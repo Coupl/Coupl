@@ -1,4 +1,3 @@
-import phonenumber_field.modelfields
 from django.contrib.auth.models import User
 from django.db import models
 from phonenumber_field import modelfields
@@ -14,11 +13,10 @@ class Profile(models.Model):
     dateOfBirth = models.DateField(blank=False, editable=False)
     description = models.CharField(default="", max_length=200)
     photos = None
-    gender = models.CharField(blank=False, max_length=10)  # "Male" or "Female" written on db
-    preference = models.CharField(blank=False,
-                                  max_length=10)  # Will receive "Male", "Female" or "Both" from the front-end and
+    gender = models.CharField(blank=False, max_length=10)       # "Male" or "Female" written on db
+    preference = models.CharField(blank=False, max_length=10)   # Will receive "Male", "Female" or "Both" from the front-end and
+                                                                # place what is received into the db
 
-    # place what is received into the db
     @property
     def eventHistory(self):
         return None
@@ -42,7 +40,7 @@ class Event(models.Model):
     eventStartTime = models.DateTimeField(blank=False)
     eventFinishTime = models.DateTimeField(blank=False)
     eventCreator = models.ForeignKey("Coordinator", on_delete=models.CASCADE)
-    eventLocation = models.ForeignKey("Location", on_delete=models.CASCADE)
+    eventLocation = models.ForeignKey("Location", on_delete=models.CASCADE, null=True)
     eventAttendees = models.ManyToManyField(User)
 
     @property
@@ -89,6 +87,6 @@ class Coordinator(models.Model):
 
 
 class Ticket(models.Model):
-    reporter = models.ForeignKey(User, on_delete=models.CASCADE)
-    reported = models.ForeignKey(User, on_delete=models.CASCADE)
+    reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reporter")
+    reported = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reported")
     description = models.CharField(blank=False, max_length=250)
