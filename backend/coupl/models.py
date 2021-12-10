@@ -89,6 +89,6 @@ class Coordinator(models.Model):
 
 
 class Ticket(models.Model):
-    reporter = models.ForeignKey(User, on_delete=models.CASCADE)
-    reported = models.ForeignKey(User, on_delete=models.CASCADE)
+    #reporter = models.ForeignKey(User, on_delete=models.CASCADE)
+    #reported = models.ForeignKey(User, on_delete=models.CASCADE)
     description = models.CharField(blank=False, max_length=250)
