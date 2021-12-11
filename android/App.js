@@ -19,8 +19,8 @@ import {
   Button,
 } from 'react-native';
 
-import WelcomeScreen from './src/components/WelcomeScreen';
-import HomeScreen from './src/components/HomeScreen';
+import LandingNavigation from './src/components/Landing/LandingNavigation';
+import UserNavigation from './src/components/User/UserNavigation';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -32,8 +32,16 @@ const App: () => Node = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ title: 'Welcome' }}/>
-        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Home' }}/>
+        <Stack.Screen
+          name="LandingNavigation"
+          component={LandingNavigation}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="UserNavigation"
+          component={UserNavigation}
+          options={{ headerShown: false }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
