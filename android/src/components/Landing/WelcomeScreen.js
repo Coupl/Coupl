@@ -1,8 +1,6 @@
 
 import React from 'react';
-import {
-    Button,
-} from 'react-native';
+import { Button } from 'react-native-paper';
 
 
 const WelcomeScreen = ({ navigation }) => {
@@ -10,17 +8,17 @@ const WelcomeScreen = ({ navigation }) => {
     return (
         <>
             <Button
-                title="Login"
-                onPress={() =>
-                    navigation.navigate('LoginScreen')
-                }
-            />
+                mode="contained"
+                onPress={() => navigation.navigate('LoginScreen')}
+            >
+                Login
+            </Button>
             <Button
-                title="Register"
-                onPress={() =>
-                    navigation.navigate('RegisterScreen')
-                }
-            />
+                mode="contained"
+                onPress={() => navigation.navigate('RegisterScreen') }
+            >
+                Register
+            </Button>
         </>
     );
 };
