@@ -1,7 +1,11 @@
+import datetime
+
+import qrcode
 from django.contrib.auth.models import User
 from django.db import models
 from phonenumber_field import modelfields
 from django.utils.translation import gettext_lazy as _
+import qrcode as qr
 
 
 # Create your models here.
@@ -14,16 +18,30 @@ class Profile(models.Model):
     description = models.CharField(default="", max_length=200)
     photos = None
     gender = models.CharField(blank=False, max_length=10)       # "Male" or "Female" written on db
-    preference = models.CharField(blank=False, max_length=10)   # Will receive "Male", "Female" or "Both" from the front-end and
-                                                                # place what is received into the db
+    preference = models.CharField(blank=False, max_length=10)
+    # likes = models.ManyToManyField("self", through_fields=("Match", "liker"))
 
     @property
     def eventHistory(self):
-        return None
+        return Event.objects.filter(eventAttendees__in=self)
 
     @property
     def matchHistory(self):
-        return None
+        return  # Profile.objects.filter(profile__in=self.likes).filter(likes__in=self)
+
+
+class ProfilePicture(models.Model):
+    title = models.CharField(max_length=50)
+    description = models.CharField(max_length=100)
+    profile = models.ForeignKey("Profile", on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='user_images/')
+    order = models.IntegerField()
+
+
+# class Match(models.Model):
+#     liker = models.ForeignKey(User, on_delete=models.CASCADE, related_name="liker")
+#     liked = models.ForeignKey(User, on_delete=models.CASCADE, related_name="liked")
+#     event = models.ForeignKey("Event", on_delete=models.CASCADE, related_name="match-event")
 
 
 class Location(models.Model):
@@ -31,6 +49,14 @@ class Location(models.Model):
     description = models.CharField(max_length=100)
     address = models.CharField(blank=False, max_length=150)
     # photo = models.ImageField()
+
+
+class LocationPictures(models.Model):
+    title = models.CharField(max_length=50)
+    description = models.CharField(max_length=100)
+    location = models.ForeignKey("Location", on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='user_images/')
+    order = models.IntegerField()
 
 
 class Event(models.Model):
@@ -45,7 +71,10 @@ class Event(models.Model):
 
     @property
     def eventQRCode(self):
-        return None
+        # qr = qrcode.QRCode(version=2)
+        # qr.add_data(str(self.id) + " " + self.eventName)
+        # qr.make_image(fill_color="black", back_color="white").save("deneme.png")
+        return 1
 
 
 class Comment(models.Model):
