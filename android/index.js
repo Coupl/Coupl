@@ -14,14 +14,19 @@ import {
     enGB,
     registerTranslation,
   } from 'react-native-paper-dates'
+import axios from 'axios';
+import Toast from 'react-native-toast-message';
 
 const store = configureStore();
 registerTranslation('en-GB', enGB);
+
+//axios.defaults.baseURL = 'https://127.0.0.1:8000/';
 
 const WrappedApp = () => (
     <StoreProvider store={store}>
         <PaperProvider>
             <App />
+            <Toast />
         </PaperProvider>
     </StoreProvider>
 );

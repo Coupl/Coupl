@@ -5,13 +5,16 @@ import Ionicons, { FontAwesome, Foundation, SimpleLineIcons } from 'react-native
 import { DatePickerInput } from 'react-native-paper-dates';
 import { ScrollView } from 'react-native';
 import axios from 'axios';
+import Toast from 'react-native-toast-message';
 
 
 const RegisterScreen = ({ navigation }) => {
 
+    const pageChangeTimeout = 1000; //In milliseconds
+
     const [name, setName] = useState('');
     const [surname, setSurname] = useState('');
-    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [gender, setGender] = useState('');
     const [preferredGender, setPreferredGender] = useState('');
@@ -22,9 +25,30 @@ const RegisterScreen = ({ navigation }) => {
     const renderBothRadioButton = (<><Ionicons name="male" size={24} /><Ionicons name="female" size={24} /><Text> Both</Text></>);
 
     const onRegisterSubmit = () => {
-        axios.get(`https://jsonplaceholder.typicode.com/users`).then(res => {
-            const persons = res.data;
-            console.log(persons);
+        const userData = { username: phone, password: password };
+        axios.post(`http://10.0.2.2:8000/`, userData).then(res => {
+            Toast.show({
+                type: 'success',
+                text1: 'Success',
+                text2: 'Your account is successfully registered.'
+            });
+            
+            //Go to the login screen after a timeout
+            setTimeout(()=> {navigation.navigate('LoginScreen');}, pageChangeTimeout);
+
+        }).catch(err => {
+            let errors = "";
+            let errorData = err.response.data;
+            for (var key in errorData) {
+                var value = errorData[key];
+                errors = errors + value + "\n";
+            }
+
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: errors
+            });
         });
     }
 
@@ -42,24 +66,27 @@ const RegisterScreen = ({ navigation }) => {
             />
 
             <TextInput
-                label="Email"
-                value={email}
-                onChangeText={text => setEmail(text)}
+                label="Phone"
+                value={phone}
+                onChangeText={text => setPhone(text)}
             />
             <TextInput
                 label="Password"
+                secureTextEntry={true}
                 value={password}
                 onChangeText={text => setPassword(text)}
             />
 
-            <DatePickerInput
-                locale="en-GB"
-                label="Birthdate"
-                value={birthdate}
-                onChange={(d) => setBirthdate(d)}
-                inputMode="start"
-            //mode="outlined"
-            />
+            {
+                <DatePickerInput
+                    locale="en-GB"
+                    label="Birthdate"
+                    value={birthdate}
+                    onChange={(d) => setBirthdate(d)}
+                    inputMode="start"
+                //mode="outlined"
+                />
+            }
             <Text >Your gender:</Text>
             <RadioButton.Group onValueChange={value => setGender(value)} value={gender}>
                 <RadioButton.Item label={renderMaleRadioButton} value="Male" />
