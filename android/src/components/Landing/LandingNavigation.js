@@ -15,7 +15,7 @@ const LandingNavigation = ({ navigation }) => {
 
     return (
         <Stack.Navigator>
-            <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} options={{ title: 'WelcomeScreen' }} />
+            <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} options={{ headerShown: false }} />
             <Stack.Screen name="LoginScreen" component={LoginScreen} options={{ title: 'Login' }} />
             <Stack.Screen name="RegisterScreen" component={RegisterScreen} options={{ title: 'Register' }} />
         </Stack.Navigator>
