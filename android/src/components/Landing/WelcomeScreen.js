@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ImageBackground, StyleSheet, View } from 'react-native';
+import { Image, ImageBackground, StyleSheet, View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 
 
@@ -10,6 +10,10 @@ const WelcomeScreen = ({ navigation }) => {
         <View style={styles.container}>
             <ImageBackground source={require("./welcomeBackground.png")} resizeMode="cover" style={styles.image}>
                 <View style={styles.innerContainer}>
+                    <Image
+                        style={styles.logo}
+                        source={require('./couplLogo.png')}
+                    />
                     <Button
                         style={styles.button}
                         color="green"
@@ -51,6 +55,11 @@ const styles = StyleSheet.create({
     image: {
         width: "100%",
         flex: 1,
+    },
+    logo: {
+        width: "80%",
+        height: "20%",
+        resizeMode: 'contain',
     },
     button: {
         margin: 20,
