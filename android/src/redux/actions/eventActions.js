@@ -11,7 +11,21 @@ const leaveEvent = () => {
     }
 }
 
+const startMatching = () => {
+    return {
+        type: "START_MATCHING"
+    }
+}
+
+const stopMatching = () => {
+    return {
+        type: "STOP_MATCHING"
+    }
+}
+
 export default {
     joinEvent,
-    leaveEvent
+    leaveEvent,
+    startMatching,
+    stopMatching
 }
