@@ -20,7 +20,7 @@ import Toast from 'react-native-toast-message';
 const store = configureStore();
 registerTranslation('en-GB', enGB);
 
-//axios.defaults.baseURL = 'https://127.0.0.1:8000/';
+axios.defaults.baseURL = 'http://10.0.2.2:8000/';
 
 const WrappedApp = () => (
     <StoreProvider store={store}>
