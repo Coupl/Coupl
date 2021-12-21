@@ -6,6 +6,7 @@ import {
 import { Button } from 'react-native-paper';
 import { useStore } from 'react-redux';
 import allActions from '../../redux/actions';
+import axios from 'axios'
 
 const HomeScreen = ({ navigation }) => {
 
@@ -13,15 +14,14 @@ const HomeScreen = ({ navigation }) => {
     const joinEventAction = allActions.eventActions.joinEvent;
 
     const joinEvent = (eventId) => {
-        //TODO: Join the event and fetch the event details here
-        const eventInfo = {
-            name: "Rastgele bir etkinlik",
-            numParticipants: 25,
-            endingTime: new Date()
-        }
-        
-        store.dispatch(joinEventAction(eventInfo));
-        navigation.navigate('EventNavigation')
+        axios.get('getEvent?event_id=' + eventId).then((res) => {
+            var eventInfo = res.data;
+            eventInfo.numParticipants = 25; //Add this to the actual response later
+            store.dispatch(joinEventAction(eventInfo));
+            navigation.navigate('EventNavigation');
+        }).catch((err) => {
+            console.log(err.response);
+        });
     }
 
     return (
@@ -29,7 +29,7 @@ const HomeScreen = ({ navigation }) => {
             <Text>Burası ana ekran, analiz raporundaki ui resimlerine göre sadece qr code tarama şeyi olacak</Text>
             <Button
                 mode="contained"
-                onPress={() => joinEvent(1)}
+                onPress={() => joinEvent(7)}
             >
                 Test için rastgele evente girme tuşu
             </Button>

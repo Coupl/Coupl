@@ -41,13 +41,17 @@ const EventHomeScreen = ({ navigation }) => {
     return (
         <>
             <Text>
-                Event name: {eventInfo.name}
+                Event name: {eventInfo.eventName}
             </Text>
+            <Text>
+                {eventInfo.eventDescription}
+            </Text>
+                
             <Text>
                 Number of participants: {eventInfo.numParticipants}
             </Text>
             <Text>
-                Event ending time: {eventInfo.endingTime.toString()}
+                Event ending time: {eventInfo.eventFinishTime}
             </Text>
 
             <Button
