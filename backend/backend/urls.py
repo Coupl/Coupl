@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 
+
 import coupl.views
 
 # router = routers.DefaultRouter()
@@ -25,4 +26,6 @@ import coupl.views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', coupl.views.UserLoginView.as_view()),
+    path('getEvent/', coupl.views.EventGetView.as_view()),
+    path('addEvent/', coupl.views.EventAddView.as_view()),
 ]
