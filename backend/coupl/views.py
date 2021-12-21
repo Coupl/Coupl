@@ -27,7 +27,7 @@ class EventGetView(APIView):
     def get(self, request, format=None):
         event_id = request.query_params.get('event_id')
         event = Event.objects.get(pk=event_id)
-        return JsonResponse(model_to_dict(event), status=400)
+        return JsonResponse(model_to_dict(event), status=200)
 
 
 class EventAddView(APIView):
