@@ -21,6 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class EventSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Event
         fields = ['eventName', 'eventDescription', 'eventCreator', 'eventStartTime', 'eventFinishTime']
@@ -32,4 +33,3 @@ class EventSerializer(serializers.ModelSerializer):
                                     eventCreator=validated_data.get('eventCreator'),
                                     eventStartTime=validated_data.get('eventStartTime'),
                                     eventFinishTime=validated_data.get('eventFinishTime'))
-
