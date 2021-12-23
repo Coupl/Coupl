@@ -6,6 +6,7 @@ import {
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from './HomeScreen';
 import UpcomingEventsScreen from './UpcomingEventsScreen';
+import UpcomingEventsDetailsScreen from './UpcomingEventsDetailsScreen';
 import MessagesScreen from './MessagesScreen';
 import ProfileScreen from './ProfileScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -18,6 +19,7 @@ const TabsComponent = () => {
         <Tabs.Navigator>
             <Tabs.Screen name="HomeScreen" component={HomeScreen} />
             <Tabs.Screen name="UpcomingEventsScreen" component={UpcomingEventsScreen} />
+            <Tabs.Screen name="UpcomingEventsDetailsScreen" component={UpcomingEventsDetailsScreen} />
             <Tabs.Screen name="MessagesScreen" component={MessagesScreen} />
             <Tabs.Screen name="ProfileScreen" component={ProfileScreen} />
         </Tabs.Navigator>
@@ -33,7 +35,7 @@ const UserNavigation = ({ navigation }) => {
             <Stack.Screen name="EventNavigation" component={EventNavigation} options={{ headerShown: false }} />
         </Stack.Navigator>
 
-        
+
     );
 };
 
