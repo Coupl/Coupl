@@ -1,17 +1,24 @@
 
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback } from 'react';
-import { BackHandler } from 'react-native';
+import { BackHandler, Dimensions, Image, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 import { useSelector, useStore } from 'react-redux';
 import allActions from '../../redux/actions';
 import selectCurrentEvent from '../../redux/selectors';
+import { data } from "./../User/data";
+import AntDesign from "react-native-vector-icons/AntDesign";
+import moment from 'moment';
+
+const height = Dimensions.get('window').height;
+const width = Dimensions.get('window').width;
 
 const EventHomeScreen = ({ navigation }) => {
 
     const currentEvent = useSelector(selectCurrentEvent);
-    const eventInfo = currentEvent.eventInfo;
-    
+    //const eventInfo = currentEvent.eventInfo;
+    const eventInfo = data[0];
+
     const store = useStore();
 
     const leaveEvent = () => {
@@ -38,36 +45,118 @@ const EventHomeScreen = ({ navigation }) => {
         }, [])
     );
 
-    return (
-        <>
-            <Text>
-                Event name: {eventInfo.eventName}
-            </Text>
-            <Text>
-                {eventInfo.eventDescription}
-            </Text>
-                
-            <Text>
-                Number of participants: {eventInfo.numParticipants}
-            </Text>
-            <Text>
-                Event ending time: {eventInfo.eventFinishTime}
-            </Text>
+    const eventEndTime = moment().endOf('hour').fromNow();
+    const numParticipants = 25;
+    const numLikes = 5;
 
-            <Button
-                mode="contained"
-                onPress={() => startMatching()}
-            >
-                Start Matching
-            </Button>
-            <Button
-                mode="contained"
-                onPress={() => leaveEvent()}
-            >
-                Leave the Event
-            </Button>
-        </>
+    return (
+        <View style={{ flex: 1 }}>
+            <Image style={styles.image} source={{ uri: eventInfo.eventImage }} />
+            <View style={styles.background}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flexWrap: 'wrap' }}>
+                    {eventInfo.tags.map((tag, index) => {
+                        return (
+                            <AntDesign key={index} name="slack-square" size={28}
+                                style={styles.icon}
+                                color={'#000'}
+                            >
+                                <Text style={styles.text}>{tag}</Text>
+                            </AntDesign>
+                        )
+                    })}
+                </View>
+
+                <View style={{
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    flexDirection: 'column'
+                }}>
+
+                    <AntDesign name="dashboard" size={28}
+                        style={styles.icon}
+                        color={'#000'}
+                    >
+                        <Text style={styles.text}> Event ends {eventEndTime}</Text>
+                    </AntDesign>
+
+                    <AntDesign name="user" size={28}
+                        style={styles.icon}
+                        color={'#000'}
+                    >
+                        <Text style={styles.text}> Number of participants: {numParticipants}</Text>
+                    </AntDesign>
+
+                    <AntDesign name="heart" size={28}
+                        style={styles.icon}
+                        color={'#000'}
+                    >
+                        <Text style={styles.text}> Number of likes: {numLikes}</Text>
+                    </AntDesign>
+
+                    <Button
+                        style={styles.startMatchingButton}
+                        mode="contained"
+                        onPress={() => startMatching()}
+                    >
+                        Start Matching
+                    </Button>
+                    <Button
+                        style={styles.leaveEventButton}
+                        mode="contained"
+                        onPress={() => leaveEvent()}
+                    >
+                        Leave the Event
+                    </Button>
+
+                </View>
+            </View>
+        </View>
     );
 };
 
 export default EventHomeScreen;
+
+const styles = StyleSheet.create({
+    description: {
+        paddingTop: 10,
+        padding: 10,
+        fontSize: 18,
+        fontWeight: '500',
+        textAlign: 'justify',
+    },
+    icon: {
+        padding: 10,
+    },
+    text: {
+        fontSize: 18,
+    },
+    image: {
+        marginTop: -height * 0.03,
+        width: width,
+        height: height * 0.4,
+        borderTopLeftRadius: 16,
+        borderTopRightRadius: 16,
+        resizeMode: 'contain',
+    },
+    background: {
+        paddingTop: 20,
+        position: 'absolute',
+        width,
+        height,
+        transform: [{ translateY: height * 0.3 }],
+        backgroundColor: '#fff',
+        borderRadius: 32
+    },
+    startMatchingButton: {
+        width: width * 0.7,
+        marginTop: 20,
+        marginBottom: 50,
+        backgroundColor: "green",
+        borderRadius: 20
+    },
+    leaveEventButton: {
+        width: width * 0.7,
+        backgroundColor: "gray",
+        borderRadius: 20
+    },
+});
