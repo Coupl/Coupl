@@ -26,6 +26,7 @@ const HomeScreen = ({ navigation }) => {
     const store = useStore();
     const joinEventAction = allActions.eventActions.joinEvent;
     const [renderScanner, setRenderScanner] = useState(false);
+    const [scanQRCode, setScanQRCode] = useState(true);
 
     const joinEvent = (eventId) => {
         axios.get('getEvent?event_id=' + eventId).then((res) => {
@@ -39,6 +40,8 @@ const HomeScreen = ({ navigation }) => {
     }
 
     const onRead = e => {
+        if (!scanQRCode) return;
+
         const url = e.data;
         const eventId = url.split("=")[1];
 
@@ -53,6 +56,8 @@ const HomeScreen = ({ navigation }) => {
         //joinEvent(eventId);
 
         setRenderScanner(false);
+        setScanQRCode(false);
+        setTimeout(() => {setScanQRCode(true)}, 10000);
     }
 
     const onPreviewClick = () => {
