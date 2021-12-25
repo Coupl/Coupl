@@ -12,12 +12,14 @@ import { useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { data } from "./data";
 import AntDesign from "react-native-vector-icons/AntDesign";
+import UpcomingEventsDetailsScreen from './UpcomingEventsDetailsScreen';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
-const UpcomingEventsScreen = ({ navigation }) => {
+const UpcomingEvents = ({ navigation }) => {
     useEffect(() => {
         navigation.setOptions({ title: "Upcoming Events" });
     }, []);
@@ -27,9 +29,10 @@ const UpcomingEventsScreen = ({ navigation }) => {
                 data={data}
                 keyExtractor={item => item.key}
                 contentContainerStyle={{ padding: 16 }}
-                renderItem={item => {
+                renderItem={item_ => {
+                    const item = item_.item;
                     return (
-                        <TouchableOpacity style={{ marginBottom: 16, height: height * 0.40 }} onPress={() => navigation.navigate('UpcomingEventsDetailsScreen', { item })}>
+                        <TouchableOpacity style={{ marginBottom: 16, height: height * 0.40 }} onPress={() => navigation.navigate('UpcomingEventDetails', { item })}>
                             <View style={{ flex: 1, padding: 16 }}>
                                 <View
                                     style={
@@ -37,20 +40,20 @@ const UpcomingEventsScreen = ({ navigation }) => {
                                         { backgroundColor: '#C0D6E4', borderRadius: 16 },
                                         ]}
                                 />
-                                <Image style={styles.image} source={{ uri: item.item.coverImage }} />
-                                <Text style={styles.name}>{item.item.name}</Text>
+                                <Image style={styles.image} source={{ uri: item.coverImage }} />
+                                <Text style={styles.name}>{item.name}</Text>
                                 <AntDesign name="enviroment" size={12}
                                     style={styles.icon}
                                     color={'#000'}
                                 >
 
-                                    <Text style={styles.description}>{item.item.location}</Text>
+                                    <Text style={styles.description}>{item.location}</Text>
                                 </AntDesign>
                                 <AntDesign name="calendar" size={12}
                                     style={styles.icon}
                                     color={'#000'}
                                 >
-                                    <Text style={styles.text}>{item.item.date}</Text>
+                                    <Text style={styles.text}>{item.date}</Text>
                                 </AntDesign>
                             </View>
                         </TouchableOpacity>
@@ -60,6 +63,17 @@ const UpcomingEventsScreen = ({ navigation }) => {
         </SafeAreaView>
     );
 };
+
+const UpcomingEventsScreen = ({ navigation }) => {
+    const Stack = createNativeStackNavigator();
+
+    return (
+        <Stack.Navigator>
+            <Stack.Screen name="UpcomingEvents" component={UpcomingEvents} options={{ headerShown: false }} />
+            <Stack.Screen name="UpcomingEventDetails" component={UpcomingEventsDetailsScreen}/>
+        </Stack.Navigator>
+    );
+}
 
 export default UpcomingEventsScreen;
 

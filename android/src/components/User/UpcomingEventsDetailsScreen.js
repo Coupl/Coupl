@@ -20,11 +20,11 @@ const width = Dimensions.get('window').width;
 const UpcomingEventsDetailsScreen = ({ navigation, route }) => {
   const { item } = route.params;
   useEffect(() => {
-    navigation.setOptions({ title: `${item.item.name}` });
+    navigation.setOptions({ title: `${item.name}` });
   }, []);
   return (
     <View style={{ flex: 1 }}>
-      <Image style={styles.image} source={{ uri: item.item.eventImage }} />
+      <Image style={styles.image} source={{ uri: item.eventImage }} />
       <View style={styles.background}>
         <ScrollView>
           <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flexWrap: 'wrap' }}>
@@ -32,21 +32,21 @@ const UpcomingEventsDetailsScreen = ({ navigation, route }) => {
               style={styles.icon}
               color={'#000'}
             >
-              <Text style={styles.text}>{item.item.location}</Text>
+              <Text style={styles.text}>{item.location}</Text>
             </AntDesign>
             <AntDesign name="calendar" size={28}
               style={styles.icon}
               color={'#000'}
             >
-              <Text style={styles.text}>{item.item.date}</Text>
+              <Text style={styles.text}>{item.date}</Text>
             </AntDesign>
             <AntDesign name="clockcircle" size={28}
               style={styles.icon}
               color={'#000'}
             >
-              <Text style={styles.text}>{item.item.startTime + " - " + item.item.endTime}</Text>
+              <Text style={styles.text}>{item.startTime + " - " + item.endTime}</Text>
             </AntDesign>
-            {item.item.tags.map((tag, index) => {
+            {item.tags.map((tag, index) => {
               return (
                 <AntDesign key={index} name="slack-square" size={28}
                   style={styles.icon}
@@ -57,7 +57,7 @@ const UpcomingEventsDetailsScreen = ({ navigation, route }) => {
               )
             })}
           </View>
-          <Text style={styles.description}>{item.item.description}</Text>
+          <Text style={styles.description}>{item.description}</Text>
         </ScrollView>
       </View>
     </View>

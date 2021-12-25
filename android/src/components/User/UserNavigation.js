@@ -11,17 +11,32 @@ import MessagesScreen from './MessagesScreen';
 import ProfileScreen from './ProfileScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import EventNavigation from '../Event/EventNavigation';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const TabsComponent = () => {
     const Tabs = createBottomTabNavigator();
 
     return (
-        <Tabs.Navigator>
-            <Tabs.Screen name="HomeScreen" component={HomeScreen} />
-            <Tabs.Screen name="UpcomingEventsScreen" component={UpcomingEventsScreen} />
-            <Tabs.Screen name="UpcomingEventsDetailsScreen" component={UpcomingEventsDetailsScreen} />
-            <Tabs.Screen name="MessagesScreen" component={MessagesScreen} />
-            <Tabs.Screen name="ProfileScreen" component={ProfileScreen} />
+        <Tabs.Navigator
+
+            screenOptions={({ route }) => ({
+                tabBarIcon: ({ focused, color, size }) => {
+                    let iconName = "ios-information-circle";
+                    if (route.name === "HomeScreen") iconName = "home";
+                    else if (route.name === "UpcomingEventsScreen") iconName = "calendar";
+                    else if (route.name === "MessagesScreen") iconName = "chatbox-ellipses";
+                    else if (route.name === "ProfileScreen") iconName = "person";
+
+                    return <Ionicons name={iconName} size={size} color={color} />;
+                },
+                tabBarActiveTintColor: 'tomato',
+                tabBarInactiveTintColor: 'gray',
+            })}
+        >
+            <Tabs.Screen name="HomeScreen" component={HomeScreen} options={{title : "Home"}}/>
+            <Tabs.Screen name="UpcomingEventsScreen" component={UpcomingEventsScreen} options={{title : "Upcoming Events"}}/>
+            <Tabs.Screen name="MessagesScreen" component={MessagesScreen} options={{title : "Messages"}}/>
+            <Tabs.Screen name="ProfileScreen" component={ProfileScreen} options={{title : "Profile"}}/>
         </Tabs.Navigator>
     );
 }
