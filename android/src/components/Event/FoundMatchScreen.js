@@ -3,7 +3,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { ActivityIndicator, Button, Card } from 'react-native-paper';
 import { useSelector, useStore } from 'react-redux';
-import { selectMatch } from '../../redux/selectors';
+import { selectCurrentEvent, selectMatch } from '../../redux/selectors';
 import { hobbies } from '../User/data';
 import AntDesign from "react-native-vector-icons/AntDesign";
 import allActions from '../../redux/actions';
@@ -99,6 +99,7 @@ const UserCard = ({ match, acceptMatch, removeMatch }) => {
 const FoundMatchScreen = ({ navigation }) => {
 
     const match = useSelector(selectMatch);
+    const currentEvent = useSelector(selectCurrentEvent);
     if (!match) {
         return (
             <View style={{
@@ -127,7 +128,7 @@ const FoundMatchScreen = ({ navigation }) => {
             if (Math.random() < 0.5) {
 
                 const matchsChoiceAction = allActions.eventActions.matchsChoice;
-                store.dispatch(matchsChoiceAction(match.rejectedOnce));
+                store.dispatch(matchsChoiceAction(currentEvent.rejectedOnce));
                 clearInterval(matchsChoice);
             }
         }, 1000)
