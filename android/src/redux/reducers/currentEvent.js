@@ -40,12 +40,33 @@ const currentEvent = (state = {
         case "FOUND_MATCH":
             return {
                 ...state,
-                match: action.payload
+                match: {
+                    user: action.payload.user,
+                    location: action.payload.location,
+                    yourAcceptance: MatchStates.WAITING,
+                    theirAcceptance: MatchStates.WAITING,
+                }
             }
         case "REMOVE_MATCH":
             return {
                 ...state,
                 match: null
+            }
+        case "ACCEPT_MATCH":
+            return {
+                ...state,
+                match: {
+                    ...state.match,
+                    yourAcceptance: MatchStates.ACCEPTED
+                }
+            }
+        case "MATCHS_CHOICE":
+            return {
+                ...state,
+                match: {
+                    ...state.match,
+                    theirAcceptance: action.payload
+                }
             }
         case "SKIP_USER":
             return state
@@ -58,6 +79,12 @@ export const EventStates = {
     NOT_IN_EVENT: "NOT_IN_EVENT",
     IN_EVENT: "IN_EVENT",
     IN_MATCHING: "IN_MATCHING",
+};
+
+export const MatchStates = {
+    WAITING: "WAITING",
+    ACCEPTED: "ACCEPTED",
+    REJECTED: "REJECTED",
 };
 
 export default currentEvent;

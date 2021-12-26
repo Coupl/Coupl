@@ -1,3 +1,5 @@
+import { MatchStates } from "../reducers/currentEvent"
+
 const joinEvent = (eventInfo) => {
     return {
         type: "JOIN_EVENT",
@@ -50,6 +52,19 @@ const removeMatch = () => {
     }
 }
 
+const acceptMatch = () => {
+    return {
+        type: "ACCEPT_MATCH"
+    }
+}
+
+const matchsChoice = (isAccept) => {
+    const payload = isAccept ? MatchStates.ACCEPTED : MatchStates.REJECTED; 
+    return {
+        type: "MATCHS_CHOICE",
+        payload: payload
+    }
+}
 
 export default {
     joinEvent,
@@ -60,4 +75,6 @@ export default {
     skipUser,
     foundMatch,
     removeMatch,
+    acceptMatch,
+    matchsChoice,
 }
