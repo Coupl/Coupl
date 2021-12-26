@@ -30,13 +30,10 @@ class EventGetView(APIView):
         event = Event.objects.get(pk=event_id)
 
         print(event)
-        serializer = EventSerializer(data=model_to_dict(event))
+        serializer = EventSerializer(event)
 
-        if serializer.is_valid():
-            return JsonResponse(serializer.data, status=201)
-        else:
-            print(serializer.errors)
-            return JsonResponse("Error", status=400, safe=False)
+        return Response(serializer.data, status=201)
+
         """
         try:
             event = Event.objects.get(pk=event_id)

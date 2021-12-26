@@ -20,13 +20,16 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-class UserSerializer2(serializers.RelatedField):
+
+class UserDisplaySerializer(serializers.RelatedField):
     def to_representation(self, value):
         username = value.username
-        return username
+        pk = value.pk
+        return {"pk": pk, "username": username}
+
 
 class EventSerializer(serializers.ModelSerializer):
-    eventAttendees = UserSerializer2(many=True, read_only=True)
+    eventAttendees = UserDisplaySerializer(many=True, read_only=True)
 
     class Meta:
         model = Event
