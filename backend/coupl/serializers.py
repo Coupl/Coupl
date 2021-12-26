@@ -4,6 +4,12 @@ from rest_framework import serializers
 from coupl.models import Profile, Event
 
 
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = '__all__'
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -32,7 +38,7 @@ class EventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ['eventName', 'eventDescription', 'eventCreator', 'eventStartTime', 'eventFinishTime',
+        fields = ['pk', 'eventName', 'eventDescription', 'eventCreator', 'eventStartTime', 'eventFinishTime',
                   'eventAttendees']
 
     def create(self, validated_data):

@@ -8,7 +8,7 @@ from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
 from coupl.serializers import UserSerializer, EventSerializer
-from coupl.models import Event
+from coupl.models import Event, Profile
 
 
 # todo
@@ -55,8 +55,9 @@ class EventAddView(APIView):
 
 class EventJoinView(APIView):
     def post(self, request, format=None):
-        event_id = request.query_params.get('event_id')
-        user_id = request.query_params.get('user_id')
+        event_id = request.query_params.get('eventId')
+        print(event_id)
+        user_id = request.query_params.get('userId')
         try:
             event = Event.objects.get(pk=event_id)
         except ObjectDoesNotExist:
@@ -71,8 +72,8 @@ class EventJoinView(APIView):
 
 class EventLeaveView(APIView):
     def post(self, request, format=None):
-        event_id = request.query_params.get('event_id')
-        user_id = request.query_params.get('user_id')
+        event_id = request.query_params.get('eventId')
+        user_id = request.query_params.get('userId')
         try:
             event = Event.objects.get(pk=event_id)
         except ObjectDoesNotExist:
@@ -84,5 +85,26 @@ class EventLeaveView(APIView):
         if event.eventAttendees.contains(user):
             event.eventAttendees.remove(user)
             return JsonResponse('Successfully left event', status=201, safe=False)
+        else:
+            return JsonResponse('User is not in the event', status=400, safe=False)
+
+class UserGetMatches(APIView):
+    def get(self, request, format=None):
+        event_id = request.query_params.get('eventId')
+        user_id = request.query_params.get('userId')
+        try:
+            event = Event.objects.get(pk=event_id)
+        except ObjectDoesNotExist:
+            return JsonResponse('Event with the given id is not found.', status=400, safe=False)
+        try:
+            user = User.objects.get(pk=user_id)
+        except ObjectDoesNotExist:
+            return JsonResponse('User with the given id is not found.', status=400, safe=False)
+        if event.eventAttendees.contains(user):
+            possibleMatches = []
+            for attendee in event.eventAttendees.all().exclude(user):
+                if attendee.profile.gender in Profile.preferenceList[user.profile.preference]:
+                    possibleMatches.append(attendee)
+            return possibleMatches
         else:
             return JsonResponse('User is not in the event', status=400, safe=False)

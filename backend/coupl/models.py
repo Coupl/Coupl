@@ -10,6 +10,7 @@ import qrcode as qr
 
 # Create your models here.
 class Profile(models.Model):
+    preferenceList = ["Male", "Female", ["Male", "Female"]]
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(blank=False, max_length=30)
     surname = models.CharField(blank=False, max_length=30)
