@@ -10,6 +10,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from coupl.serializers import UserSerializer, EventSerializer
 from coupl.models import Event
 
+
+# todo
 class UserLoginView(APIView):
     def get(self, request, format=None):
         users = User.objects.all()
@@ -23,7 +25,14 @@ class UserLoginView(APIView):
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
 
-#needs fixing
+
+class EventListView(APIView):
+    def get(self, request, format=None):
+        events = Event.objects.all()
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
+
+
 class EventGetView(APIView):
     def get(self, request, format=None):
         event_id = request.query_params.get('event_id')
