@@ -23,9 +23,41 @@ const stopMatching = () => {
     }
 }
 
+const likeUser = (user) => {
+    return {
+        type: "LIKE_USER",
+        payload: user
+    }
+}
+
+const skipUser = (user) => {
+    return {
+        type: "SKIP_USER",
+        payload: user
+    }
+}
+
+const foundMatch = (match) => {
+    return {
+        type: "FOUND_MATCH",
+        payload: match
+    }
+}
+
+const removeMatch = () => {
+    return {
+        type: "REMOVE_MATCH"
+    }
+}
+
+
 export default {
     joinEvent,
     leaveEvent,
     startMatching,
-    stopMatching
+    stopMatching,
+    likeUser,
+    skipUser,
+    foundMatch,
+    removeMatch,
 }
