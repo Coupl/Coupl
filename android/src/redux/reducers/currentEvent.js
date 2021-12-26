@@ -2,7 +2,8 @@ const currentEvent = (state = {
     eventInfo: null,
     state: EventStates.NOT_IN_EVENT,
     likedUsers: [],
-    match: null
+    match: null,
+    rejectedOnce: false,
 }, action) => {
     switch (action.type) {
         case "JOIN_EVENT":
@@ -66,7 +67,8 @@ const currentEvent = (state = {
                 match: {
                     ...state.match,
                     theirAcceptance: action.payload
-                }
+                },
+                rejectedOnce: true
             }
         case "SKIP_USER":
             return state

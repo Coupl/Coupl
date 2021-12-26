@@ -15,7 +15,7 @@ const UserCard = ({ candidateInfo, likeCandidate, skipCandidate }) => {
     const fullName = candidateInfo.name.first + " " + candidateInfo.name.last[0] + ".";
     const age = "Age: " + candidateInfo.dob.age;
 
-    const randomHobbies = hobbies.sort(() => 0.5 - Math.random()).slice(0, 5);
+    const randomHobbies = hobbies.sort(() => 0.5 - Math.random()).slice(0, 4);
 
     //Temporary solution to render random photo.
     candidateInfo.picture.large = "https://i.pravatar.cc/" + parseInt(Math.random()*100 + 500);
@@ -96,7 +96,7 @@ const MatchingScreen = ({ navigation }) => {
         const foundMatch = (Math.random() < 0.4);
         if (foundMatch) {
             console.log(likedUsers);
-            const matchUser = likedUsers.sort(() => 0.5 - Math.random())[0];
+            const matchUser = currentCandidate;
             const matchLocation = meetingLocations.sort(() => 0.5 - Math.random())[0];
             const foundMatchAction = allActions.eventActions.foundMatch;
 
@@ -107,8 +107,6 @@ const MatchingScreen = ({ navigation }) => {
 
             store.dispatch(foundMatchAction(match));
             navigation.navigate('FoundMatchScreen');
-
-            console.log("match ", matchUser);
         }
     }
 

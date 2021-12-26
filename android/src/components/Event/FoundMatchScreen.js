@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Button, Card } from 'react-native-paper';
+import { ActivityIndicator, Button, Card } from 'react-native-paper';
 import { useSelector, useStore } from 'react-redux';
-import { selectMatch } from '../../redux/selectors';
+import { selectCurrentEvent, selectMatch } from '../../redux/selectors';
 import { hobbies } from '../User/data';
 import AntDesign from "react-native-vector-icons/AntDesign";
 import allActions from '../../redux/actions';
@@ -11,10 +11,23 @@ import { MatchStates } from '../../redux/reducers/currentEvent';
 
 const UserCard = ({ match, acceptMatch, removeMatch }) => {
     const candidateInfo = match.user;
+
+    if (!candidateInfo) {
+        return (
+            <View style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}>
+                <ActivityIndicator size={200} color="#0000ff" />
+            </View>
+        )
+    }
+
     const fullName = candidateInfo.name.first + " " + candidateInfo.name.last[0] + ".";
     const age = "Age: " + candidateInfo.dob.age;
 
-    const randomHobbies = hobbies.sort(() => 0.5 - Math.random()).slice(0, 5);
+    const randomHobbies = hobbies.sort(() => 0.5 - Math.random()).slice(0, 4);
 
     const renderMatchChoices = () => {
         if (match.yourAcceptance === MatchStates.WAITING) {
@@ -41,7 +54,7 @@ const UserCard = ({ match, acceptMatch, removeMatch }) => {
                     style={styles.icon}
                     color={'#000'}
                 >
-                    <Text style={{fontSize: 15}}>Your match did not accept, you can keep matching with other people.</Text>
+                    <Text style={{ fontSize: 15 }}>Your match did not accept, you can keep matching with other people.</Text>
                 </AntDesign>
             )
         }
@@ -51,7 +64,7 @@ const UserCard = ({ match, acceptMatch, removeMatch }) => {
                 style={styles.icon}
                 color={'#000'}
             >
-                <Text style={{fontSize: 15}}>You both accepted, your match is finalized.</Text>
+                <Text style={{ fontSize: 15 }}>You both accepted, your match is finalized.</Text>
             </AntDesign>
         )
     }
@@ -86,6 +99,19 @@ const UserCard = ({ match, acceptMatch, removeMatch }) => {
 const FoundMatchScreen = ({ navigation }) => {
 
     const match = useSelector(selectMatch);
+    const currentEvent = useSelector(selectCurrentEvent);
+    if (!match) {
+        return (
+            <View style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}>
+                <ActivityIndicator size={200} color="#0000ff" />
+            </View>
+        )
+    }
+
     const store = useStore();
 
     const removeMatch = () => {
@@ -99,11 +125,10 @@ const FoundMatchScreen = ({ navigation }) => {
         store.dispatch(acceptMatchAction());
 
         const matchsChoice = setInterval(() => {
-            console.log("here");
             if (Math.random() < 0.5) {
 
                 const matchsChoiceAction = allActions.eventActions.matchsChoice;
-                store.dispatch(matchsChoiceAction(Math.random() < 0.5));
+                store.dispatch(matchsChoiceAction(currentEvent.rejectedOnce));
                 clearInterval(matchsChoice);
             }
         }, 1000)
