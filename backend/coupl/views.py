@@ -7,8 +7,8 @@ from rest_framework.views import APIView
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
-from coupl.serializers import UserSerializer, EventSerializer
-from coupl.models import Event
+from coupl.serializers import UserSerializer, EventSerializer, TagSerializer
+from coupl.models import Event, Tag
 
 
 # todo
@@ -86,3 +86,35 @@ class EventLeaveView(APIView):
             return JsonResponse('Successfully left event', status=201, safe=False)
         else:
             return JsonResponse('User is not in the event', status=400, safe=False)
+
+
+class TagCreateView(APIView):
+    def post(self, request, format=None):
+        serializer = TagSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
+
+
+class EventAddTagView(APIView):
+    def post(self, request, format=None):
+        event_id = request.query_params.get('eventId')
+        tag_id = request.query_params.get('tagId')
+        try:
+            event = Event.objects.get(pk=event_id)
+        except ObjectDoesNotExist:
+            return JsonResponse('Event with the given id is not found.', status=400, safe=False)
+        try:
+            tag = Tag.objects.get(pk=tag_id)
+        except ObjectDoesNotExist:
+            return JsonResponse('Tag with the given id is not found.', status=400, safe=False)
+        event.eventTags.add(tag)
+        return JsonResponse('Successfully added tag to the event', status=201, safe=False)
+
+
+class TagListView(APIView):
+    def get(self, request, format=None):
+        tags = Tag.objects.all()
+        serializer = TagSerializer(tags, many=True)
+        return Response(serializer.data)

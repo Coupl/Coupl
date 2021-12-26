@@ -27,7 +27,8 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ['tagName', 'tagDescription']
 
     def create(self, validated_data):
-        return Tag.objects.create(tagName=validated_data.get('tagName'), tagDescripton=validated_data.get('tagDescription'))
+        return Tag.objects.create(tagName=validated_data.get('tagName'),
+                                  tagDescription=validated_data.get('tagDescription'))
 
     def update(self, instance, validated_data):
         instance.tagName = validated_data.get('tagName')
@@ -52,7 +53,7 @@ class TagDisplaySerializer(serializers.RelatedField):
 
 class EventSerializer(serializers.ModelSerializer):
     eventAttendees = UserDisplaySerializer(many=True, read_only=True)
-    eventTags = UserDisplaySerializer(many=True, read_only=True)
+    eventTags = TagDisplaySerializer(many=True, read_only=True)
 
     class Meta:
         model = Event
