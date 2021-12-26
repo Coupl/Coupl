@@ -5,10 +5,11 @@ import { BackHandler, Dimensions, Image, ScrollView, StyleSheet, View } from 're
 import { Button, Text } from 'react-native-paper';
 import { useSelector, useStore } from 'react-redux';
 import allActions from '../../redux/actions';
-import { selectCurrentEvent, selectLikedUsers } from '../../redux/selectors';
+import { selectCurrentEvent, selectLikedUsers, selectMatch } from '../../redux/selectors';
 import { data } from "./../User/data";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import moment from 'moment';
+import { MatchStates } from '../../redux/reducers/currentEvent';
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
@@ -20,6 +21,7 @@ const EventHomeScreen = ({ navigation }) => {
     const eventInfo = data[0];
     const store = useStore();
     const likedUsers = useSelector(selectLikedUsers);
+    const match = useSelector(selectMatch);
 
     const leaveEvent = () => {
         const leaveEventAction = allActions.eventActions.leaveEvent;
@@ -31,6 +33,17 @@ const EventHomeScreen = ({ navigation }) => {
         const startMatchingAction = allActions.eventActions.startMatching;
         store.dispatch(startMatchingAction());
         navigation.navigate('MatchingScreen');
+    }
+
+    const seeCurrentMatch = () => {
+        navigation.navigate('FoundMatchScreen');
+    }
+
+    const matchIsFinalized = match && (match.yourAcceptance === MatchStates.ACCEPTED && match.theirAcceptance === MatchStates.ACCEPTED);
+    const renderMatchIsFinalizedText = () => {
+        return (
+            <Text style={{marginBottom: 30}}>Your match with {match.user.name.first} is already finalized.</Text>
+        );
     }
 
     useFocusEffect(
@@ -93,13 +106,29 @@ const EventHomeScreen = ({ navigation }) => {
                         <Text style={styles.text}> Number of likes: {numLikes}</Text>
                     </AntDesign>
 
-                    <Button
-                        style={styles.startMatchingButton}
-                        mode="contained"
-                        onPress={() => startMatching()}
-                    >
-                        Start Matching
-                    </Button>
+                    {
+                        matchIsFinalized ?
+                            renderMatchIsFinalizedText() :
+                            <Button
+                                style={styles.startMatchingButton}
+                                mode="contained"
+                                onPress={() => startMatching()}
+                            >
+                                Start Matching
+                            </Button>
+                    }
+
+                    {
+                        match &&
+                        <Button
+                            style={styles.seeCurrentMatchButton}
+                            mode="contained"
+                            onPress={() => seeCurrentMatch()}
+                        >
+                            See Current Match
+                        </Button>
+                    }
+
                     <Button
                         style={styles.leaveEventButton}
                         mode="contained"
@@ -150,7 +179,13 @@ const styles = StyleSheet.create({
     startMatchingButton: {
         width: width * 0.7,
         marginTop: 20,
-        marginBottom: 50,
+        marginBottom: 30,
+        backgroundColor: "green",
+        borderRadius: 20
+    },
+    seeCurrentMatchButton: {
+        width: width * 0.7,
+        marginBottom: 30,
         backgroundColor: "green",
         borderRadius: 20
     },

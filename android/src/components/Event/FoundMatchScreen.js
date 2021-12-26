@@ -16,9 +16,6 @@ const UserCard = ({ match, acceptMatch, removeMatch }) => {
 
     const randomHobbies = hobbies.sort(() => 0.5 - Math.random()).slice(0, 5);
 
-    //Temporary solution to render random photo.
-    //candidateInfo.picture.large = "https://i.pravatar.cc/" + parseInt(Math.random() * 100 + 500);
-
     const renderMatchChoices = () => {
         if (match.yourAcceptance === MatchStates.WAITING) {
             return (
@@ -40,21 +37,21 @@ const UserCard = ({ match, acceptMatch, removeMatch }) => {
 
         if (match.theirAcceptance === MatchStates.REJECTED) {
             return (
-                <AntDesign name="smileo" size={20}
+                <AntDesign name="smileo" size={15}
                     style={styles.icon}
                     color={'#000'}
                 >
-                    <Text>Your match did not accept, you can keep matching with other people.</Text>
+                    <Text style={{fontSize: 15}}>Your match did not accept, you can keep matching with other people.</Text>
                 </AntDesign>
             )
         }
 
         return (
-            <AntDesign name="smileo" size={20}
+            <AntDesign name="smileo" size={15}
                 style={styles.icon}
                 color={'#000'}
             >
-                <Text>You both accepted, your match is finalized.</Text>
+                <Text style={{fontSize: 15}}>You both accepted, your match is finalized.</Text>
             </AntDesign>
         )
     }
@@ -103,7 +100,7 @@ const FoundMatchScreen = ({ navigation }) => {
 
         const matchsChoice = setInterval(() => {
             console.log("here");
-            if (Math.random() < 0.25) {
+            if (Math.random() < 0.5) {
 
                 const matchsChoiceAction = allActions.eventActions.matchsChoice;
                 store.dispatch(matchsChoiceAction(Math.random() < 0.5));
