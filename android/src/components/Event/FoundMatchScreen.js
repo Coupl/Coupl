@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Button, Card } from 'react-native-paper';
+import { ActivityIndicator, Button, Card } from 'react-native-paper';
 import { useSelector, useStore } from 'react-redux';
 import { selectMatch } from '../../redux/selectors';
 import { hobbies } from '../User/data';
