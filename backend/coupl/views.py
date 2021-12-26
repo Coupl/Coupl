@@ -43,14 +43,6 @@ class EventGetView(APIView):
 
         return Response(serializer.data, status=201)
 
-        """
-        try:
-            event = Event.objects.get(pk=event_id)
-        except ObjectDoesNotExist:
-            return JsonResponse('Event with the given id is not found.', status=400, safe=False)
-        return JsonResponse(model_to_dict(event), status=200)
-        """
-
 
 class EventAddView(APIView):
     def post(self, request, format=None):
