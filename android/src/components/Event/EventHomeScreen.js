@@ -5,7 +5,7 @@ import { BackHandler, Dimensions, Image, ScrollView, StyleSheet, View } from 're
 import { Button, Text } from 'react-native-paper';
 import { useSelector, useStore } from 'react-redux';
 import allActions from '../../redux/actions';
-import selectCurrentEvent from '../../redux/selectors';
+import { selectCurrentEvent, selectLikedUsers } from '../../redux/selectors';
 import { data } from "./../User/data";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import moment from 'moment';
@@ -18,8 +18,8 @@ const EventHomeScreen = ({ navigation }) => {
     const currentEvent = useSelector(selectCurrentEvent);
     //const eventInfo = currentEvent.eventInfo;
     const eventInfo = data[0];
-
     const store = useStore();
+    const likedUsers = useSelector(selectLikedUsers);
 
     const leaveEvent = () => {
         const leaveEventAction = allActions.eventActions.leaveEvent;
@@ -47,7 +47,7 @@ const EventHomeScreen = ({ navigation }) => {
 
     const eventEndTime = moment().endOf('hour').fromNow();
     const numParticipants = 25;
-    const numLikes = 5;
+    const numLikes = likedUsers.length;
 
     return (
         <View style={{ flex: 1 }}>
