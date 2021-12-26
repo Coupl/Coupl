@@ -41,7 +41,7 @@ const UserCard = ({ match, acceptMatch, removeMatch }) => {
                     style={styles.icon}
                     color={'#000'}
                 >
-                    <Text style={{fontSize: 15}}>Your match did not accept, you can keep matching with other people.</Text>
+                    <Text style={{ fontSize: 15 }}>Your match did not accept, you can keep matching with other people.</Text>
                 </AntDesign>
             )
         }
@@ -51,7 +51,7 @@ const UserCard = ({ match, acceptMatch, removeMatch }) => {
                 style={styles.icon}
                 color={'#000'}
             >
-                <Text style={{fontSize: 15}}>You both accepted, your match is finalized.</Text>
+                <Text style={{ fontSize: 15 }}>You both accepted, your match is finalized.</Text>
             </AntDesign>
         )
     }
@@ -86,6 +86,18 @@ const UserCard = ({ match, acceptMatch, removeMatch }) => {
 const FoundMatchScreen = ({ navigation }) => {
 
     const match = useSelector(selectMatch);
+    if (!match) {
+        return (
+            <View style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+                }}>
+                <ActivityIndicator size={200} color="#0000ff" />
+            </View>
+        )
+    }
+
     const store = useStore();
 
     const removeMatch = () => {
