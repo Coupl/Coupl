@@ -36,4 +36,5 @@ urlpatterns = [
     path('getMatchList', coupl.views.UserGetMatches.as_view()),
     path('createProfile/', coupl.views.CreateProfileView.as_view()),
     path('getProfile', coupl.views.ProfileGetView.as_view()),
+    path('listProfile/', coupl.views.ListProfileView.as_view()),
 ]

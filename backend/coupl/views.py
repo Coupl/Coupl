@@ -28,6 +28,13 @@ class UserLoginView(APIView):
         return JsonResponse(serializer.errors, status=400)
 
 
+class ListProfileView(APIView):
+    def get(self, request, format=None):
+        profiles = Profile.objects.all()
+        serializer = ProfileSerializer(profiles, many=True)
+        return Response(serializer.data)
+
+
 class CreateProfileView(APIView):
     def post(self, request):
         print(request.data)
@@ -99,8 +106,8 @@ class EventJoinView(APIView):
 
 class EventLeaveView(APIView):
     def post(self, request, format=None):
-        event_id = request.query_params.get('event_id')
-        user_id = request.query_params.get('user_id')
+        event_id = request.query_params.get('eventId')
+        user_id = request.query_params.get('eventId')
         try:
             event = Event.objects.get(pk=event_id)
         except ObjectDoesNotExist:
