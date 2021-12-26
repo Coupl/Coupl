@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from rest_framework import authentication, permissions
@@ -7,7 +9,7 @@ from rest_framework.views import APIView
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
-from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer
+from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer, ProfileSerializer
 from coupl.models import Event, Tag, Profile
 
 
@@ -24,6 +26,24 @@ class UserLoginView(APIView):
             serializer.save()
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
+
+
+class CreateProfileView(APIView):
+    def post(self, request):
+        print(request.data)
+        userSerializer = UserSerializer(data=request.data.get('user'))
+        if userSerializer.is_valid():
+            userSerializer.save()
+        else:
+            return JsonResponse("Can't create user", status=400, safe=False)
+        userPk = userSerializer.data.get('pk')
+        request.data.pop('user', None)
+        request.data.update({'user': userPk})
+        profileSerializer = ProfileSerializer(data=request.data)
+        if profileSerializer.is_valid():
+            profileSerializer.save()
+            return JsonResponse(profileSerializer.data, status=201)
+        return JsonResponse(profileSerializer.errors, status=400)
 
 
 class EventListView(APIView):

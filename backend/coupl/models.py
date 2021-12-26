@@ -15,7 +15,7 @@ class Profile(models.Model):
     name = models.CharField(blank=False, max_length=30)
     surname = models.CharField(blank=False, max_length=30)
     phone = modelfields.PhoneNumberField(blank=False)
-    dateOfBirth = models.DateField(blank=False, editable=False)
+    dateOfBirth = models.DateField(blank=False)
     description = models.CharField(default="", max_length=200)
     photos = None
     gender = models.CharField(blank=False, max_length=10)       # "Male" or "Female" written on db
