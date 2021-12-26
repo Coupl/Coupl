@@ -45,6 +45,15 @@ class CreateProfileView(APIView):
             return JsonResponse(profileSerializer.data, status=201)
         return JsonResponse(profileSerializer.errors, status=400)
 
+class ProfileGetView(APIView):
+    def get(self, request, format=None):
+        userId = request.query_params.get('userId')
+        profile = Profile.objects.get(user=userId)
+
+        serializer = ProfileSerializer(profile)
+
+        return Response(serializer.data, status=201)
+
 
 class EventListView(APIView):
     def get(self, request, format=None):
@@ -55,10 +64,9 @@ class EventListView(APIView):
 
 class EventGetView(APIView):
     def get(self, request, format=None):
-        event_id = request.query_params.get('event_id')
+        event_id = request.query_params.get('eventId')
         event = Event.objects.get(pk=event_id)
 
-        print(event)
         serializer = EventSerializer(event)
 
         return Response(serializer.data, status=201)

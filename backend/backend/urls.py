@@ -34,5 +34,6 @@ urlpatterns = [
     path('eventAddTag', coupl.views.EventAddTagView.as_view()),
     path('listTags/', coupl.views.TagListView.as_view()),
     path('getMatchList', coupl.views.UserGetMatches.as_view()),
-    path('createProfile/', coupl.views.CreateProfileView.as_view())
+    path('createProfile/', coupl.views.CreateProfileView.as_view()),
+    path('getProfile', coupl.views.ProfileGetView.as_view()),
 ]
