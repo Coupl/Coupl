@@ -124,11 +124,10 @@ const FoundMatchScreen = ({ navigation }) => {
         store.dispatch(acceptMatchAction());
 
         const matchsChoice = setInterval(() => {
-            console.log("here");
             if (Math.random() < 0.5) {
 
                 const matchsChoiceAction = allActions.eventActions.matchsChoice;
-                store.dispatch(matchsChoiceAction(Math.random() < 0.5));
+                store.dispatch(matchsChoiceAction(match.rejectedOnce));
                 clearInterval(matchsChoice);
             }
         }, 1000)
