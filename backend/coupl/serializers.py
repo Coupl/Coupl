@@ -4,6 +4,21 @@ from rest_framework import serializers
 from coupl.models import Profile, Event, Tag
 
 
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['user', 'name', 'surname', 'phone', 'dateOfBirth', 'description',
+                  'photos', 'gender', 'preference']
+
+    def create(self, validated_data):
+        return Profile.objects.create(user=validated_data.get('user'), name=validated_data.get('name'),
+                                      surname=validated_data.get('surname'),
+                                      phone=validated_data.get('phone'), dateOfBirth=validated_data.get('dateOfBirth'),
+                                      description=validated_data.get('description'),
+                                      gender=validated_data.get('gender'), preference=validated_data.get('preference'))
+    #def update TO BE IMPLEMENTED
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -43,22 +58,9 @@ class UserDisplaySerializer(serializers.RelatedField):
         return {"pk": pk, "username": username}
 
 
-class ProfileSerializer(serializers.ModelSerializer):
-    user = UserDisplaySerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Profile
-        fields = ['user', 'name', 'surname', 'phone', 'dateOfBirth', 'description',
-                  'photos', 'gender', 'preference']
-
-    def create(self, validated_data):
-        return Profile.objects.create(user=validated_data.get('user'), name=validated_data.get('name'),
-                                      surname=validated_data.get('surname'),
-                                      phone=validated_data.get('phone'), dateOfBirth=validated_data.get('dateOfBirth'),
-                                      description=validated_data.get('description'),
-                                      gender=validated_data.get('gender'), preference=validated_data.get('preference'))
-    #def update TO BE IMPLEMENTED
-
+class ProfileDisplaySerializer(serializers.RelatedField):
+    def to_representation(self, value):
+        return None
 
 
 class TagDisplaySerializer(serializers.RelatedField):
