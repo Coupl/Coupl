@@ -26,8 +26,8 @@ import coupl.views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', coupl.views.UserLoginView.as_view()),
-    path('getEvent/', coupl.views.EventGetView.as_view()),
+    path('getEvent', coupl.views.EventGetView.as_view()),
     path('addEvent/', coupl.views.EventAddView.as_view()),
-    path('joinEvent/', coupl.views.EventJoinView.as_view()),
+    path('joinEvent', coupl.views.EventJoinView.as_view()),
     path('listEvents/', coupl.views.EventListView.as_view())
 ]

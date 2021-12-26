@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from django.forms import model_to_dict
 from rest_framework import serializers
-from coupl.models import Profile, Event
+from coupl.models import Profile, Event, Tag
+
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -20,6 +21,21 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
 
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model= Tag
+        fields = ['tagName', 'tagDescription']
+
+    def create(self, validated_data):
+        return Tag.objects.create(tagName=validated_data.get('tagName'), tagDescripton=validated_data.get('tagDescription'))
+
+    def update(self, instance, validated_data):
+        instance.tagName = validated_data.get('tagName')
+        instance.tagDescription = validated_data.get('tagDescription')
+        instance.save()
+        return instance
+
+
 class UserDisplaySerializer(serializers.RelatedField):
     def to_representation(self, value):
         username = value.username
@@ -27,13 +43,21 @@ class UserDisplaySerializer(serializers.RelatedField):
         return {"pk": pk, "username": username}
 
 
+class TagDisplaySerializer(serializers.RelatedField):
+    def to_representation(self, value):
+        pk = value.pk
+        tagName = value.tagName
+        tagDescription = value.tagDescription
+        return {"pk": pk, "tagName": tagName, "tagDescription": tagDescription}
+
 class EventSerializer(serializers.ModelSerializer):
     eventAttendees = UserDisplaySerializer(many=True, read_only=True)
+    eventTags = UserDisplaySerializer(many=True, read_only=True)
 
     class Meta:
         model = Event
-        fields = ['eventName', 'eventDescription', 'eventCreator', 'eventStartTime', 'eventFinishTime',
-                  'eventAttendees']
+        fields = ['eventName', 'eventDescription', 'eventCreator', 'eventStartTime',
+                  'eventFinishTime', 'eventAttendees', 'eventTags']
 
     def create(self, validated_data):
         print(validated_data)
@@ -42,3 +66,4 @@ class EventSerializer(serializers.ModelSerializer):
                                     eventCreator=validated_data.get('eventCreator'),
                                     eventStartTime=validated_data.get('eventStartTime'),
                                     eventFinishTime=validated_data.get('eventFinishTime'))
+
