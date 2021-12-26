@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.forms import model_to_dict
 from rest_framework import serializers
 from coupl.models import Profile, Event
 
@@ -19,12 +20,17 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+class UserSerializer2(serializers.RelatedField):
+    def to_representation(self, value):
+        username = value.username
+        return username
 
 class EventSerializer(serializers.ModelSerializer):
+    eventAttendees = UserSerializer2(many=True, read_only=True)
 
     class Meta:
         model = Event
-        fields = ['eventName', 'eventDescription', 'eventCreator', 'eventStartTime', 'eventFinishTime']
+        fields = ['eventName', 'eventDescription', 'eventCreator', 'eventStartTime', 'eventFinishTime', 'eventAttendees']
 
     def create(self, validated_data):
         print(validated_data)

@@ -27,11 +27,23 @@ class UserLoginView(APIView):
 class EventGetView(APIView):
     def get(self, request, format=None):
         event_id = request.query_params.get('event_id')
+        event = Event.objects.get(pk=event_id)
+
+        print(event)
+        serializer = EventSerializer(data=model_to_dict(event))
+
+        if serializer.is_valid():
+            return JsonResponse(serializer.data, status=201)
+        else:
+            print(serializer.errors)
+            return JsonResponse("Error", status=400, safe=False)
+        """
         try:
             event = Event.objects.get(pk=event_id)
         except ObjectDoesNotExist:
             return JsonResponse('Event with the given id is not found.', status=400, safe=False)
         return JsonResponse(model_to_dict(event), status=200)
+        """
 
 
 class EventAddView(APIView):
