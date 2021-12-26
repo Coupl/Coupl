@@ -50,6 +50,7 @@ class CreateProfileView(APIView):
         if profileSerializer.is_valid():
             profileSerializer.save()
             return JsonResponse(profileSerializer.data, status=201)
+        # User.objects.get(userPk).delete() # if profile is not valid the user will should be deleted from the database as well
         return JsonResponse(profileSerializer.errors, status=400)
 
 class ProfileGetView(APIView):

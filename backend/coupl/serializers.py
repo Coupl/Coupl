@@ -11,7 +11,9 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         print(validated_data)
-        return User.objects.create(username=validated_data.get('username'), password=validated_data.get('password'))
+        user = User.objects.create(username=validated_data.get('username'))
+        user.set_password(validated_data.get('password'))
+        return user
 
     def update(self, instance, validated_data):
         instance.username = validated_data.get('username')
