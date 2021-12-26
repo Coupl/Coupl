@@ -7,8 +7,8 @@ from rest_framework.views import APIView
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
-from coupl.serializers import UserSerializer, EventSerializer, TagSerializer
-from coupl.models import Event, Tag
+from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer
+from coupl.models import Event, Tag, Profile
 
 
 # todo
@@ -118,3 +118,23 @@ class TagListView(APIView):
         tags = Tag.objects.all()
         serializer = TagSerializer(tags, many=True)
         return Response(serializer.data)
+
+
+class UserGetMatches(APIView):
+    def get(self, request, format=None):
+        event_id = request.query_params.get('eventId')
+        user_id = request.query_params.get('userId')
+        try:
+            event = Event.objects.get(pk=event_id)
+        except ObjectDoesNotExist:
+            return JsonResponse('Event with the given id is not found.', status=400, safe=False)
+        try:
+            user = User.objects.get(pk=user_id)
+        except ObjectDoesNotExist:
+            return JsonResponse('User with the given id is not found.', status=400, safe=False)
+        if event.eventAttendees.contains(user):
+            attendees = event.eventAttendees.exclude(pk=user_id)# .filter(profile__gender__in=Profile.preferenceList[user.profile.preference])
+            serializer = UserSerializer(attendees, many=True)
+            return Response(serializer.data)
+        else:
+            return JsonResponse('User is not in the event', status=400, safe=False)

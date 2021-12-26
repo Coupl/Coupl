@@ -33,4 +33,5 @@ urlpatterns = [
     path('createTag/', coupl.views.TagCreateView.as_view()),
     path('eventAddTag', coupl.views.EventAddTagView.as_view()),
     path('listTags/', coupl.views.TagListView.as_view()),
+    path('getMatchList', coupl.views.UserGetMatches.as_view()),
 ]

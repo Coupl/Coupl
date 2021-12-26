@@ -4,11 +4,16 @@ from rest_framework import serializers
 from coupl.models import Profile, Event, Tag
 
 
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = []
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'password']
+        fields = ['pk', 'username', 'password']
 
     def create(self, validated_data):
         print(validated_data)
@@ -23,7 +28,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
-        model= Tag
+        model = Tag
         fields = ['tagName', 'tagDescription']
 
     def create(self, validated_data):
@@ -51,13 +56,14 @@ class TagDisplaySerializer(serializers.RelatedField):
         tagDescription = value.tagDescription
         return {"pk": pk, "tagName": tagName, "tagDescription": tagDescription}
 
+
 class EventSerializer(serializers.ModelSerializer):
     eventAttendees = UserDisplaySerializer(many=True, read_only=True)
     eventTags = TagDisplaySerializer(many=True, read_only=True)
 
     class Meta:
         model = Event
-        fields = ['eventName', 'eventDescription', 'eventCreator', 'eventStartTime',
+        fields = ['id', 'eventName', 'eventDescription', 'eventCreator', 'eventStartTime',
                   'eventFinishTime', 'eventAttendees', 'eventTags']
 
     def create(self, validated_data):
@@ -67,4 +73,3 @@ class EventSerializer(serializers.ModelSerializer):
                                     eventCreator=validated_data.get('eventCreator'),
                                     eventStartTime=validated_data.get('eventStartTime'),
                                     eventFinishTime=validated_data.get('eventFinishTime'))
-
