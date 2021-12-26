@@ -7,8 +7,8 @@ from rest_framework.views import APIView
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
-from coupl.serializers import UserSerializer, EventSerializer
-from coupl.models import Event, Profile
+from coupl.serializers import UserSerializer, EventSerializer, TagSerializer
+from coupl.models import Event, Tag
 
 
 # todo
@@ -55,9 +55,8 @@ class EventAddView(APIView):
 
 class EventJoinView(APIView):
     def post(self, request, format=None):
-        event_id = request.query_params.get('eventId')
-        print(event_id)
-        user_id = request.query_params.get('userId')
+        event_id = request.query_params.get('event_id')
+        user_id = request.query_params.get('user_id')
         try:
             event = Event.objects.get(pk=event_id)
         except ObjectDoesNotExist:
@@ -72,8 +71,8 @@ class EventJoinView(APIView):
 
 class EventLeaveView(APIView):
     def post(self, request, format=None):
-        event_id = request.query_params.get('eventId')
-        user_id = request.query_params.get('userId')
+        event_id = request.query_params.get('event_id')
+        user_id = request.query_params.get('user_id')
         try:
             event = Event.objects.get(pk=event_id)
         except ObjectDoesNotExist:
@@ -88,23 +87,34 @@ class EventLeaveView(APIView):
         else:
             return JsonResponse('User is not in the event', status=400, safe=False)
 
-class UserGetMatches(APIView):
-    def get(self, request, format=None):
+
+class TagCreateView(APIView):
+    def post(self, request, format=None):
+        serializer = TagSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
+
+
+class EventAddTagView(APIView):
+    def post(self, request, format=None):
         event_id = request.query_params.get('eventId')
-        user_id = request.query_params.get('userId')
+        tag_id = request.query_params.get('tagId')
         try:
             event = Event.objects.get(pk=event_id)
         except ObjectDoesNotExist:
             return JsonResponse('Event with the given id is not found.', status=400, safe=False)
         try:
-            user = User.objects.get(pk=user_id)
+            tag = Tag.objects.get(pk=tag_id)
         except ObjectDoesNotExist:
-            return JsonResponse('User with the given id is not found.', status=400, safe=False)
-        if event.eventAttendees.contains(user):
-            possibleMatches = []
-            for attendee in event.eventAttendees.all().exclude(user):
-                if attendee.profile.gender in Profile.preferenceList[user.profile.preference]:
-                    possibleMatches.append(attendee)
-            return possibleMatches
-        else:
-            return JsonResponse('User is not in the event', status=400, safe=False)
+            return JsonResponse('Tag with the given id is not found.', status=400, safe=False)
+        event.eventTags.add(tag)
+        return JsonResponse('Successfully added tag to the event', status=201, safe=False)
+
+
+class TagListView(APIView):
+    def get(self, request, format=None):
+        tags = Tag.objects.all()
+        serializer = TagSerializer(tags, many=True)
+        return Response(serializer.data)
