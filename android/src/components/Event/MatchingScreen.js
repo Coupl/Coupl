@@ -15,7 +15,7 @@ const UserCard = ({ candidateInfo, likeCandidate, skipCandidate }) => {
     const fullName = candidateInfo.name.first + " " + candidateInfo.name.last[0] + ".";
     const age = "Age: " + candidateInfo.dob.age;
 
-    const randomHobbies = hobbies.sort(() => 0.5 - Math.random()).slice(0, 5);
+    const randomHobbies = hobbies.sort(() => 0.5 - Math.random()).slice(0, 4);
 
     //Temporary solution to render random photo.
     candidateInfo.picture.large = "https://i.pravatar.cc/" + parseInt(Math.random()*100 + 500);

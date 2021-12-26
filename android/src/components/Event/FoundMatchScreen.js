@@ -27,7 +27,7 @@ const UserCard = ({ match, acceptMatch, removeMatch }) => {
     const fullName = candidateInfo.name.first + " " + candidateInfo.name.last[0] + ".";
     const age = "Age: " + candidateInfo.dob.age;
 
-    const randomHobbies = hobbies.sort(() => 0.5 - Math.random()).slice(0, 5);
+    const randomHobbies = hobbies.sort(() => 0.5 - Math.random()).slice(0, 4);
 
     const renderMatchChoices = () => {
         if (match.yourAcceptance === MatchStates.WAITING) {
