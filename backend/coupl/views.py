@@ -83,8 +83,8 @@ class EventAddView(APIView):
 
 class EventJoinView(APIView):
     def post(self, request, format=None):
-        event_id = request.query_params.get('event_id')
-        user_id = request.query_params.get('user_id')
+        event_id = request.query_params.get('eventId')
+        user_id = request.query_params.get('userId')
         try:
             event = Event.objects.get(pk=event_id)
         except ObjectDoesNotExist:
@@ -161,7 +161,7 @@ class UserGetMatches(APIView):
         except ObjectDoesNotExist:
             return JsonResponse('User with the given id is not found.', status=400, safe=False)
         if event.eventAttendees.contains(user):
-            attendees = event.eventAttendees.exclude(pk=user_id)# .filter(profile__gender__in=Profile.preferenceList[user.profile.preference])
+            attendees = event.eventAttendees.exclude(pk=user_id).filter(profile__gender__in=Profile.preferenceList[int(user.profile.preference)])
             serializer = UserSerializer(attendees, many=True)
             return Response(serializer.data)
         else:
