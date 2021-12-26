@@ -11,6 +11,19 @@ import { MatchStates } from '../../redux/reducers/currentEvent';
 
 const UserCard = ({ match, acceptMatch, removeMatch }) => {
     const candidateInfo = match.user;
+
+    if (!candidateInfo) {
+        return (
+            <View style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}>
+                <ActivityIndicator size={200} color="#0000ff" />
+            </View>
+        )
+    }
+
     const fullName = candidateInfo.name.first + " " + candidateInfo.name.last[0] + ".";
     const age = "Age: " + candidateInfo.dob.age;
 
@@ -92,7 +105,7 @@ const FoundMatchScreen = ({ navigation }) => {
                 flex: 1,
                 justifyContent: 'center',
                 alignItems: 'center',
-                }}>
+            }}>
                 <ActivityIndicator size={200} color="#0000ff" />
             </View>
         )
