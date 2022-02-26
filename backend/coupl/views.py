@@ -1,5 +1,6 @@
 import datetime
 
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from rest_framework import authentication, permissions
@@ -14,6 +15,17 @@ from coupl.models import Event, Tag, Profile
 
 
 # todo
+class LoginView(APIView):
+    def post(self, request, format=None):
+        username = request.data['username']
+        password = request.data['password']
+        user = User.objects.get(username=username)
+        authenticated_user = authenticate(username=username, password=password)
+        if authenticated_user is not None:
+            return JsonResponse({'pk': authenticated_user.pk}, status=200)
+        return Response(False)
+
+
 class UserLoginView(APIView):
     def get(self, request, format=None):
         users = User.objects.all()
@@ -52,6 +64,7 @@ class CreateProfileView(APIView):
             return JsonResponse(profileSerializer.data, status=201)
         # User.objects.get(userPk).delete() # if profile is not valid the user will should be deleted from the database as well
         return JsonResponse(profileSerializer.errors, status=400)
+
 
 class ProfileGetView(APIView):
     def get(self, request, format=None):
@@ -169,7 +182,8 @@ class UserGetMatches(APIView):
         except ObjectDoesNotExist:
             return JsonResponse('User with the given id is not found.', status=400, safe=False)
         if event.eventAttendees.contains(user):
-            attendees = event.eventAttendees.exclude(pk=user_id).filter(profile__gender__in=Profile.preferenceList[int(user.profile.preference)])
+            attendees = event.eventAttendees.exclude(pk=user_id).filter(
+                profile__gender__in=Profile.preferenceList[int(user.profile.preference)])
             serializer = UserSerializer(attendees, many=True)
             return Response(serializer.data)
         else:
