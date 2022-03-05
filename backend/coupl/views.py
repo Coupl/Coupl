@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from rest_framework import authentication, permissions
+from rest_framework.authtoken.models import Token
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,15 +16,16 @@ from coupl.models import Event, Tag, Profile
 from coupl.mixins import UserGetMatchesMixin
 
 
-# todo
+# todo Send user login token when successfully logged in
 class LoginView(APIView):
     def post(self, request, format=None):
         username = request.data['username']
         password = request.data['password']
-        user = User.objects.get(username=username)
         authenticated_user = authenticate(username=username, password=password)
         if authenticated_user is not None:
-            return JsonResponse({'pk': authenticated_user.pk}, status=200)
+            get, create = Token.objects.get_or_create(user=authenticated_user)
+            token = get if get is not None else create
+            return JsonResponse(token.key, status=200, safe=False)
         return Response(False)
 
 
