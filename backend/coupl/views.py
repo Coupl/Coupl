@@ -12,6 +12,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer, ProfileSerializer
 from coupl.models import Event, Tag, Profile
+from coupl.mixins import UserGetMatchesMixin
 
 
 # todo
@@ -169,8 +170,9 @@ class TagListView(APIView):
         return Response(serializer.data)
 
 
-class UserGetMatches(APIView):
+class UserGetMatches(UserGetMatchesMixin, APIView):
     def get(self, request, format=None):
+        print("aaa")
         event_id = request.query_params.get('eventId')
         user_id = request.query_params.get('userId')
         try:
@@ -181,8 +183,8 @@ class UserGetMatches(APIView):
             user = User.objects.get(pk=user_id)
         except ObjectDoesNotExist:
             return JsonResponse('User with the given id is not found.', status=400, safe=False)
-        if event.eventAttendees.contains(user):
-            attendees = event.eventAttendees.exclude(pk=user_id).filter(
+        if event.event_attendees.contains(user):
+            attendees = event.event_attendees.exclude(pk=user_id).filter(
                 profile__gender__in=Profile.preference_list[int(user.profile.preference)])
             serializer = UserSerializer(attendees, many=True)
             return Response(serializer.data)
