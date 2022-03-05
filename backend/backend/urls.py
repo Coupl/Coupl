@@ -25,6 +25,7 @@ import coupl.views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     path('', coupl.views.UserLoginView.as_view()),
     path('login', coupl.views.LoginView.as_view()),
     path('getEvent', coupl.views.EventGetView.as_view()),

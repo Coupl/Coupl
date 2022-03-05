@@ -23,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ['tagName', 'tagDescription']
+        fields = ['tag_name', 'tag_description']
 
     def create(self, validated_data):
         return Tag.objects.create(tag_name=validated_data.get('tagName'),
