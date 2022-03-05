@@ -39,10 +39,11 @@ class ProfilePicture(models.Model):
     order = models.IntegerField()
 
 
-# class Match(models.Model):
-#     liker = models.ForeignKey(User, on_delete=models.CASCADE, related_name="liker")
-#     liked = models.ForeignKey(User, on_delete=models.CASCADE, related_name="liked")
-#     event = models.ForeignKey("Event", on_delete=models.CASCADE, related_name="match-event")
+class Match(models.Model):
+    liker = models.ForeignKey(User, on_delete=models.CASCADE, related_name="liker")
+    liked = models.ForeignKey(User, on_delete=models.CASCADE, related_name="liked")
+    event = models.ForeignKey("Event", on_delete=models.CASCADE)
+    confirmed = models.BooleanField(default=False)
 
 
 class Location(models.Model):
