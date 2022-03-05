@@ -1,4 +1,5 @@
 import datetime
+import json
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
@@ -117,7 +118,7 @@ class EventJoinView(APIView):
             user = User.objects.get(pk=user_id)
         except ObjectDoesNotExist:
             return JsonResponse('User with the given id is not found.', status=400, safe=False)
-        event.eventAttendees.add(user)
+        event.event_attendees.add(user)
         return JsonResponse('Successfully joined the event', status=201, safe=False)
 
 
@@ -174,21 +175,14 @@ class TagListView(APIView):
 
 class UserGetMatches(UserGetMatchesMixin, APIView):
     def get(self, request, format=None):
-        print("aaa")
-        event_id = request.query_params.get('eventId')
-        user_id = request.query_params.get('userId')
-        try:
-            event = Event.objects.get(pk=event_id)
-        except ObjectDoesNotExist:
-            return JsonResponse('Event with the given id is not found.', status=400, safe=False)
-        try:
-            user = User.objects.get(pk=user_id)
-        except ObjectDoesNotExist:
-            return JsonResponse('User with the given id is not found.', status=400, safe=False)
-        if event.event_attendees.contains(user):
-            attendees = event.event_attendees.exclude(pk=user_id).filter(
-                profile__gender__in=Profile.preference_list[int(user.profile.preference)])
-            serializer = UserSerializer(attendees, many=True)
-            return Response(serializer.data)
-        else:
-            return JsonResponse('User is not in the event', status=400, safe=False)
+        user_id = self.args[0].get("user_id")
+        event_id = self.args[0].get("event_id")
+        user = User.objects.get(pk=user_id)
+        event = Event.objects.get(pk=event_id)
+        print(event_id, user_id)
+
+        attendees = event.event_attendees.exclude(pk=user_id).filter(
+            profile__gender__in=Profile.preference_list[int(user.profile.preference)])
+        serializer = UserSerializer(attendees, many=True)
+        return Response(serializer.data)
+
