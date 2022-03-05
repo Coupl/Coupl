@@ -26,12 +26,12 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ['tagName', 'tagDescription']
 
     def create(self, validated_data):
-        return Tag.objects.create(tagName=validated_data.get('tagName'),
-                                  tagDescription=validated_data.get('tagDescription'))
+        return Tag.objects.create(tag_name=validated_data.get('tagName'),
+                                  tag_description=validated_data.get('tagDescription'))
 
     def update(self, instance, validated_data):
-        instance.tagName = validated_data.get('tagName')
-        instance.tagDescription = validated_data.get('tagDescription')
+        instance.tag_name = validated_data.get('tagName')
+        instance.tag_description = validated_data.get('tagDescription')
         instance.save()
         return instance
 
@@ -48,13 +48,13 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ['user', 'name', 'surname', 'phone', 'dateOfBirth', 'description',
+        fields = ['user', 'name', 'surname', 'phone', 'date_of_birth', 'description',
                   'photos', 'gender', 'preference']
 
     def create(self, validated_data):
         return Profile.objects.create(user=validated_data.get('user'), name=validated_data.get('name'),
                                       surname=validated_data.get('surname'),
-                                      phone=validated_data.get('phone'), dateOfBirth=validated_data.get('dateOfBirth'),
+                                      phone=validated_data.get('phone'), date_of_birth=validated_data.get('dateOfBirth'),
                                       description=validated_data.get('description'),
                                       gender=validated_data.get('gender'), preference=validated_data.get('preference'))
     #def update TO BE IMPLEMENTED
@@ -63,24 +63,24 @@ class ProfileSerializer(serializers.ModelSerializer):
 class TagDisplaySerializer(serializers.RelatedField):
     def to_representation(self, value):
         pk = value.pk
-        tagName = value.tagName
-        tagDescription = value.tagDescription
-        return {"pk": pk, "tagName": tagName, "tagDescription": tagDescription}
+        tag_name = value.tagName
+        tag_description = value.tagDescription
+        return {"pk": pk, "tag_name": tag_name, "tag_description": tag_description}
 
 
 class EventSerializer(serializers.ModelSerializer):
-    eventAttendees = UserDisplaySerializer(many=True, read_only=True)
-    eventTags = TagDisplaySerializer(many=True, read_only=True)
+    event_attendees = UserDisplaySerializer(many=True, read_only=True)
+    event_tags = TagDisplaySerializer(many=True, read_only=True)
 
     class Meta:
         model = Event
-        fields = ['id', 'eventName', 'eventDescription', 'eventCreator', 'eventStartTime',
-                  'eventFinishTime', 'eventAttendees', 'eventTags']
+        fields = ['id', 'event_name', 'event_description', 'event_creator', 'event_start_time',
+                  'event_finish_time', 'event_attendees', 'event_tags']
 
     def create(self, validated_data):
         print(validated_data)
-        return Event.objects.create(eventName=validated_data.get('eventName'),
-                                    eventDescription=validated_data.get('eventDescription'),
-                                    eventCreator=validated_data.get('eventCreator'),
-                                    eventStartTime=validated_data.get('eventStartTime'),
-                                    eventFinishTime=validated_data.get('eventFinishTime'))
+        return Event.objects.create(event_name=validated_data.get('eventName'),
+                                    event_description=validated_data.get('eventDescription'),
+                                    event_creator=validated_data.get('eventCreator'),
+                                    event_start_time=validated_data.get('eventStartTime'),
+                                    event_finish_time=validated_data.get('eventFinishTime'))

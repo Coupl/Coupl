@@ -10,12 +10,12 @@ import qrcode as qr
 
 # Create your models here.
 class Profile(models.Model):
-    preferenceList = [["Male"], ["Female"], ["Male", "Female"]]
+    preference_list = [["Male"], ["Female"], ["Male", "Female"]]
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(blank=False, max_length=30)
     surname = models.CharField(blank=False, max_length=30)
     phone = modelfields.PhoneNumberField(blank=False)
-    dateOfBirth = models.DateField(blank=False)
+    date_of_birth = models.DateField(blank=False)
     description = models.CharField(default="", max_length=200)
     photos = None
     gender = models.CharField(blank=False, max_length=10)       # "Male" or "Female" written on db
@@ -62,14 +62,14 @@ class LocationPictures(models.Model):
 
 
 class Event(models.Model):
-    eventName = models.CharField(blank=False, max_length=50)
-    eventDescription = models.CharField(blank=True, max_length=150)
-    eventTags = models.ManyToManyField("Tag")
-    eventStartTime = models.DateTimeField(blank=False)
-    eventFinishTime = models.DateTimeField(blank=False)
-    eventCreator = models.ForeignKey("Coordinator", on_delete=models.CASCADE)
-    eventLocation = models.ForeignKey("Location", on_delete=models.CASCADE, null=True)
-    eventAttendees = models.ManyToManyField(User)
+    event_name = models.CharField(blank=False, max_length=50)
+    event_description = models.CharField(blank=True, max_length=150)
+    event_tags = models.ManyToManyField("Tag")
+    event_start_time = models.DateTimeField(blank=False)
+    event_finish_time = models.DateTimeField(blank=False)
+    event_creator = models.ForeignKey("Coordinator", on_delete=models.CASCADE)
+    event_location = models.ForeignKey("Location", on_delete=models.CASCADE, null=True)
+    event_attendees = models.ManyToManyField(User)
 
     @property
     def eventQRCode(self):
@@ -82,7 +82,7 @@ class Event(models.Model):
 class Comment(models.Model):
     commenter = models.ForeignKey(User, on_delete=models.CASCADE)
     event = models.ForeignKey("Event", on_delete=models.CASCADE)
-    commentText = models.CharField(max_length=150)
+    comment_text = models.CharField(max_length=150)
 
 
 class Rating(models.Model):
@@ -99,22 +99,22 @@ class Rating(models.Model):
 
 
 class Tag(models.Model):
-    tagName = models.CharField(blank=False, max_length=50)
-    tagDescription = models.CharField(max_length=100)
+    tag_name = models.CharField(blank=False, max_length=50)
+    tag_description = models.CharField(max_length=100)
 
 
 class SubAreas(models.Model):
     event = models.ForeignKey("Event", on_delete=models.CASCADE)
-    areaName = models.CharField(blank=False, max_length=50)
-    areaDescription = models.CharField(max_length=100)
-    areaPicture = None
+    area_name = models.CharField(blank=False, max_length=50)
+    area_description = models.CharField(max_length=100)
+    area_picture = None
 
 
 class Coordinator(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    coordinatorPhone = modelfields.PhoneNumberField(blank=False)
-    coordinatorContact = None
-    coordinatorRating = None
+    coordinator_phone = modelfields.PhoneNumberField(blank=False)
+    coordinator_contact = None
+    coordinator_rating = None
 
 
 class Ticket(models.Model):

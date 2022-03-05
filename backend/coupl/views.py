@@ -50,26 +50,26 @@ class ListProfileView(APIView):
 class CreateProfileView(APIView):
     def post(self, request):
         print(request.data)
-        userSerializer = UserSerializer(data=request.data.get('user'))
-        if userSerializer.is_valid():
-            userSerializer.save()
+        user_serializer = UserSerializer(data=request.data.get('user'))
+        if user_serializer.is_valid():
+            user_serializer.save()
         else:
             return JsonResponse("Can't create user", status=400, safe=False)
-        userPk = userSerializer.data.get('pk')
+        user_pk = user_serializer.data.get('pk')
         request.data.pop('user', None)
-        request.data.update({'user': userPk})
-        profileSerializer = ProfileSerializer(data=request.data)
-        if profileSerializer.is_valid():
-            profileSerializer.save()
-            return JsonResponse(profileSerializer.data, status=201)
+        request.data.update({'user': user_pk})
+        profile_serializer = ProfileSerializer(data=request.data)
+        if profile_serializer.is_valid():
+            profile_serializer.save()
+            return JsonResponse(profile_serializer.data, status=201)
         # User.objects.get(userPk).delete() # if profile is not valid the user will should be deleted from the database as well
-        return JsonResponse(profileSerializer.errors, status=400)
+        return JsonResponse(profile_serializer.errors, status=400)
 
 
 class ProfileGetView(APIView):
     def get(self, request, format=None):
-        userId = request.query_params.get('userId')
-        profile = Profile.objects.get(user=userId)
+        user_id = request.query_params.get('userId')
+        profile = Profile.objects.get(user=user_id)
 
         serializer = ProfileSerializer(profile)
 
@@ -183,7 +183,7 @@ class UserGetMatches(APIView):
             return JsonResponse('User with the given id is not found.', status=400, safe=False)
         if event.eventAttendees.contains(user):
             attendees = event.eventAttendees.exclude(pk=user_id).filter(
-                profile__gender__in=Profile.preferenceList[int(user.profile.preference)])
+                profile__gender__in=Profile.preference_list[int(user.profile.preference)])
             serializer = UserSerializer(attendees, many=True)
             return Response(serializer.data)
         else:
