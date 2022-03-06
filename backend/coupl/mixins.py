@@ -7,7 +7,7 @@ import json
 # Login required
 
 
-class UserGetMatchesMixin:
+class UserInEventMixin:
     def dispatch(self, request, *args, **kwargs):
         event_id = json.loads(self.request.body)['eventId']
         user_id = json.loads(self.request.body)['userId']
