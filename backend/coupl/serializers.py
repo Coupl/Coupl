@@ -63,8 +63,8 @@ class ProfileSerializer(serializers.ModelSerializer):
 class TagDisplaySerializer(serializers.RelatedField):
     def to_representation(self, value):
         pk = value.pk
-        tag_name = value.tagName
-        tag_description = value.tagDescription
+        tag_name = value.tag_name
+        tag_description = value.tag_description
         return {"pk": pk, "tag_name": tag_name, "tag_description": tag_description}
 
 
