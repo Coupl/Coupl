@@ -2,6 +2,7 @@ import datetime
 import json
 
 from django.contrib.auth import authenticate
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from rest_framework import authentication, permissions
@@ -29,6 +30,7 @@ class LoginView(APIView):
             return JsonResponse(token.key, status=200, safe=False)
         return Response(False)
 
+LoginRequiredMixin
 
 class UserLoginView(APIView):
     def get(self, request, format=None):
