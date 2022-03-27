@@ -62,7 +62,7 @@ class ProfilePictureDisplaySerializer(serializers.RelatedField):
 
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserDisplaySerializer(read_only=True)
-    profile_pictures = ProfilePictureDisplaySerializer(read_only=True, many=True)
+    profile_pictures = ProfilePictureSerializer(read_only=True, many=True)
 
     class Meta:
         model = Profile
