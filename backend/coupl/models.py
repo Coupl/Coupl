@@ -42,9 +42,9 @@ class ProfilePicture(models.Model):
 class Match(models.Model):
     liker = models.ForeignKey(User, on_delete=models.CASCADE, related_name="liker")
     liked = models.ForeignKey(User, on_delete=models.CASCADE, related_name="liked")
+    skip = models.BooleanField(default=False)
     event = models.ForeignKey("Event", on_delete=models.CASCADE)
     confirmed = models.BooleanField(default=False)
-
 
 class Location(models.Model):
     name = models.CharField(blank=False, max_length=50)

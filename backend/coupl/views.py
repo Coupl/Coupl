@@ -177,6 +177,7 @@ class UserGetMatches(UserInEventMixin, APIView):
 
         attendees = event.event_attendees.exclude(pk=user_id).filter(
             profile__gender__in=Profile.preference_list[int(user.profile.preference)])
+
         serializer = UserSerializer(attendees, many=True)
         return Response(serializer.data)
 
