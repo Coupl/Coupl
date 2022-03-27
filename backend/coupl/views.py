@@ -14,7 +14,7 @@ from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
 from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer, ProfileSerializer
-from coupl.models import Event, Tag, Profile
+from coupl.models import Event, Tag, Profile, Match
 from coupl.mixins import UserInEventMixin
 
 
@@ -30,7 +30,9 @@ class LoginView(APIView):
             return JsonResponse(token.key, status=200, safe=False)
         return Response(False)
 
+
 LoginRequiredMixin
+
 
 class UserLoginView(APIView):
     def get(self, request, format=None):
@@ -174,10 +176,23 @@ class UserGetMatches(UserInEventMixin, APIView):
         event_id = self.args[0].get("event_id")
         user = User.objects.get(pk=user_id)
         event = Event.objects.get(pk=event_id)
+        liked = Match.objects.filter(event__match__liker=user_id).values_list('liked_id', flat=True, named=False)
 
-        attendees = event.event_attendees.exclude(pk=user_id).filter(
+        attendees = event.event_attendees.exclude(pk=user_id).exclude(pk__in=liked).filter(
             profile__gender__in=Profile.preference_list[int(user.profile.preference)])
-
         serializer = UserSerializer(attendees, many=True)
         return Response(serializer.data)
 
+
+class UserGetBestMatch(UserInEventMixin, APIView):
+    def get(self, request, format=None):
+        user_id = self.args[0].get("user_id")
+        event_id = self.args[0].get("event_id")
+        user = User.objects.get(pk=user_id)
+        event = Event.objects.get(pk=event_id)
+        liked = Match.objects.filter(event__match__liker=user_id).values_list('liked_id', flat=True, named=False)
+
+        attendee = event.event_attendees.exclude(pk=user_id).exclude(pk__in=liked).filter(
+            profile__gender__in=Profile.preference_list[int(user.profile.preference)]).first()
+        serializer = ProfileSerializer(attendee.profile)
+        return Response(serializer.data)

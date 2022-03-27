@@ -18,8 +18,9 @@ class Profile(models.Model):
     date_of_birth = models.DateField(blank=False)
     description = models.CharField(default="", max_length=200)
     photos = None
-    gender = models.CharField(blank=False, max_length=10)       # "Male" or "Female" written on db
-    preference = models.CharField(blank=False, max_length=10)   # Preference list index
+    gender = models.CharField(blank=False, max_length=10)  # "Male" or "Female" written on db
+    preference = models.CharField(blank=False, max_length=10)  # Preference list index
+
     # likes = models.ManyToManyField("self", through_fields=("Match", "liker"))
 
     @property
@@ -34,7 +35,8 @@ class Profile(models.Model):
 class ProfilePicture(models.Model):
     title = models.CharField(max_length=50)
     description = models.CharField(max_length=100)
-    profile = models.ForeignKey("Profile", on_delete=models.CASCADE)
+    profile = models.ForeignKey("Profile", on_delete=models.CASCADE, related_name='profile_pictures')
+    string = models.CharField(max_length=150, blank=True)
     image = models.ImageField(upload_to='user_images/')
     order = models.IntegerField()
 
@@ -45,6 +47,7 @@ class Match(models.Model):
     skip = models.BooleanField(default=False)
     event = models.ForeignKey("Event", on_delete=models.CASCADE)
     confirmed = models.BooleanField(default=False)
+
 
 class Location(models.Model):
     name = models.CharField(blank=False, max_length=50)

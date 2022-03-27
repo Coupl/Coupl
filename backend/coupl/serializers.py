@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.forms import model_to_dict
 from rest_framework import serializers
-from coupl.models import Profile, Event, Tag
+from coupl.models import Profile, Event, Tag, ProfilePicture
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -11,7 +11,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         print(validated_data)
-        return User.objects.create_user(username=validated_data.get('username'), password=validated_data.get('password'))
+        return User.objects.create_user(username=validated_data.get('username'),
+                                        password=validated_data.get('password'))
 
     def update(self, instance, validated_data):
         instance.username = validated_data.get('username')
@@ -43,21 +44,39 @@ class UserDisplaySerializer(serializers.RelatedField):
         return {"pk": pk, "username": username}
 
 
+class ProfilePictureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProfilePicture
+        fields = ['title', 'description', 'profile', 'string', 'order']
+
+
+class ProfilePictureDisplaySerializer(serializers.RelatedField):
+    def to_representation(self, value):
+        title = value.title
+        description = value.description
+        profile = value.profile
+        string = value.string
+        order = value.order
+        return {"title": title, "description": description, "profile": profile, "string": string, "order": order}
+
+
 class ProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
+    user = UserDisplaySerializer(read_only=True)
+    profile_pictures = ProfilePictureDisplaySerializer(read_only=True, many=True)
 
     class Meta:
         model = Profile
-        fields = ['user', 'name', 'surname', 'phone', 'date_of_birth', 'description',
-                  'photos', 'gender', 'preference']
+        fields = ['user', 'profile_pictures', 'name', 'surname', 'phone', 'date_of_birth', 'description',
+                  'gender', 'preference']
 
     def create(self, validated_data):
         return Profile.objects.create(user=validated_data.get('user'), name=validated_data.get('name'),
                                       surname=validated_data.get('surname'),
-                                      phone=validated_data.get('phone'), date_of_birth=validated_data.get('dateOfBirth'),
+                                      phone=validated_data.get('phone'),
+                                      date_of_birth=validated_data.get('dateOfBirth'),
                                       description=validated_data.get('description'),
                                       gender=validated_data.get('gender'), preference=validated_data.get('preference'))
-    #def update TO BE IMPLEMENTED
+    # def update TO BE IMPLEMENTED
 
 
 class TagDisplaySerializer(serializers.RelatedField):
