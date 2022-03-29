@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.forms import model_to_dict
 from rest_framework import serializers
-from coupl.models import Profile, Event, Tag, ProfilePicture
+from coupl.models import Profile, Event, Tag, ProfilePicture, Match
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -103,3 +103,9 @@ class EventSerializer(serializers.ModelSerializer):
                                     event_creator=validated_data.get('eventCreator'),
                                     event_start_time=validated_data.get('eventStartTime'),
                                     event_finish_time=validated_data.get('eventFinishTime'))
+
+
+class MatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Match
+        fields = ['liker', 'liked', 'skip', 'event', 'confirmed']

@@ -13,9 +13,10 @@ from rest_framework.views import APIView
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
-from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer, ProfileSerializer
+from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer,\
+    ProfileSerializer, MatchSerializer
 from coupl.models import Event, Tag, Profile, Match
-from coupl.mixins import UserInEventMixin
+from coupl.mixins import UserInEventMixin, LikeInEventMixin
 
 
 # todo Send user login token when successfully logged in
@@ -194,5 +195,29 @@ class UserGetBestMatch(UserInEventMixin, APIView):
 
         attendee = event.event_attendees.exclude(pk=user_id).exclude(pk__in=liked).filter(
             profile__gender__in=Profile.preference_list[int(user.profile.preference)]).first()
+        if not attendee:
+            raise ObjectDoesNotExist
         serializer = ProfileSerializer(attendee.profile)
+        return Response(serializer.data)
+
+
+class UserLike(LikeInEventMixin, APIView):
+    def post(self, request, format=None):
+        liker_id = self.args[0].get("liker_id")
+        liked_id = self.args[0].get("liked_id")
+        event_id = self.args[0].get("event_id")
+
+        liker = User.objects.get(pk=liker_id)
+        liked = User.objects.get(pk=liked_id)
+        event = Event.objects.get(pk=event_id)
+
+        # Liked user also previously liked the liker, match confirms
+        match = Match.objects.get(liked=liker, liker=liked)
+        if match:
+            match.confirmed = True
+        else:
+            match = Match(liker=liker, liked=liked, event=event)
+        match.save()
+
+        serializer = MatchSerializer(match)
         return Response(serializer.data)
