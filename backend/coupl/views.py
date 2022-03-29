@@ -16,7 +16,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer,\
     ProfileSerializer, MatchSerializer
 from coupl.models import Event, Tag, Profile, Match
-from coupl.mixins import UserInEventMixin, LikeInEventMixin
+from coupl.mixins import UserInEventMixin, LikeInEventMixin, SkipInEventMixin
 
 
 # todo Send user login token when successfully logged in
@@ -129,8 +129,8 @@ class EventJoinView(APIView):
 
 class EventLeaveView(UserInEventMixin, APIView):
     def post(self, request, format=None):
-        user_id = self.args[0].get("user_id")
-        event_id = self.args[0].get("event_id")
+        event_id = request.query_params.get('eventId')
+        user_id = request.query_params.get('userId')
         user = User.objects.get(pk=user_id)
         event = Event.objects.get(pk=event_id)
 
@@ -212,12 +212,38 @@ class UserLike(LikeInEventMixin, APIView):
         event = Event.objects.get(pk=event_id)
 
         # Liked user also previously liked the liker, match confirms
-        match = Match.objects.get(liked=liker, liker=liked)
-        if match:
-            match.confirmed = True
+        match_qs = Match.objects.filter(liked=liker, liker=liked, skip=False)
+        if match_qs:
+            for match in match_qs:
+                match.confirmed = True
+                match.save()
+        # Else create new match
         else:
             match = Match(liker=liker, liked=liked, event=event)
-        match.save()
+            match.save()
 
         serializer = MatchSerializer(match)
+        return Response(serializer.data)
+
+
+class UserSkip(SkipInEventMixin, APIView):
+    def post(self, request, format=None):
+        skipper_id = self.args[0].get("skipper_id")
+        skipped_id = self.args[0].get("skipped_id")
+        event_id = self.args[0].get("event_id")
+
+        skipper = User.objects.get(pk=skipper_id)
+        skipped = User.objects.get(pk=skipped_id)
+        event = Event.objects.get(pk=event_id)
+
+        skip_qs = Match.objects.filter(liked=skipper, liker=skipped)
+        if skip_qs:
+            for skip in skip_qs:
+                skip.skip = True
+                skip.save()
+        else:
+            skip = Match(liker=skipper, liked=skipped, event=event, skip=True)
+            skip.save()
+
+        serializer = MatchSerializer(skip)
         return Response(serializer.data)
