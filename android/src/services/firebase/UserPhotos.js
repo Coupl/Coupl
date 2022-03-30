@@ -18,22 +18,11 @@ export const uploadPhoto = async (userId, photo, slot) => {
 };
 
 
-export const getUserPhotos = async (userId) => {
-    const numPhotos = 6;
-    let photos = ["", "", "", "", "", ""];
-    const photoNames = Array.from(Array(numPhotos).keys()).map((index) => (userId + "_photo" + (index + 1)));
-    console.log(photoNames);
-
-    for (let i = 0; i < numPhotos; i++) {
-        const photoName = photoNames[i];
-        try {
-            const response = await storage().ref(photoName).getDownloadURL();
-            photos[i] = response;
-        } catch (error) {
-            photos[i] = "";
-        }
+export const getPhotoURL = async (photoName) => {
+    try {
+        const response = await storage().ref(photoName).getDownloadURL();
+        return response;
+    } catch (error) {
+        return null;
     }
-
-    return photos;
-
 };
