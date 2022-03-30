@@ -22,7 +22,7 @@ import Toast from 'react-native-toast-message';
 const store = configureStore();
 registerTranslation('en-GB', enGB);
 
-axios.defaults.baseURL = 'http://10.0.2.2:8000/';
+axios.defaults.baseURL = 'https://coupl-bilkent.herokuapp.com/';
 
 const WrappedApp = () => (
     <StoreProvider store={store}>
