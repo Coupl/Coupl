@@ -4,20 +4,41 @@ import { Button, TextInput } from 'react-native-paper';
 import { Image, ImageBackground, ScrollView, StyleSheet, View } from 'react-native';
 import axios from 'axios';
 import Toast from 'react-native-toast-message';
+import allActions from '../../redux/actions';
+import { useStore } from 'react-redux';
 
 
 const LoginScreen = ({ navigation }) => {
+
+    const store = useStore();
+    const setUserAction = allActions.userActions.setUser;
 
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const onLoginSubmit = () => {
         const loginData = { phoneNumber: phone, password: password };
-        //axios.post(``, loginData).then(res => { });
-        Toast.show({
-            type: 'success',
-            text1: 'Login is Successful',
+
+        //TODO: Use the login route when it works 
+        axios.get(`listProfile`, loginData).then(res => {
+            const userInfo = res.data.filter((user) => user.phone === phone)[0];
+            
+            if (!userInfo) {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Wrong phone number and/or password',
+                });
+
+                return;
+            }
+
+            store.dispatch(setUserAction(userInfo));
+            Toast.show({
+                type: 'success',
+                text1: 'Login is Successful',
+            });
+            navigation.navigate('UserNavigation');
         });
-        navigation.navigate('UserNavigation');
+
     }
 
     return (
