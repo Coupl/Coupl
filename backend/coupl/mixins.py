@@ -2,7 +2,10 @@ from django.shortcuts import redirect
 from django.core.exceptions import ObjectDoesNotExist
 from coupl.models import Event, User
 import json
-from django.forms import ValidationError
+from rest_framework.response import Response
+from django.http import JsonResponse
+
+
 
 # Login required
 
@@ -15,7 +18,7 @@ class UserInEventMixin:
         if Event.objects.filter(pk=event_id, event_attendees__in=[user_id]):
             return super().dispatch(request, args, **kwargs)
         else:
-            raise ObjectDoesNotExist
+            return JsonResponse("User is not in event", status=400, safe=False)
 
 
 class EventJoinMixin:
@@ -24,7 +27,7 @@ class EventJoinMixin:
         user_id = request.GET.get('userId')
         args = {"event_id": event_id, "user_id": user_id}
         if Event.objects.filter(pk=event_id, event_attendees__in=[user_id]):
-            raise ValidationError('User is already in event', code='exists')
+            return JsonResponse("User is already in event", status=400, safe=False)
         else:
             return super().dispatch(request, args, **kwargs)
 
@@ -39,7 +42,7 @@ class LikeInEventMixin:
         if Event.objects.filter(pk=event_id, event_attendees__in=[liker_id, liked_id]):
             return super().dispatch(request, args, **kwargs)
         else:
-            raise ObjectDoesNotExist
+            return JsonResponse("One of the users is not in event", status=400, safe=False)
 
 
 class SkipInEventMixin:
@@ -52,4 +55,4 @@ class SkipInEventMixin:
         if Event.objects.filter(pk=event_id, event_attendees__in=[skipper_id, skipped_id]):
             return super().dispatch(request, args, **kwargs)
         else:
-            raise ObjectDoesNotExist
+            return JsonResponse("One of the users is not in event", status=400, safe=False)
