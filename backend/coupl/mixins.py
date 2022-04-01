@@ -2,7 +2,7 @@ from django.shortcuts import redirect
 from django.core.exceptions import ObjectDoesNotExist
 from coupl.models import Event, User
 import json
-
+from django.forms import ValidationError
 
 # Login required
 
@@ -16,6 +16,16 @@ class UserInEventMixin:
             return super().dispatch(request, args, **kwargs)
         else:
             raise ObjectDoesNotExist
+
+
+class EventJoinMixin:
+    def dispatch(self, request, *args, **kwargs):
+        event_id = request.GET.get('eventId')
+        user_id = request.GET.get('userId')
+        if Event.objects.filter(pk=event_id, event_attendees__in=[user_id]):
+            raise ValidationError('User is already in event', code='exists')
+        else:
+            return super().dispatch(request, args, **kwargs)
 
 
 class LikeInEventMixin:

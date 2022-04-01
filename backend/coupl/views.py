@@ -16,7 +16,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer,\
     ProfileSerializer, MatchSerializer
 from coupl.models import Event, Tag, Profile, Match
-from coupl.mixins import UserInEventMixin, LikeInEventMixin, SkipInEventMixin
+from coupl.mixins import UserInEventMixin, LikeInEventMixin, SkipInEventMixin, EventJoinMixin
 
 
 # todo Send user login token when successfully logged in
@@ -111,7 +111,7 @@ class EventAddView(APIView):
         return JsonResponse(serializer.errors, status=400)
 
 
-class EventJoinView(APIView):
+class EventJoinView(EventJoinMixin, APIView):
     def post(self, request, format=None):
         event_id = request.query_params.get('eventId')
         user_id = request.query_params.get('userId')
