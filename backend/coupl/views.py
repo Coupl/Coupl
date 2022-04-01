@@ -134,7 +134,7 @@ class EventLeaveView(UserInEventMixin, APIView):
         user = User.objects.get(pk=user_id)
         event = Event.objects.get(pk=event_id)
 
-        event.eventAttendees.remove(user)
+        event.event_attendees.remove(user)
 
         return JsonResponse('Successfully left event', status=201, safe=False)
 
