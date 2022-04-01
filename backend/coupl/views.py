@@ -17,7 +17,7 @@ from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, Us
     ProfileSerializer, MatchSerializer
 from coupl.models import Event, Tag, Profile, Match
 from coupl.mixins import UserInEventMixin, LikeInEventMixin, SkipInEventMixin, EventJoinMixin
-
+from itertools import chain
 
 # todo Send user login token when successfully logged in
 class LoginView(APIView):
@@ -246,4 +246,25 @@ class UserSkip(SkipInEventMixin, APIView):
             skip.save()
 
         serializer = MatchSerializer(skip)
+        return Response(serializer.data)
+
+
+class UserGetMutualLikes(UserInEventMixin, APIView):
+    def get(self, request, format=None):
+        user_id = self.args[0].get("user_id")
+        event_id = self.args[0].get("event_id")
+        user = User.objects.get(pk=user_id)
+        event = Event.objects.get(pk=event_id)
+
+        mutuals_as_liker = Match.objects.filter(liker=user, event=event, confirmed=True).values_list('liked', flat=True, named=False)
+        mutuals_as_liked = Match.objects.filter(liked=user, event=event, confirmed=True).values_list('liker', flat=True, named=False)
+
+        mutuals = list(chain(mutuals_as_liker, mutuals_as_liked))
+        mutuals = User.objects.filter(pk__in=mutuals)
+
+
+        #mutuals = match.liked.exclude(pk=user_id).filter(
+        #    event__match__liker=user_id, event__pk=event_id, event__match__confirmed=True)
+
+        serializer = UserSerializer(mutuals, many=True)
         return Response(serializer.data)
