@@ -113,8 +113,8 @@ class EventAddView(APIView):
 
 class EventJoinView(EventJoinMixin, APIView):
     def post(self, request, format=None):
-        event_id = request.query_params.get('eventId')
-        user_id = request.query_params.get('userId')
+        user_id = self.args[0].get("user_id")
+        event_id = self.args[0].get("event_id")
         try:
             event = Event.objects.get(pk=event_id)
         except ObjectDoesNotExist:
@@ -129,8 +129,8 @@ class EventJoinView(EventJoinMixin, APIView):
 
 class EventLeaveView(UserInEventMixin, APIView):
     def post(self, request, format=None):
-        event_id = request.query_params.get('eventId')
-        user_id = request.query_params.get('userId')
+        user_id = self.args[0].get("user_id")
+        event_id = self.args[0].get("event_id")
         user = User.objects.get(pk=user_id)
         event = Event.objects.get(pk=event_id)
 

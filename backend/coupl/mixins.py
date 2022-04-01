@@ -9,8 +9,8 @@ from django.forms import ValidationError
 
 class UserInEventMixin:
     def dispatch(self, request, *args, **kwargs):
-        event_id = json.loads(self.request.body)['eventId']
-        user_id = json.loads(self.request.body)['userId']
+        event_id = request.GET.get('eventId')
+        user_id = request.GET.get('userId')
         args = {"event_id": event_id, "user_id": user_id}
         if Event.objects.filter(pk=event_id, event_attendees__in=[user_id]):
             return super().dispatch(request, args, **kwargs)
@@ -22,6 +22,7 @@ class EventJoinMixin:
     def dispatch(self, request, *args, **kwargs):
         event_id = request.GET.get('eventId')
         user_id = request.GET.get('userId')
+        args = {"event_id": event_id, "user_id": user_id}
         if Event.objects.filter(pk=event_id, event_attendees__in=[user_id]):
             raise ValidationError('User is already in event', code='exists')
         else:
