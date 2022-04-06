@@ -29,9 +29,8 @@ const HomeScreen = ({ navigation }) => {
     const [scanQRCode, setScanQRCode] = useState(true);
 
     const joinEvent = (eventId) => {
-        axios.get('getEvent?event_id=' + eventId).then((res) => {
+        axios.get('getEvent?eventId=' + eventId).then((res) => {
             var eventInfo = res.data;
-            eventInfo.numParticipants = 25; //Add this to the actual response later
             store.dispatch(joinEventAction(eventInfo));
             navigation.navigate('EventNavigation');
         }).catch((err) => {
@@ -106,6 +105,13 @@ const HomeScreen = ({ navigation }) => {
                     onPress={() => navigation.navigate('UpcomingEventsScreen')}
                 >
                     Check Out the Upcoming Events
+                </Button>
+
+                <Button
+                    mode="contained"
+                    onPress={() => joinEvent(7)}
+                >
+                    Test Eventi
                 </Button>
             </>
         )

@@ -16,3 +16,29 @@ class UserInEventMixin:
             return super().dispatch(request, args, **kwargs)
         else:
             raise ObjectDoesNotExist
+
+
+class LikeInEventMixin:
+    def dispatch(self, request, *args, **kwargs):
+        event_id = json.loads(self.request.body)['eventId']
+        liker_id = json.loads(self.request.body)['likerId']
+        liked_id = json.loads(self.request.body)['likedId']
+
+        args = {"event_id": event_id, "liker_id": liker_id, "liked_id": liked_id, }
+        if Event.objects.filter(pk=event_id, event_attendees__in=[liker_id, liked_id]):
+            return super().dispatch(request, args, **kwargs)
+        else:
+            raise ObjectDoesNotExist
+
+
+class SkipInEventMixin:
+    def dispatch(self, request, *args, **kwargs):
+        event_id = json.loads(self.request.body)['eventId']
+        skipper_id = json.loads(self.request.body)['skipperId']
+        skipped_id = json.loads(self.request.body)['skippedId']
+
+        args = {"event_id": event_id, "skipper_id": skipper_id, "skipped_id": skipped_id, }
+        if Event.objects.filter(pk=event_id, event_attendees__in=[skipper_id, skipped_id]):
+            return super().dispatch(request, args, **kwargs)
+        else:
+            raise ObjectDoesNotExist

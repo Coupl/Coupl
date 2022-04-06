@@ -17,8 +17,12 @@ const width = Dimensions.get('window').width;
 const EventHomeScreen = ({ navigation }) => {
 
     const currentEvent = useSelector(selectCurrentEvent);
-    //const eventInfo = currentEvent.eventInfo;
-    const eventInfo = data[0];
+    const eventInfo = currentEvent.eventInfo;
+
+    if (!eventInfo) {
+        return <div>Loading...</div>
+    }
+
     const store = useStore();
     const likedUsers = useSelector(selectLikedUsers);
     const match = useSelector(selectMatch);
@@ -59,21 +63,22 @@ const EventHomeScreen = ({ navigation }) => {
     );
 
     const eventEndTime = moment().endOf('hour').fromNow();
-    const numParticipants = 25;
+    const numParticipants = eventInfo.event_attendees.length;
     const numLikes = likedUsers.length;
 
     return (
         <View style={{ flex: 1 }}>
             <Image style={styles.image} source={{ uri: eventInfo.eventImage }} />
             <View style={styles.background}>
+            <Text>{eventInfo.event_name}</Text>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flexWrap: 'wrap' }}>
-                    {eventInfo.tags.map((tag, index) => {
+                    {eventInfo.event_tags.map((tag, index) => {
                         return (
                             <AntDesign key={index} name="slack-square" size={28}
                                 style={styles.icon}
                                 color={'#000'}
                             >
-                                <Text style={styles.text}>{tag}</Text>
+                                <Text style={styles.text}>{tag.tag_name}</Text>
                             </AntDesign>
                         )
                     })}

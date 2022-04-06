@@ -4,7 +4,6 @@ import json
 from django.contrib.auth import authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
-from django.db.models import Max
 from django.http import JsonResponse
 from rest_framework import authentication, permissions
 from rest_framework.authtoken.models import Token
@@ -16,7 +15,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer, ProfileSerializer, ProfilePictureSerializer
 from coupl.models import Event, Tag, Profile, Match, ProfilePicture
-from coupl.mixins import UserInEventMixin
+from coupl.mixins import UserInEventMixin, LikeInEventMixin, SkipInEventMixin
 
 
 # todo Send user login token when successfully logged in
@@ -177,12 +176,12 @@ class EventJoinView(APIView):
 
 class EventLeaveView(UserInEventMixin, APIView):
     def post(self, request, format=None):
-        user_id = self.args[0].get("user_id")
-        event_id = self.args[0].get("event_id")
+        event_id = request.query_params.get('eventId')
+        user_id = request.query_params.get('userId')
         user = User.objects.get(pk=user_id)
         event = Event.objects.get(pk=event_id)
 
-        event.eventAttendees.remove(user)
+        event.event_attendees.remove(user)
 
         return JsonResponse('Successfully left event', status=201, safe=False)
 
@@ -243,5 +242,55 @@ class UserGetBestMatch(UserInEventMixin, APIView):
 
         attendee = event.event_attendees.exclude(pk=user_id).exclude(pk__in=liked).filter(
             profile__gender__in=Profile.preference_list[int(user.profile.preference)]).first()
+        if not attendee:
+            raise ObjectDoesNotExist
         serializer = ProfileSerializer(attendee.profile)
+        return Response(serializer.data)
+
+
+class UserLike(LikeInEventMixin, APIView):
+    def post(self, request, format=None):
+        liker_id = self.args[0].get("liker_id")
+        liked_id = self.args[0].get("liked_id")
+        event_id = self.args[0].get("event_id")
+
+        liker = User.objects.get(pk=liker_id)
+        liked = User.objects.get(pk=liked_id)
+        event = Event.objects.get(pk=event_id)
+
+        # Liked user also previously liked the liker, match confirms
+        match_qs = Match.objects.filter(liked=liker, liker=liked, skip=False)
+        if match_qs:
+            for match in match_qs:
+                match.confirmed = True
+                match.save()
+        # Else create new match
+        else:
+            match = Match(liker=liker, liked=liked, event=event)
+            match.save()
+
+        serializer = MatchSerializer(match)
+        return Response(serializer.data)
+
+
+class UserSkip(SkipInEventMixin, APIView):
+    def post(self, request, format=None):
+        skipper_id = self.args[0].get("skipper_id")
+        skipped_id = self.args[0].get("skipped_id")
+        event_id = self.args[0].get("event_id")
+
+        skipper = User.objects.get(pk=skipper_id)
+        skipped = User.objects.get(pk=skipped_id)
+        event = Event.objects.get(pk=event_id)
+
+        skip_qs = Match.objects.filter(liked=skipper, liker=skipped)
+        if skip_qs:
+            for skip in skip_qs:
+                skip.skip = True
+                skip.save()
+        else:
+            skip = Match(liker=skipper, liked=skipped, event=event, skip=True)
+            skip.save()
+
+        serializer = MatchSerializer(skip)
         return Response(serializer.data)
