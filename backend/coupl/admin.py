@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Profile, Coordinator, Event, Comment, Rating, SubAreas, Location, Tag, Ticket, Match, ProfilePicture
+from .models import Profile, Coordinator, Event, Comment, Rating, SubAreas, Location, Tag, Ticket, Match, \
+    ProfilePicture, LocationPictures
 
 # Register your models here.
 admin.site.register(Coordinator)
@@ -13,3 +14,4 @@ admin.site.register(Ticket)
 admin.site.register(Rating)
 admin.site.register(SubAreas)
 admin.site.register(Match)
+admin.site.register(LocationPictures)

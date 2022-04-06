@@ -17,10 +17,8 @@ class Profile(models.Model):
     phone = modelfields.PhoneNumberField(blank=False)
     date_of_birth = models.DateField(blank=False)
     description = models.CharField(default="", max_length=200)
-    photos = None
     gender = models.CharField(blank=False, max_length=10)  # "Male" or "Female" written on db
     preference = models.CharField(blank=False, max_length=10)  # Preference list index
-
     # likes = models.ManyToManyField("self", through_fields=("Match", "liker"))
 
     @property
@@ -36,7 +34,7 @@ class ProfilePicture(models.Model):
     title = models.CharField(max_length=50)
     description = models.CharField(max_length=100)
     profile = models.ForeignKey("Profile", on_delete=models.CASCADE, related_name='profile_pictures')
-    url = models.CharField(max_length=150, blank=True)
+    url = models.CharField(max_length=150)
     order = models.IntegerField()
 
 
@@ -52,14 +50,13 @@ class Location(models.Model):
     name = models.CharField(blank=False, max_length=50)
     description = models.CharField(max_length=100)
     address = models.CharField(blank=False, max_length=150)
-    # photo = models.ImageField()
 
 
 class LocationPictures(models.Model):
     title = models.CharField(max_length=50)
     description = models.CharField(max_length=100)
     location = models.ForeignKey("Location", on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='user_images/')
+    url = models.CharField(max_length=150)
     order = models.IntegerField()
 
 

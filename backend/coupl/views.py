@@ -29,6 +29,7 @@ class LoginView(APIView):
         if authenticated_user is not None:
             get, create = Token.objects.get_or_create(user=authenticated_user)
             token = get if get is not None else create
+            request.user = authenticated_user
             return JsonResponse(token.key, status=200, safe=False)
         return Response(False)
 
@@ -48,12 +49,14 @@ class UserLoginView(APIView):
 
 
 class ListProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request, format=None):
         profiles = Profile.objects.all()
         serializer = ProfileSerializer(profiles, many=True)
         # todo
         # i broke something and i dunno what
-        return JsonResponse(serializer.data, safe=False)
+        return Response(serializer.data)
 
 
 class UpdateProfileView(APIView):
@@ -68,9 +71,12 @@ class UpdateProfileView(APIView):
 class AddProfilePicture(APIView):
 
     def post(self, request, format=None):
-        last_pic = ProfilePicture.objects.filter(profile__user_id=request.data['profile']).aggregate(Max('order'))
+        last_pic = ProfilePicture.objects.filter(profile__user_id=request.data['id']).aggregate(Max('order'))
+        profile = Profile.objects.get(user_id=request.data['id'])
         request.data['order'] = last_pic['order__max'] + 1
-        profile_pic = ProfilePictureSerializer(data=request.data)
+        data = request.data
+        data['profile'] = profile.pk
+        profile_pic = ProfilePictureSerializer(data=data)
         if profile_pic.is_valid():
             profile_pic.save()
             return JsonResponse(profile_pic.data, status=201)
