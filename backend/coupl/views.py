@@ -4,6 +4,7 @@ import json
 from django.contrib.auth import authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
+from django.db.models import Max
 from django.http import JsonResponse
 from rest_framework import authentication, permissions
 from rest_framework.authtoken.models import Token
@@ -13,7 +14,8 @@ from rest_framework.views import APIView
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
-from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer, ProfileSerializer, ProfilePictureSerializer
+from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer, ProfileSerializer, \
+    ProfilePictureSerializer, MatchSerializer
 from coupl.models import Event, Tag, Profile, Match, ProfilePicture
 from coupl.mixins import UserInEventMixin, LikeInEventMixin, SkipInEventMixin
 
