@@ -4,6 +4,7 @@ import json
 from django.contrib.auth import authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
+from django.db.models import Max
 from django.http import JsonResponse
 from rest_framework import authentication, permissions
 from rest_framework.authtoken.models import Token
@@ -13,8 +14,8 @@ from rest_framework.views import APIView
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
-from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer, ProfileSerializer
-from coupl.models import Event, Tag, Profile, Match
+from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer, ProfileSerializer, ProfilePictureSerializer
+from coupl.models import Event, Tag, Profile, Match, ProfilePicture
 from coupl.mixins import UserInEventMixin
 
 
@@ -29,9 +30,6 @@ class LoginView(APIView):
             token = get if get is not None else create
             return JsonResponse(token.key, status=200, safe=False)
         return Response(False)
-
-
-LoginRequiredMixin
 
 
 class UserLoginView(APIView):
@@ -52,7 +50,58 @@ class ListProfileView(APIView):
     def get(self, request, format=None):
         profiles = Profile.objects.all()
         serializer = ProfileSerializer(profiles, many=True)
-        return Response(serializer.data)
+        # todo
+        # i broke something and i dunno what
+        return JsonResponse(serializer.data, safe=False)
+
+
+class UpdateProfileView(APIView):
+    def post(self, request, format=None):
+        profile = Profile.objects.get(pk=request.data['id'])
+        serializer = ProfileSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.update(profile, serializer.validated_data)
+        return JsonResponse(serializer.data, status=201)
+
+
+class AddProfilePicture(APIView):
+
+    def post(self, request, format=None):
+        last_pic = ProfilePicture.objects.filter(profile=request.data['profile']).aggregate(Max('order'))
+        request.data['order'] = last_pic['order__max'] + 1
+        profile_pic = ProfilePictureSerializer(data=request.data)
+        if profile_pic.is_valid():
+            profile_pic.save()
+            return JsonResponse(profile_pic.data, status=201)
+        return JsonResponse(profile_pic.errors, status=400)
+
+
+class RemoveProfilePicture(APIView):
+    def post(self, request, format=None):
+        pp = ProfilePicture.objects.get(profile=request.data['id'], order=request.data['order'])
+        pp.delete()
+        rest = ProfilePicture.objects.filter(profile=request.data['id'], order__gt=request.data['order'])
+        for pic in rest:
+            pic.order = pic.order - 1
+            pic.save()
+        profile = Profile.objects.get(pk=request.data['id'])
+        serializer = ProfileSerializer(profile)
+        return JsonResponse(serializer.data, status=201)
+
+
+class SwapProfilePicture(APIView):
+    def post(self, request, format=None):
+        first_order = request.data['first_order']
+        second_order = request.data['second_order']
+        first = ProfilePicture.objects.get(profile_id=request.data['id'], order=first_order)
+        second = ProfilePicture.objects.get(profile_id=request.data['id'], order=second_order)
+        first.order = second_order
+        second.order = first_order
+        first.save()
+        second.save()
+        profile = Profile.objects.get(pk=request.data['id'])
+        serializer = ProfileSerializer(profile)
+        return JsonResponse(serializer.data)
 
 
 class CreateProfileView(APIView):

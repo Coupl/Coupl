@@ -36,8 +36,7 @@ class ProfilePicture(models.Model):
     title = models.CharField(max_length=50)
     description = models.CharField(max_length=100)
     profile = models.ForeignKey("Profile", on_delete=models.CASCADE, related_name='profile_pictures')
-    string = models.CharField(max_length=150, blank=True)
-    image = models.ImageField(upload_to='user_images/')
+    url = models.CharField(max_length=150, blank=True)
     order = models.IntegerField()
 
 
