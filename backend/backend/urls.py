@@ -38,6 +38,7 @@ urlpatterns = [
     path('listTags/', coupl.views.TagListView.as_view()),
     path('getMatchList', coupl.views.UserGetMatches.as_view()),
     path('createProfile/', coupl.views.CreateProfileView.as_view()),
+    path('updateProfile/', coupl.views.UpdateProfileView.as_view()),
     path('getProfile', coupl.views.ProfileGetView.as_view()),
     path('listProfile/', coupl.views.ListProfileView.as_view()),
     path('getBestMatch/', coupl.views.UserGetBestMatch.as_view()),
@@ -45,5 +46,9 @@ urlpatterns = [
     path('getMutualLikes/', coupl.views.UserGetMutualLikes.as_view()),
     path('likeUser/', coupl.views.UserLike.as_view()),
     path('skipUser/', coupl.views.UserSkip.as_view()),
+
+    path('addPicture/', coupl.views.AddProfilePicture.as_view()),
+    path('removePicture/', coupl.views.RemoveProfilePicture.as_view()),
+    path('swapPhotos/', coupl.views.SwapProfilePicture.as_view()),
 
 ]

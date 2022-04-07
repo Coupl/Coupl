@@ -47,7 +47,7 @@ class UserDisplaySerializer(serializers.RelatedField):
 class ProfilePictureSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProfilePicture
-        fields = ['title', 'description', 'profile', 'string', 'order']
+        fields = ['pk', 'title', 'description', 'profile', 'url', 'order']
 
 
 class ProfilePictureDisplaySerializer(serializers.RelatedField):
@@ -55,9 +55,9 @@ class ProfilePictureDisplaySerializer(serializers.RelatedField):
         title = value.title
         description = value.description
         profile = value.profile
-        string = value.string
+        url = value.url
         order = value.order
-        return {"title": title, "description": description, "profile": profile, "string": string, "order": order}
+        return {"title": title, "description": description, "profile": profile, "url": url, "order": order}
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -76,7 +76,18 @@ class ProfileSerializer(serializers.ModelSerializer):
                                       date_of_birth=validated_data.get('dateOfBirth'),
                                       description=validated_data.get('description'),
                                       gender=validated_data.get('gender'), preference=validated_data.get('preference'))
-    # def update TO BE IMPLEMENTED
+
+    # todo
+    def update(self, instance, validated_data):
+        profile = Profile.objects.get(pk=instance.pk)
+        profile.name = validated_data['name']
+        profile.surname = validated_data['surname']
+        profile.phone = validated_data['phone']
+        profile.date_of_birth = validated_data['date_of_birth']
+        profile.description = validated_data['description']
+        profile.gender = validated_data['gender']
+        profile.preference = validated_data['preference']
+        return profile.save()
 
 
 class TagDisplaySerializer(serializers.RelatedField):
