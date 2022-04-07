@@ -100,7 +100,7 @@ class RemoveProfilePicture(APIView):
         return JsonResponse(serializer.data, status=201)
 
 
-class SwapProfilePicture(LikeInEventMixin, APIView):
+class SwapProfilePicture(APIView):
     def post(self, request, format=None):
         first_order = request.data['first_order']
         second_order = request.data['second_order']
@@ -172,8 +172,8 @@ class EventAddView(APIView):
 
 class EventJoinView(APIView):
     def post(self, request, format=None):
-        event_id = request.query_params.get('eventId')
-        user_id = request.query_params.get('userId')
+        event_id = request.query_params.get('event_id')
+        user_id = request.query_params.get('user_id')
         try:
             event = Event.objects.get(pk=event_id)
         except ObjectDoesNotExist:
@@ -302,7 +302,7 @@ class UserSkip(APIView):
         return Response(serializer.data)
 
 
-class UserGetMutualLikes(UserInEventMixin, APIView):
+class UserGetMutualLikes(APIView):
     def get(self, request, format=None):
         user_id = self.args[0].get("user_id")
         event_id = self.args[0].get("event_id")
