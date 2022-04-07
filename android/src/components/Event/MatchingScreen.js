@@ -4,27 +4,69 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Button, Text } from 'react-native-paper';
 import { useSelector, useStore } from 'react-redux';
 import allActions from '../../redux/actions';
-import { Animated, Image, StyleSheet, View } from 'react-native';
+import { Animated, Image, StyleSheet, View, Dimensions, ScrollView } from 'react-native';
 import axios from 'axios';
 import { Avatar, Card, Title, Paragraph } from 'react-native-paper';
 import AntDesign from "react-native-vector-icons/AntDesign";
-import { selectLikedUsers } from '../../redux/selectors';
+import { selectCurrentEvent, selectLikedUsers, selectUser } from '../../redux/selectors';
 import { hobbies, meetingLocations } from '../User/data';
+import Gallery from 'react-native-image-gallery';
+import moment from 'moment';
+import { getPhotoURL } from '../../services/firebase/UserPhotos';
+
+const height = Dimensions.get('window').height;
+const width = Dimensions.get('window').width;
+const imagePreview = { source: require("./assets/preview.png"), dimensions: { width: 512, height: 512 } };
 
 const UserCard = ({ candidateInfo, likeCandidate, skipCandidate }) => {
-    const fullName = candidateInfo.name.first + " " + candidateInfo.name.last[0] + ".";
-    const age = "Age: " + candidateInfo.dob.age;
+    const fullName = candidateInfo.name + " " + candidateInfo.surname[0] + ".";
+    const age = "Age: " + moment().diff(candidateInfo.date_of_birth, 'years');;
+    const randomHobbies = hobbies.sort(() => 0.5 - Math.random()).slice(0, 10);
 
-    const randomHobbies = hobbies.sort(() => 0.5 - Math.random()).slice(0, 4);
+    const [profilePictures, setProfilePictures] = useState(null);
 
-    //Temporary solution to render random photo.
-    candidateInfo.picture.large = "https://i.pravatar.cc/" + parseInt(Math.random()*100 + 500);
+    useEffect(() => {
+        const fetchPictureURLS = async () => {
+            let fetchedProfilePictures = Array(candidateInfo.profile_pictures.length).fill("");
+            for (let i = 0; i < candidateInfo.profile_pictures.length; i++) {
+                const URL = await getPhotoURL(candidateInfo.profile_pictures[i].url);
+                fetchedProfilePictures[i] = { source: { uri: URL } };
+            }
+
+            setProfilePictures(fetchedProfilePictures);
+        }
+
+        fetchPictureURLS().catch((err) => { console.log(err) });
+    }, []);
+
+    const ProfilePictures = () => {
+        if (!profilePictures) {
+            return (
+                <View style={{ height: width, width: width, justifyContent: "center", alignItems: "center" }}>
+                    <ActivityIndicator size={200} />
+                </View>
+            )
+        } else {
+            return (
+                <View style={{ height: width, width: width }}>
+                    <Gallery
+                        style={{ flex: 1, backgroundColor: 'white' }}
+                        images={profilePictures}
+                    />
+                </View>
+            )
+        }
+    }
 
     return (
-        <Card>
-            <Card.Cover style={{ height: "60%" }} source={{ uri: candidateInfo.picture.large }} />
-            <Card.Title title={fullName} subtitle={age} />
-            <Card.Content>
+        <View style={[styles.container, {
+            flexDirection: "column"
+        }]}>
+            <ProfilePictures />
+            <Text style={{ fontWeight: "bold", fontSize: 24 }}>{fullName}</Text>
+            <Text style={{ fontWeight: "bold", fontSize: 18 }}>{age}</Text>
+            <ScrollView style={{ flex: 3, padding: 10 }}>
+
                 <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flexWrap: 'wrap' }}>
                     {randomHobbies.map((hobby, index) => {
                         return (
@@ -37,32 +79,13 @@ const UserCard = ({ candidateInfo, likeCandidate, skipCandidate }) => {
                         )
                     })}
                 </View>
-            </Card.Content>
-            <Card.Actions>
-                <Button icon="heart" onPress={() => likeCandidate(candidateInfo)}>Like</Button>
-                <Button icon="close" onPress={() => skipCandidate(candidateInfo)}>Skip</Button>
-            </Card.Actions>
-        </Card>
+            </ScrollView>
+            <View style={{ flexDirection: "row", padding: 10 }}>
+                <Button style={{ flex: 1 }} icon="heart" onPress={() => likeCandidate(candidateInfo)}>Like</Button>
+                <Button style={{ flex: 1 }} icon="close" onPress={() => skipCandidate(candidateInfo)}>Skip</Button>
+            </View>
+        </View>
     );
-
-    /*
-    <>
-    <Image style={{ width: 200, height: 200 }} source={{ uri: currentCandidate.picture.large }} />
-            <Text>{currentCandidate.name.first} {currentCandidate.name.last}</Text>
-            <Button
-                mode="contained"
-                onPress={() => fetchNewCandidate()}
-            >
-                Like
-            </Button>
-            <Button
-                mode="contained"
-                onPress={() => fetchNewCandidate()}
-            >
-                Skip
-            </Button>   
-    </>
-    */
 }
 
 
@@ -71,11 +94,23 @@ const MatchingScreen = ({ navigation }) => {
     const [currentCandidate, setCurrentCandidate] = useState(null);
     const store = useStore();
     const likedUsers = useSelector(selectLikedUsers);
+    const user = useSelector(selectUser);
+    const event = useSelector(selectCurrentEvent);
 
     const fetchNewCandidate = () => {
         setCurrentCandidate(null);
-        axios.get("https://randomuser.me/api/").then((res) => {
-            setTimeout(() => { setCurrentCandidate(res.data.results[0]) }, 500);
+
+        const config = {
+            params: {
+                eventId: event.eventInfo.id,
+                userId: user.userId
+            }
+        }
+
+        axios.get("getBestMatch", config).then((res) => {
+            setCurrentCandidate(res.data)
+        }).catch((err) => {
+            console.log(err.response.data);
         });
     };
 
@@ -93,7 +128,7 @@ const MatchingScreen = ({ navigation }) => {
     );
 
     const checkMatch = () => {
-        const foundMatch = (Math.random() < 0.4);
+        const foundMatch = false;
         if (foundMatch) {
             console.log(likedUsers);
             const matchUser = currentCandidate;
@@ -112,9 +147,21 @@ const MatchingScreen = ({ navigation }) => {
 
     const likeCandidate = (candidate) => {
         const likeUserAction = allActions.eventActions.likeUser;
-        store.dispatch(likeUserAction(candidate));
-        checkMatch();
-        fetchNewCandidate();
+
+        console.log(candidate);
+        const likeInformation = {
+            eventId: event.eventInfo.id,
+            likerId: user.userId,
+            likedId: candidate.user.pk
+        }
+
+        axios.post("likeUser/", likeInformation).then((res) => {
+            store.dispatch(likeUserAction(candidate));
+            checkMatch();
+            fetchNewCandidate();
+        }).catch((err) => {
+            console.log(err);
+        })
     }
     const skipCandidate = (candidate) => {
         const skipUserAction = allActions.eventActions.skipUser;
@@ -141,9 +188,7 @@ export default MatchingScreen;
 const styles = StyleSheet.create({
 
     container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center'
+        flex: 1
     },
     innerContainer: {
         margin: 20,

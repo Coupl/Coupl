@@ -23,6 +23,7 @@
     "react-native-camera": "^4.2.1",
     "react-native-gesture-handler": "^2.1.0",
     "react-native-image-crop-picker": "^0.37.3",
+    "react-native-image-gallery": "archriss/react-native-image-gallery#152/head",
     "react-native-paper": "^4.11.0",
     "react-native-paper-dates": "^0.8.0",
     "react-native-permissions": "^3.2.0",
@@ -34,7 +35,8 @@
     "react-redux": "^7.2.6",
     "redux": "^4.1.2",
     "redux-devtools-extension": "^2.13.9",
-    "redux-thunk": "^2.4.1"
+    "redux-thunk": "^2.4.1",
+    "uuidv4": "^6.2.13"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
