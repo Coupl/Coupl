@@ -1,9 +1,10 @@
 import storage, { firebase } from '@react-native-firebase/storage';
+const { v4: uuidv4 } = require('uuid');
 
 export const uploadPhoto = async (userId, photo, slot) => {
 
     const uri = photo.path;
-    const filename = userId + "_" + "photo" + slot;
+    const filename = uuidv4();
     const uploadUri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
 
     const task = storage()
@@ -12,8 +13,10 @@ export const uploadPhoto = async (userId, photo, slot) => {
 
     try {
         await task;
+        return filename;
     } catch (e) {
         console.error(e);
+        return null;
     }
 };
 
