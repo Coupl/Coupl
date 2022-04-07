@@ -96,6 +96,12 @@ DATABASES = {
     }
 }
 
+OAUTH2_PROVIDER = {
+    # this is the list of available scopes
+    'SCOPES': {'read': 'Read scope', 'write': 'Write scope', 'User': 'User access to events',
+               'Coordinator': 'Event Coordinator access to event', 'Admin': 'Admin access to everything'}
+}
+
 PHONENUMBER_DB_FORMAT = "E164"
 PHONENUMBER_DEFAULT_REGION = "TR"
 

@@ -15,7 +15,7 @@ from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
 from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer,\
-    ProfileSerializer, MatchSerializer
+    ProfileSerializer, MatchSerializer, ProfilePictureSerializer
 from coupl.models import Event, Tag, Profile, Match, ProfilePicture
 from coupl.mixins import UserInEventMixin, LikeInEventMixin, SkipInEventMixin, EventJoinMixin
 from itertools import chain
@@ -54,6 +54,7 @@ class UserLoginView(APIView):
 class ListProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+
     def get(self, request, format=None):
         profiles = Profile.objects.all()
         serializer = ProfileSerializer(profiles, many=True)
@@ -64,7 +65,7 @@ class ListProfileView(APIView):
 
 class UpdateProfileView(APIView):
     def post(self, request, format=None):
-        profile = Profile.objects.get(pk=request.data['id'])
+        profile = Profile.objects.get(user_id=request.data['id'])
         serializer = ProfileSerializer(data=request.data)
         if serializer.is_valid():
             serializer.update(profile, serializer.validated_data)
@@ -99,7 +100,7 @@ class RemoveProfilePicture(APIView):
         return JsonResponse(serializer.data, status=201)
 
 
-class SwapProfilePicture(APIView):
+class SwapProfilePicture(LikeInEventMixin, APIView):
     def post(self, request, format=None):
         first_order = request.data['first_order']
         second_order = request.data['second_order']
@@ -117,7 +118,7 @@ class SwapProfilePicture(APIView):
 class CreateProfileView(APIView):
     def post(self, request):
         print(request.data)
-        user_serializer = UserSerializer(data=request.data.get('user'))
+        user_serializer = UserSerializer(data=request.data['user'])
         if user_serializer.is_valid():
             user_serializer.save()
         else:
@@ -135,7 +136,7 @@ class CreateProfileView(APIView):
 
 class ProfileGetView(APIView):
     def get(self, request, format=None):
-        user_id = request.query_params.get('userId')
+        user_id = request.query_params.get('user_id')
         profile = Profile.objects.get(user=user_id)
 
         serializer = ProfileSerializer(profile)
@@ -152,7 +153,7 @@ class EventListView(APIView):
 
 class EventGetView(APIView):
     def get(self, request, format=None):
-        event_id = request.query_params.get('eventId')
+        event_id = request.query_params.get('event_id')
         event = Event.objects.get(pk=event_id)
 
         serializer = EventSerializer(event)
@@ -185,12 +186,10 @@ class EventJoinView(APIView):
         return JsonResponse('Successfully joined the event', status=201, safe=False)
 
 
-class EventLeaveView(UserInEventMixin, APIView):
+class EventLeaveView(APIView):
     def post(self, request, format=None):
-        event_id = request.query_params.get('eventId')
-        user_id = request.query_params.get('userId')
-        user = User.objects.get(pk=user_id)
-        event = Event.objects.get(pk=event_id)
+        user = User.objects.get(pk=request.data['user_id'])
+        event = Event.objects.get(pk=request.data['event_id'])
 
         event.event_attendees.remove(user)
 
@@ -208,8 +207,8 @@ class TagCreateView(APIView):
 
 class EventAddTagView(APIView):
     def post(self, request, format=None):
-        event_id = request.query_params.get('eventId')
-        tag_id = request.query_params.get('tagId')
+        event_id = request.query_params.get('event_id')
+        tag_id = request.query_params.get('tag_id')
         try:
             event = Event.objects.get(pk=event_id)
         except ObjectDoesNotExist:
@@ -229,29 +228,25 @@ class TagListView(APIView):
         return Response(serializer.data)
 
 
-class UserGetMatches(UserInEventMixin, APIView):
+class UserGetMatches(APIView):
     def get(self, request, format=None):
-        user_id = self.args[0].get("user_id")
-        event_id = self.args[0].get("event_id")
-        user = User.objects.get(pk=user_id)
-        event = Event.objects.get(pk=event_id)
-        liked = Match.objects.filter(event__match__liker=user_id).values_list('liked_id', flat=True, named=False)
+        user = User.objects.get(pk=request.data["user_id"])
+        event = Event.objects.get(pk=request.data["event_id"])
+        liked = Match.objects.filter(event__match__liker=request.data["user_id"]).values_list('liked_id', flat=True, named=False)
 
-        attendees = event.event_attendees.exclude(pk=user_id).exclude(pk__in=liked).filter(
+        attendees = event.event_attendees.exclude(pk=request.data["user_id"]).exclude(pk__in=liked).filter(
             profile__gender__in=Profile.preference_list[int(user.profile.preference)])
         serializer = UserSerializer(attendees, many=True)
         return Response(serializer.data)
 
 
-class UserGetBestMatch(UserInEventMixin, APIView):
+class UserGetBestMatch(APIView):
     def get(self, request, format=None):
-        user_id = self.args[0].get("user_id")
-        event_id = self.args[0].get("event_id")
-        user = User.objects.get(pk=user_id)
-        event = Event.objects.get(pk=event_id)
-        liked = Match.objects.filter(event__match__liker=user_id).values_list('liked_id', flat=True, named=False)
+        user = User.objects.get(pk=request.data["user_id"])
+        event = Event.objects.get(pk=request.data["event_id"])
+        liked = Match.objects.filter(event__match__liker=request.data["user_id"]).values_list('liked_id', flat=True, named=False)
 
-        attendee = event.event_attendees.exclude(pk=user_id).exclude(pk__in=liked).filter(
+        attendee = event.event_attendees.exclude(pk=request.data["user_id"]).exclude(pk__in=liked).filter(
             profile__gender__in=Profile.preference_list[int(user.profile.preference)]).first()
         if not attendee:
             raise ObjectDoesNotExist
@@ -259,11 +254,11 @@ class UserGetBestMatch(UserInEventMixin, APIView):
         return Response(serializer.data)
 
 
-class UserLike(LikeInEventMixin, APIView):
+class UserLike(APIView):
     def post(self, request, format=None):
-        liker_id = self.args[0].get("liker_id")
-        liked_id = self.args[0].get("liked_id")
-        event_id = self.args[0].get("event_id")
+        liker_id = request.data["liker_id"]
+        liked_id = request.data["liked_id"]
+        event_id = request.data["event_id"]
 
         liker = User.objects.get(pk=liker_id)
         liked = User.objects.get(pk=liked_id)
@@ -284,11 +279,11 @@ class UserLike(LikeInEventMixin, APIView):
         return Response(serializer.data)
 
 
-class UserSkip(SkipInEventMixin, APIView):
+class UserSkip(APIView):
     def post(self, request, format=None):
-        skipper_id = self.args[0].get("skipper_id")
-        skipped_id = self.args[0].get("skipped_id")
-        event_id = self.args[0].get("event_id")
+        skipper_id = request.data["skipper_id"]
+        skipped_id = request.data["skipped_id"]
+        event_id = request.data["event_id"]
 
         skipper = User.objects.get(pk=skipper_id)
         skipped = User.objects.get(pk=skipped_id)

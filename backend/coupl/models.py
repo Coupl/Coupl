@@ -7,7 +7,6 @@ from phonenumber_field import modelfields
 from django.utils.translation import gettext_lazy as _
 import qrcode as qr
 
-
 # Create your models here.
 class Profile(models.Model):
     preference_list = [["Male"], ["Female"], ["Male", "Female"]]
@@ -18,7 +17,7 @@ class Profile(models.Model):
     date_of_birth = models.DateField(blank=False)
     description = models.CharField(default="", max_length=200)
     gender = models.CharField(blank=False, max_length=10)  # "Male" or "Female" written on db
-    preference = models.CharField(blank=False, max_length=10)  # Preference list index
+    preference = models.IntegerField(blank=False)  # Preference list index
     # likes = models.ManyToManyField("self", through_fields=("Match", "liker"))
 
     @property
