@@ -302,8 +302,8 @@ class UserSkip(APIView):
 
 class UserGetMutualLikes(APIView):
     def get(self, request, format=None):
-        user_id = self.args[0].get("user_id")
-        event_id = self.args[0].get("event_id")
+        user_id = request.data["user_id"]
+        event_id = request.data["event_id"]
         user = User.objects.get(pk=user_id)
         event = Event.objects.get(pk=event_id)
 
