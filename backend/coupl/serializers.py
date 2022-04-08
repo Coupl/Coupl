@@ -73,7 +73,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         return Profile.objects.create(user=validated_data.get('user'), name=validated_data.get('name'),
                                       surname=validated_data.get('surname'),
                                       phone=validated_data.get('phone'),
-                                      date_of_birth=validated_data.get('dateOfBirth'),
+                                      date_of_birth=validated_data.get('date_of_birth'),
                                       description=validated_data.get('description'),
                                       gender=validated_data.get('gender'), preference=validated_data.get('preference'))
 

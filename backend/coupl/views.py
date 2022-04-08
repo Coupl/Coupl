@@ -134,7 +134,7 @@ class CreateProfileView(APIView):
 
 
 class ProfileGetView(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         user_id = request.data['user_id']
         profile = Profile.objects.get(user=user_id)
 
@@ -151,7 +151,7 @@ class EventListView(APIView):
 
 
 class EventGetView(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         event_id = request.data['event_id']
         event = Event.objects.get(pk=event_id)
 
@@ -228,7 +228,7 @@ class TagListView(APIView):
 
 
 class UserGetMatches(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         user = User.objects.get(pk=request.data["user_id"])
         event = Event.objects.get(pk=request.data["event_id"])
         liked = Match.objects.filter(event__match__liker=request.data["user_id"]).values_list('liked_id', flat=True, named=False)
@@ -240,7 +240,7 @@ class UserGetMatches(APIView):
 
 
 class UserGetBestMatch(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         user = User.objects.get(pk=request.data["user_id"])
         event = Event.objects.get(pk=request.data["event_id"])
         liked = Match.objects.filter(event__match__liker=request.data["user_id"]).values_list('liked_id', flat=True, named=False)
@@ -302,7 +302,7 @@ class UserSkip(APIView):
 
 
 class UserGetMutualLikes(APIView):
-    def get(self, request, format=None):
+    def post(self, request, format=None):
         user_id = request.data["user_id"]
         event_id = request.data["event_id"]
         user = User.objects.get(pk=user_id)
