@@ -24,10 +24,11 @@ import UserNavigation from './src/components/User/UserNavigation';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import setupAxios from './src/config/axiosConfig';
 
 const App: () => Node = () => {
-
   const Stack = createNativeStackNavigator();
+  setupAxios();
 
   return (
     <NavigationContainer>

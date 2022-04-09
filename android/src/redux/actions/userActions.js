@@ -1,7 +1,17 @@
+import axios from "axios";
+
 const setUser = (userObj) => {
+    userObj.userId = userObj.user.pk;
     return {
         type: "SET_USER",
         payload: userObj
+    }
+}
+
+const setAuthorizationInfo = (authorizationInfo) => {
+    return {
+        type: "SET_AUTHORIZATION_INFO",
+        payload: authorizationInfo
     }
 }
 
@@ -13,5 +23,6 @@ const logOut = () => {
 
 export default {
     setUser,
-    logOut
+    logOut,
+    setAuthorizationInfo
 }
