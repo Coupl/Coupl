@@ -14,11 +14,12 @@ from rest_framework.views import APIView
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
-from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer,\
+from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer, \
     ProfileSerializer, MatchSerializer, ProfilePictureSerializer
 from coupl.models import Event, Tag, Profile, Match, ProfilePicture
 from coupl.mixins import UserInEventMixin, LikeInEventMixin, SkipInEventMixin
 from itertools import chain
+
 
 # todo Send user login token when successfully logged in
 class LoginView(APIView):
@@ -32,9 +33,6 @@ class LoginView(APIView):
             request.user = authenticated_user
             return JsonResponse(token.key, status=200, safe=False)
         return Response(False)
-
-
-LoginRequiredMixin
 
 
 class UserLoginView(APIView):
@@ -52,8 +50,6 @@ class UserLoginView(APIView):
 
 
 class ListProfileView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
 
     def get(self, request, format=None):
         profiles = Profile.objects.all()
@@ -116,25 +112,29 @@ class SwapProfilePicture(APIView):
 
 
 class CreateProfileView(APIView):
+    # jank fest omegalul
     def post(self, request):
         user_serializer = UserSerializer(data=request.data['user'])
+        user = None
         if user_serializer.is_valid():
-            user_serializer.save()
+            user = User.objects.create_user(username=user_serializer.data['username'], password=user_serializer.data['password'])
         else:
             return JsonResponse("Can't create user", status=400, safe=False)
-        user_pk = user_serializer.data.get('pk')
         request.data.pop('user', None)
-        request.data.update({'user': user_pk})
+        profile_data = request.data
         profile_serializer = ProfileSerializer(data=request.data)
         if profile_serializer.is_valid():
-            profile_serializer.save()
-            return JsonResponse(profile_serializer.data, status=201)
-        # User.objects.get(userPk).delete() # if profile is not valid the user will should be deleted from the database as well
+            profile = Profile.objects.create(user=user, **profile_data)
+            data = ProfileSerializer(profile)
+            return JsonResponse(data.data, status=201)
+        user.delete()  # if profile is not valid the user will should be deleted from the database as well
         return JsonResponse(profile_serializer.errors, status=400)
 
 
 class ProfileGetView(APIView):
-    def post(self, request, format=None):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, format=None):
         user_id = request.data['user_id']
         profile = Profile.objects.get(user=user_id)
 
@@ -231,7 +231,8 @@ class UserGetMatches(APIView):
     def post(self, request, format=None):
         user = User.objects.get(pk=request.data["user_id"])
         event = Event.objects.get(pk=request.data["event_id"])
-        liked = Match.objects.filter(event__match__liker=request.data["user_id"]).values_list('liked_id', flat=True, named=False)
+        liked = Match.objects.filter(event__match__liker=request.data["user_id"]).values_list('liked_id', flat=True,
+                                                                                              named=False)
 
         attendees = event.event_attendees.exclude(pk=request.data["user_id"]).exclude(pk__in=liked).filter(
             profile__gender__in=Profile.preference_list[int(user.profile.preference)])
@@ -243,7 +244,8 @@ class UserGetBestMatch(APIView):
     def post(self, request, format=None):
         user = User.objects.get(pk=request.data["user_id"])
         event = Event.objects.get(pk=request.data["event_id"])
-        liked = Match.objects.filter(event__match__liker=request.data["user_id"]).values_list('liked_id', flat=True, named=False)
+        liked = Match.objects.filter(event__match__liker=request.data["user_id"]).values_list('liked_id', flat=True,
+                                                                                              named=False)
 
         attendee = event.event_attendees.exclude(pk=request.data["user_id"]).exclude(pk__in=liked).filter(
             profile__gender__in=Profile.preference_list[int(user.profile.preference)]).first()
@@ -308,14 +310,15 @@ class UserGetMutualLikes(APIView):
         user = User.objects.get(pk=user_id)
         event = Event.objects.get(pk=event_id)
 
-        mutuals_as_liker = Match.objects.filter(liker=user, event=event, confirmed=True).values_list('liked', flat=True, named=False)
-        mutuals_as_liked = Match.objects.filter(liked=user, event=event, confirmed=True).values_list('liker', flat=True, named=False)
+        mutuals_as_liker = Match.objects.filter(liker=user, event=event, confirmed=True).values_list('liked', flat=True,
+                                                                                                     named=False)
+        mutuals_as_liked = Match.objects.filter(liked=user, event=event, confirmed=True).values_list('liker', flat=True,
+                                                                                                     named=False)
 
         mutuals = list(chain(mutuals_as_liker, mutuals_as_liked))
         mutuals = User.objects.filter(pk__in=mutuals)
 
-
-        #mutuals = match.liked.exclude(pk=user_id).filter(
+        # mutuals = match.liked.exclude(pk=user_id).filter(
         #    event__match__liker=user_id, event__pk=event_id, event__match__confirmed=True)
 
         serializer = UserSerializer(mutuals, many=True)

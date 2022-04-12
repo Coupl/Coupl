@@ -68,6 +68,8 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ['user', 'profile_pictures', 'name', 'surname', 'phone', 'date_of_birth', 'description',
                   'gender', 'preference']
+        read_only_fields = ['user']
+        depth = 1
 
     def create(self, validated_data):
         return Profile.objects.create(user=validated_data.get('user'), name=validated_data.get('name'),
