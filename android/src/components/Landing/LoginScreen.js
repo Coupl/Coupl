@@ -5,7 +5,9 @@ import { Image, ImageBackground, ScrollView, StyleSheet, View } from 'react-nati
 import axios from 'axios';
 import Toast from 'react-native-toast-message';
 import allActions from '../../redux/actions';
-import { useStore } from 'react-redux';
+import { useSelector, useStore } from 'react-redux';
+import { authorize } from '../Common/authorization/Oauth2Authorization';
+import { selectAuthorizationInfo } from '../../redux/selectors';
 
 
 const LoginScreen = ({ navigation }) => {
@@ -15,12 +17,13 @@ const LoginScreen = ({ navigation }) => {
 
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
-    const onLoginSubmit = () => {
+    const onLoginSubmit = async () => {
+        await authorize(store, phone, password);
         const loginData = { phoneNumber: phone, password: password };
 
         //TODO: Use the login route when it works 
-        axios.get(`listProfile`, loginData).then(res => {
-            const userInfo = res.data.filter((user) => user.phone === phone)[0];
+        axios.get(`listProfile/`, loginData).then(res => {
+            const userInfo = res.data.filter((user) => user.user.username === phone)[0];
             
             if (!userInfo) {
                 Toast.show({
@@ -30,15 +33,15 @@ const LoginScreen = ({ navigation }) => {
 
                 return;
             }
-
             store.dispatch(setUserAction(userInfo));
             Toast.show({
                 type: 'success',
                 text1: 'Login is Successful',
             });
             navigation.navigate('UserNavigation');
+        }).catch((err) => {
+            console.log(err.response);
         });
-
     }
 
     return (

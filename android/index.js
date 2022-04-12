@@ -16,13 +16,10 @@ import {
     enGB,
     registerTranslation,
   } from 'react-native-paper-dates'
-import axios from 'axios';
 import Toast from 'react-native-toast-message';
 
 const store = configureStore();
 registerTranslation('en-GB', enGB);
-
-axios.defaults.baseURL = 'https://coupl-bilkent.herokuapp.com/';
 
 const WrappedApp = () => (
     <StoreProvider store={store}>
