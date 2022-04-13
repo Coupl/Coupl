@@ -50,6 +50,7 @@ class UserLoginView(APIView):
 
 
 class ListProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, format=None):
         profiles = Profile.objects.all()
@@ -60,8 +61,10 @@ class ListProfileView(APIView):
 
 
 class UpdateProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request, format=None):
-        profile = Profile.objects.get(user_id=request.data['id'])
+        profile = request.user.profile
         serializer = ProfileSerializer(data=request.data)
         if serializer.is_valid():
             serializer.update(profile, serializer.validated_data)
@@ -69,10 +72,11 @@ class UpdateProfileView(APIView):
 
 
 class AddProfilePicture(APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, format=None):
-        last_pic = ProfilePicture.objects.filter(profile__user_id=request.data['id']).aggregate(Max('order'))
-        profile = Profile.objects.get(user_id=request.data['id'])
+        profile = request.user.profile
+        last_pic = ProfilePicture.objects.filter(profile_id=profile.pk).aggregate(Max('order'))
         request.data['order'] = last_pic['order__max'] + 1
         data = request.data
         data['profile'] = profile.pk
@@ -84,8 +88,11 @@ class AddProfilePicture(APIView):
 
 
 class RemoveProfilePicture(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request, format=None):
-        pp = ProfilePicture.objects.get(profile__user_id=request.data['id'], order=request.data['order'])
+        profile = request.user.profile
+        pp = ProfilePicture.objects.get(profile_id=profile.pk, order=request.data['order'])
         pp.delete()
         rest = ProfilePicture.objects.filter(profile__user_id=request.data['id'], order__gt=request.data['order'])
         for pic in rest:
@@ -97,16 +104,18 @@ class RemoveProfilePicture(APIView):
 
 
 class SwapProfilePicture(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request, format=None):
         first_order = request.data['first_order']
         second_order = request.data['second_order']
-        first = ProfilePicture.objects.get(profile__user_id=request.data['id'], order=first_order)
-        second = ProfilePicture.objects.get(profile__user_id=request.data['id'], order=second_order)
+        profile = request.user.profile
+        first = ProfilePicture.objects.get(profile_id=profile.pk, order=first_order)
+        second = ProfilePicture.objects.get(profile_id=profile.pk, order=second_order)
         first.order = second_order
         second.order = first_order
         first.save()
         second.save()
-        profile = Profile.objects.get(user_id=request.data['id'])
         serializer = ProfileSerializer(profile)
         return JsonResponse(serializer.data)
 
@@ -135,15 +144,15 @@ class ProfileGetView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, format=None):
-        user_id = request.data['user_id']
-        profile = Profile.objects.get(user=user_id)
-
+        profile = request.user.profile
         serializer = ProfileSerializer(profile)
 
         return Response(serializer.data, status=201)
 
 
 class EventListView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request, format=None):
         events = Event.objects.all()
         serializer = EventSerializer(events, many=True)
@@ -151,6 +160,8 @@ class EventListView(APIView):
 
 
 class EventGetView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request, format=None):
         event_id = request.data['event_id']
         event = Event.objects.get(pk=event_id)
@@ -161,6 +172,8 @@ class EventGetView(APIView):
 
 
 class EventAddView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request, format=None):
         serializer = EventSerializer(data=request.data)
         if serializer.is_valid():
@@ -170,24 +183,24 @@ class EventAddView(APIView):
 
 
 class EventJoinView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request, format=None):
         event_id = request.data['event_id']
-        user_id = request.data['user_id']
+        user = request.user
         try:
             event = Event.objects.get(pk=event_id)
         except ObjectDoesNotExist:
             return JsonResponse('Event with the given id is not found.', status=400, safe=False)
-        try:
-            user = User.objects.get(pk=user_id)
-        except ObjectDoesNotExist:
-            return JsonResponse('User with the given id is not found.', status=400, safe=False)
         event.event_attendees.add(user)
         return JsonResponse('Successfully joined the event', status=201, safe=False)
 
 
 class EventLeaveView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request, format=None):
-        user = User.objects.get(pk=request.data['user_id'])
+        user = request.user
         event = Event.objects.get(pk=request.data['event_id'])
 
         event.event_attendees.remove(user)
@@ -196,6 +209,8 @@ class EventLeaveView(APIView):
 
 
 class TagCreateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request, format=None):
         serializer = TagSerializer(data=request.data)
         if serializer.is_valid():
@@ -205,6 +220,8 @@ class TagCreateView(APIView):
 
 
 class EventAddTagView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request, format=None):
         event_id = request.data['event_id']
         tag_id = request.data['tag_id']
@@ -221,6 +238,8 @@ class EventAddTagView(APIView):
 
 
 class TagListView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request, format=None):
         tags = Tag.objects.all()
         serializer = TagSerializer(tags, many=True)
@@ -228,8 +247,10 @@ class TagListView(APIView):
 
 
 class UserGetMatches(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request, format=None):
-        user = User.objects.get(pk=request.data["user_id"])
+        user = request.user
         event = Event.objects.get(pk=request.data["event_id"])
         liked = Match.objects.filter(event__match__liker=request.data["user_id"]).values_list('liked_id', flat=True,
                                                                                               named=False)
@@ -241,8 +262,10 @@ class UserGetMatches(APIView):
 
 
 class UserGetBestMatch(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request, format=None):
-        user = User.objects.get(pk=request.data["user_id"])
+        user = request.user
         event = Event.objects.get(pk=request.data["event_id"])
         liked = Match.objects.filter(event__match__liker=request.data["user_id"]).values_list('liked_id', flat=True,
                                                                                               named=False)
@@ -256,12 +279,13 @@ class UserGetBestMatch(APIView):
 
 
 class UserLike(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request, format=None):
-        liker_id = request.data["liker_id"]
         liked_id = request.data["liked_id"]
         event_id = request.data["event_id"]
 
-        liker = User.objects.get(pk=liker_id)
+        liker = request.user
         liked = User.objects.get(pk=liked_id)
         event = Event.objects.get(pk=event_id)
 
@@ -281,12 +305,14 @@ class UserLike(APIView):
 
 
 class UserSkip(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request, format=None):
         skipper_id = request.data["skipper_id"]
         skipped_id = request.data["skipped_id"]
         event_id = request.data["event_id"]
 
-        skipper = User.objects.get(pk=skipper_id)
+        skipper = request.user
         skipped = User.objects.get(pk=skipped_id)
         event = Event.objects.get(pk=event_id)
 
@@ -304,10 +330,11 @@ class UserSkip(APIView):
 
 
 class UserGetMutualLikes(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request, format=None):
-        user_id = request.data["user_id"]
         event_id = request.data["event_id"]
-        user = User.objects.get(pk=user_id)
+        user = request.user
         event = Event.objects.get(pk=event_id)
 
         mutuals_as_liker = Match.objects.filter(liker=user, event=event, confirmed=True).values_list('liked', flat=True,
