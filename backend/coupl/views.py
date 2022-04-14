@@ -21,6 +21,7 @@ from coupl.mixins import UserInEventMixin, LikeInEventMixin, SkipInEventMixin
 from itertools import chain
 
 
+# region USER VIEWS
 # todo Send user login token when successfully logged in
 class LoginView(APIView):
     def post(self, request, format=None):
@@ -49,6 +50,9 @@ class UserLoginView(APIView):
         return JsonResponse(serializer.errors, status=400)
 
 
+# endregion USER VIEWS
+
+# region PROFILE VIEWS
 class ListProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -58,6 +62,37 @@ class ListProfileView(APIView):
         # todo
         # i broke something and i dunno what
         return Response(serializer.data)
+
+
+class CreateProfileView(APIView):
+    # jank fest omegalul
+    def post(self, request):
+        user_serializer = UserSerializer(data=request.data['user'])
+        user = None
+        if user_serializer.is_valid():
+            user = User.objects.create_user(username=user_serializer.data['username'],
+                                            password=user_serializer.data['password'])
+        else:
+            return JsonResponse("Can't create user", status=400, safe=False)
+        request.data.pop('user', None)
+        profile_data = request.data
+        profile_serializer = ProfileSerializer(data=request.data)
+        if profile_serializer.is_valid():
+            profile = Profile.objects.create(user=user, **profile_data)
+            data = ProfileSerializer(profile)
+            return JsonResponse(data.data, status=201)
+        user.delete()  # if profile is not valid the user will should be deleted from the database as well
+        return JsonResponse(profile_serializer.errors, status=400)
+
+
+class GetProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, format=None):
+        profile = request.user.profile
+        serializer = ProfileSerializer(profile)
+
+        return Response(serializer.data, status=201)
 
 
 class UpdateProfileView(APIView):
@@ -71,6 +106,7 @@ class UpdateProfileView(APIView):
         return JsonResponse(serializer.data, status=201)
 
 
+# region PROFILE PICTURE VIEW
 class AddProfilePicture(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -120,36 +156,10 @@ class SwapProfilePicture(APIView):
         return JsonResponse(serializer.data)
 
 
-class CreateProfileView(APIView):
-    # jank fest omegalul
-    def post(self, request):
-        user_serializer = UserSerializer(data=request.data['user'])
-        user = None
-        if user_serializer.is_valid():
-            user = User.objects.create_user(username=user_serializer.data['username'], password=user_serializer.data['password'])
-        else:
-            return JsonResponse("Can't create user", status=400, safe=False)
-        request.data.pop('user', None)
-        profile_data = request.data
-        profile_serializer = ProfileSerializer(data=request.data)
-        if profile_serializer.is_valid():
-            profile = Profile.objects.create(user=user, **profile_data)
-            data = ProfileSerializer(profile)
-            return JsonResponse(data.data, status=201)
-        user.delete()  # if profile is not valid the user will should be deleted from the database as well
-        return JsonResponse(profile_serializer.errors, status=400)
+# endregion PROFILE PICTURE VIEW
+# endregion PROFILE VIEWS
 
-
-class ProfileGetView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request, format=None):
-        profile = request.user.profile
-        serializer = ProfileSerializer(profile)
-
-        return Response(serializer.data, status=201)
-
-
+# region EVENT VIEWS
 class EventListView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -159,7 +169,18 @@ class EventListView(APIView):
         return Response(serializer.data)
 
 
-class EventGetView(APIView):
+class CreateEventView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format=None):
+        serializer = EventSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
+
+
+class GetEventView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, format=None):
@@ -171,18 +192,7 @@ class EventGetView(APIView):
         return Response(serializer.data, status=201)
 
 
-class EventAddView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request, format=None):
-        serializer = EventSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
-
-
-class EventJoinView(APIView):
+class JoinEventView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, format=None):
@@ -196,7 +206,7 @@ class EventJoinView(APIView):
         return JsonResponse('Successfully joined the event', status=201, safe=False)
 
 
-class EventLeaveView(APIView):
+class LeaveEventView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, format=None):
@@ -206,17 +216,6 @@ class EventLeaveView(APIView):
         event.event_attendees.remove(user)
 
         return JsonResponse('Successfully left event', status=201, safe=False)
-
-
-class TagCreateView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request, format=None):
-        serializer = TagSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
 
 
 class EventAddTagView(APIView):
@@ -237,6 +236,7 @@ class EventAddTagView(APIView):
         return JsonResponse('Successfully added tag to the event', status=201, safe=False)
 
 
+# region TAG VIEWS
 class TagListView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -246,31 +246,45 @@ class TagListView(APIView):
         return Response(serializer.data)
 
 
-class UserGetMatches(APIView):
+class CreateTagView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format=None):
+        serializer = TagSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
+
+
+# endregion TAG VIEWS
+# endregion EVENT VIEWS
+
+# region LIKE SKIP VIEWS
+class GetUserMatches(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, format=None):
         user = request.user
         event = Event.objects.get(pk=request.data["event_id"])
-        liked = Match.objects.filter(event__match__liker=request.data["user_id"]).values_list('liked_id', flat=True,
+        liked = Match.objects.filter(event__match__liker=user.pk).values_list('liked_id', flat=True,
                                                                                               named=False)
 
-        attendees = event.event_attendees.exclude(pk=request.data["user_id"]).exclude(pk__in=liked).filter(
-            profile__gender__in=Profile.preference_list[int(user.profile.preference)])
+        attendees = event.event_attendees.exclude(pk=user.pk).exclude(pk__in=liked).filter(profile__gender__in=Profile.preference_list[int(user.profile.preference)])
         serializer = UserSerializer(attendees, many=True)
         return Response(serializer.data)
 
 
-class UserGetBestMatch(APIView):
+class GetUserBestMatch(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, format=None):
         user = request.user
         event = Event.objects.get(pk=request.data["event_id"])
-        liked = Match.objects.filter(event__match__liker=request.data["user_id"]).values_list('liked_id', flat=True,
+        liked = Match.objects.filter(event__match__liker=user.pk).values_list('liked_id', flat=True,
                                                                                               named=False)
 
-        attendee = event.event_attendees.exclude(pk=request.data["user_id"]).exclude(pk__in=liked).filter(
+        attendee = event.event_attendees.exclude(pk=user.pk).exclude(pk__in=liked).filter(
             profile__gender__in=Profile.preference_list[int(user.profile.preference)]).first()
         if not attendee:
             raise ObjectDoesNotExist
@@ -290,11 +304,10 @@ class UserLike(APIView):
         event = Event.objects.get(pk=event_id)
 
         # Liked user also previously liked the liker, match confirms
-        match_qs = Match.objects.filter(liked=liker, liker=liked, skip=False)
-        if match_qs:
-            for match in match_qs:
-                match.confirmed = True
-                match.save()
+        match = Match.objects.get(liked=liker, liker=liked, event=event, skip=False)
+        if match:
+            match.confirmed = True
+            match.save()
         # Else create new match
         else:
             match = Match(liker=liker, liked=liked, event=event)
@@ -308,28 +321,22 @@ class UserSkip(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, format=None):
-        skipper_id = request.data["skipper_id"]
         skipped_id = request.data["skipped_id"]
         event_id = request.data["event_id"]
 
         skipper = request.user
         skipped = User.objects.get(pk=skipped_id)
         event = Event.objects.get(pk=event_id)
-
-        skip_qs = Match.objects.filter(liked=skipper, liker=skipped)
-        if skip_qs:
-            for skip in skip_qs:
-                skip.skip = True
-                skip.save()
-        else:
-            skip = Match(liker=skipper, liked=skipped, event=event, skip=True)
-            skip.save()
+        skip = Match.objects.get_or_create(liker=skipper, liked=skipped, event=event)
+        skip = skip[0]
+        skip.skip = True
+        skip.save()
 
         serializer = MatchSerializer(skip)
         return Response(serializer.data)
 
 
-class UserGetMutualLikes(APIView):
+class GetUserMutualLikes(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, format=None):
@@ -345,8 +352,10 @@ class UserGetMutualLikes(APIView):
         mutuals = list(chain(mutuals_as_liker, mutuals_as_liked))
         mutuals = User.objects.filter(pk__in=mutuals)
 
-        # mutuals = match.liked.exclude(pk=user_id).filter(
-        #    event__match__liker=user_id, event__pk=event_id, event__match__confirmed=True)
+        # mutuals = match.liked.exclude(pk=user.pk).filter(
+        #    event__match__liker=user.pk, event__pk=event_id, event__match__confirmed=True)
 
         serializer = UserSerializer(mutuals, many=True)
         return Response(serializer.data)
+
+# endregion LIKE SKIP VIEWS

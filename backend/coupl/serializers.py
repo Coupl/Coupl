@@ -21,6 +21,13 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
 
+class UserDisplaySerializer(serializers.RelatedField):
+    def to_representation(self, value):
+        username = value.username
+        pk = value.pk
+        return {"pk": pk, "username": username}
+
+
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -35,13 +42,6 @@ class TagSerializer(serializers.ModelSerializer):
         instance.tag_description = validated_data.get('tag_description')
         instance.save()
         return instance
-
-
-class UserDisplaySerializer(serializers.RelatedField):
-    def to_representation(self, value):
-        username = value.username
-        pk = value.pk
-        return {"pk": pk, "username": username}
 
 
 class ProfilePictureSerializer(serializers.ModelSerializer):
