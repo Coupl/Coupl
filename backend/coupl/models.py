@@ -111,9 +111,14 @@ class SubAreas(models.Model):
 
 class Coordinator(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    coordinator_name = models.CharField(max_length=75)
     coordinator_phone = modelfields.PhoneNumberField(blank=False)
-    coordinator_contact = None
-    coordinator_rating = None
+    coordinator_details = models.CharField(max_length=250)
+
+
+class CoordinatorPicture(models.Model):
+    coordinator = models.OneToOneField(Coordinator, on_delete=models.CASCADE, related_name="photo")
+    url = models.CharField(max_length=100)
 
 
 class Ticket(models.Model):

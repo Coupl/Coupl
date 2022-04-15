@@ -15,8 +15,8 @@ from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
 from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer, \
-    ProfileSerializer, MatchSerializer, ProfilePictureSerializer
-from coupl.models import Event, Tag, Profile, Match, ProfilePicture
+    ProfileSerializer, MatchSerializer, ProfilePictureSerializer, CoordinatorSerializer, CoordinatorPictureSerializer
+from coupl.models import Event, Tag, Profile, Match, ProfilePicture, Coordinator
 from coupl.mixins import UserInEventMixin, LikeInEventMixin, SkipInEventMixin
 from itertools import chain
 
@@ -68,17 +68,15 @@ class CreateProfileView(APIView):
     # jank fest omegalul
     def post(self, request):
         user_serializer = UserSerializer(data=request.data['user'])
-        user = None
         if user_serializer.is_valid():
             user = User.objects.create_user(username=user_serializer.data['username'],
                                             password=user_serializer.data['password'])
         else:
             return JsonResponse("Can't create user", status=400, safe=False)
         request.data.pop('user', None)
-        profile_data = request.data
         profile_serializer = ProfileSerializer(data=request.data)
         if profile_serializer.is_valid():
-            profile = Profile.objects.create(user=user, **profile_data)
+            profile = Profile.objects.create(user=user, **request.data)
             data = ProfileSerializer(profile)
             return JsonResponse(data.data, status=201)
         user.delete()  # if profile is not valid the user will should be deleted from the database as well
@@ -158,6 +156,78 @@ class SwapProfilePicture(APIView):
 
 # endregion PROFILE PICTURE VIEW
 # endregion PROFILE VIEWS
+
+# region COORDINATOR VIEWS
+class CreateCoordinatorView(APIView):
+    def post(self, request, format=None):
+        user_serializer = UserSerializer(data=request.data['user'])
+        if user_serializer.is_valid():
+            user_serializer.save()
+        else:
+            return JsonResponse("Can't create user", status=400, safe=False)
+        request.data.pop('user', None)
+        user = User.objects.get(pk=user_serializer.data.get('pk'))
+        coordinator_serializer = CoordinatorSerializer(data=request.data)
+        if coordinator_serializer.is_valid():
+            coordinator = Coordinator.objects.create(user=user, **request.data)
+            coordinator_serializer = CoordinatorSerializer(coordinator)
+            return JsonResponse(coordinator_serializer.data)
+        user.delete()
+        return JsonResponse(coordinator_serializer.errors, status=400)
+
+
+class UpdateCoordinatorView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format=None):
+        coordinator = request.user.coordinator
+        serializer = CoordinatorSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.update(coordinator, serializer.validated_data)
+            return JsonResponse(serializer.data, status=201)
+
+
+class GetCoordinatorView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, format=None):
+        serializer = CoordinatorSerializer(request.user.coordinator)
+        return JsonResponse(serializer.data)
+
+
+# region COORDINATOR PHOTO VIEWS
+class CoordinatorAddPhotoView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format=None):
+        request.data['coordinator'] = request.user.coordinator.pk
+        serializer = CoordinatorPictureSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
+
+
+class CoordinatorUpdatePhotoView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format=None):
+        serializer = CoordinatorPictureSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.update(request.user.coordinator.photo, request.data)
+            return JsonResponse(serializer.data, status=200)
+        return JsonResponse(serializer.errors, status=400)
+
+
+class CoordinatorRemovePhotoView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format=None):
+        picture = request.user.coordinator.photo
+        picture.remove()
+        return JsonResponse(True, safe=False, status=200)
+# endregion COORDINATOR PHOTO VIEWS
+# endregion COORDINATOR VIEWS
 
 # region EVENT VIEWS
 class EventListView(APIView):
@@ -268,9 +338,10 @@ class GetUserMatches(APIView):
         user = request.user
         event = Event.objects.get(pk=request.data["event_id"])
         liked = Match.objects.filter(event__match__liker=user.pk).values_list('liked_id', flat=True,
-                                                                                              named=False)
+                                                                              named=False)
 
-        attendees = event.event_attendees.exclude(pk=user.pk).exclude(pk__in=liked).filter(profile__gender__in=Profile.preference_list[int(user.profile.preference)])
+        attendees = event.event_attendees.exclude(pk=user.pk).exclude(pk__in=liked).filter(
+            profile__gender__in=Profile.preference_list[int(user.profile.preference)])
         serializer = UserSerializer(attendees, many=True)
         return Response(serializer.data)
 
@@ -282,7 +353,7 @@ class GetUserBestMatch(APIView):
         user = request.user
         event = Event.objects.get(pk=request.data["event_id"])
         liked = Match.objects.filter(event__match__liker=user.pk).values_list('liked_id', flat=True,
-                                                                                              named=False)
+                                                                              named=False)
 
         attendee = event.event_attendees.exclude(pk=user.pk).exclude(pk__in=liked).filter(
             profile__gender__in=Profile.preference_list[int(user.profile.preference)]).first()
@@ -351,11 +422,9 @@ class GetUserMutualLikes(APIView):
 
         mutuals = list(chain(mutuals_as_liker, mutuals_as_liked))
         mutuals = User.objects.filter(pk__in=mutuals)
-
-        # mutuals = match.liked.exclude(pk=user.pk).filter(
-        #    event__match__liker=user.pk, event__pk=event_id, event__match__confirmed=True)
-
         serializer = UserSerializer(mutuals, many=True)
+        # mutuals = Profile.objects.filter(user_in=mutuals)
+        # serializer = ProfileSerializer(mutuals, many=True)
         return Response(serializer.data)
 
 # endregion LIKE SKIP VIEWS

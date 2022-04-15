@@ -26,27 +26,39 @@ import coupl.views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
-    path('', coupl.views.UserLoginView.as_view()),
-    path('login/', coupl.views.LoginView.as_view()),
+
+    path('listProfile/', coupl.views.ListProfileView.as_view()),
+    path('createProfile/', coupl.views.CreateProfileView.as_view()),
+    path('getMatchList/', coupl.views.GetUserMatches.as_view()),
+    path('updateProfile/', coupl.views.UpdateProfileView.as_view()),
+    path('getProfile/', coupl.views.GetProfileView.as_view()),
+
+    path('addPicture/', coupl.views.AddProfilePicture.as_view()),
+    path('removePicture/', coupl.views.RemoveProfilePicture.as_view()),
+    path('swapPhotos/', coupl.views.SwapProfilePicture.as_view()),
+
+    path('listEvents/', coupl.views.EventListView.as_view()),
     path('getEvent/', coupl.views.GetEventView.as_view()),
     path('addEvent/', coupl.views.CreateEventView.as_view()),
     path('leaveEvent/', coupl.views.LeaveEventView.as_view()),
     path('joinEvent/', coupl.views.JoinEventView.as_view()),
-    path('listEvents/', coupl.views.EventListView.as_view()),
+
     path('createTag/', coupl.views.CreateTagView.as_view()),
     path('eventAddTag/', coupl.views.EventAddTagView.as_view()),
     path('listTags/', coupl.views.TagListView.as_view()),
-    path('getMatchList/', coupl.views.GetUserMatches.as_view()),
-    path('createProfile/', coupl.views.CreateProfileView.as_view()),
-    path('updateProfile/', coupl.views.UpdateProfileView.as_view()),
-    path('getProfile/', coupl.views.GetProfileView.as_view()),
-    path('listProfile/', coupl.views.ListProfileView.as_view()),
+
     path('getBestMatch/', coupl.views.GetUserBestMatch.as_view()),
     path('likeUser/', coupl.views.UserLike.as_view()),
     path('skipUser/', coupl.views.UserSkip.as_view()),
     path('getMutualLikes/', coupl.views.GetUserMutualLikes.as_view()),
-    path('addPicture/', coupl.views.AddProfilePicture.as_view()),
-    path('removePicture/', coupl.views.RemoveProfilePicture.as_view()),
-    path('swapPhotos/', coupl.views.SwapProfilePicture.as_view()),
+
+    path('createCoordinator/', coupl.views.CreateCoordinatorView.as_view()),
+    path('updateCoordinator/', coupl.views.UpdateCoordinatorView.as_view()),
+    path('getCoordinator/', coupl.views.GetCoordinatorView.as_view()),
+
+    path('addCoordinatorPhoto/', coupl.views.CoordinatorAddPhotoView.as_view()),
+    path('updateCoordinatorPhoto/', coupl.views.CoordinatorUpdatePhotoView.as_view()),
+    path('removeCoordinatorPhoto/', coupl.views.CoordinatorRemovePhotoView.as_view()),
+
 
 ]

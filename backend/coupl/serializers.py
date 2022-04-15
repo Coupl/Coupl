@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.forms import model_to_dict
 from rest_framework import serializers
-from coupl.models import Profile, Event, Tag, ProfilePicture, Match
+from coupl.models import Profile, Event, Tag, ProfilePicture, Match, Coordinator, CoordinatorPicture
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -10,7 +10,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['pk', 'username', 'password']
 
     def create(self, validated_data):
-        print(validated_data)
         return User.objects.create_user(username=validated_data.get('username'),
                                         password=validated_data.get('password'))
 
@@ -121,3 +120,18 @@ class MatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Match
         fields = ['liker', 'liked', 'skip', 'event', 'confirmed']
+
+
+class CoordinatorPictureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CoordinatorPicture
+        fields = ['coordinator', 'url']
+
+
+class CoordinatorSerializer(serializers.ModelSerializer):
+    user = UserDisplaySerializer(read_only=True)
+    coordinator_pictures = CoordinatorPictureSerializer(read_only=True)
+
+    class Meta:
+        model = Coordinator
+        fields = ['user', 'coordinator_pictures', 'coordinator_name', 'coordinator_phone', 'coordinator_details', 'coordinator_phone']
