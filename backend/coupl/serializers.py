@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.forms import model_to_dict
 from rest_framework import serializers
-from coupl.models import Profile, Event, Tag, ProfilePicture, Match
+from coupl.models import Profile, Event, Tag, ProfilePicture, Match, Coordinator, CoordinatorPicture
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -10,7 +10,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['pk', 'username', 'password']
 
     def create(self, validated_data):
-        print(validated_data)
         return User.objects.create_user(username=validated_data.get('username'),
                                         password=validated_data.get('password'))
 
@@ -21,27 +20,27 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
 
+class UserDisplaySerializer(serializers.RelatedField):
+    def to_representation(self, value):
+        username = value.username
+        pk = value.pk
+        return {"pk": pk, "username": username}
+
+
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = ['tag_name', 'tag_description']
 
     def create(self, validated_data):
-        return Tag.objects.create(tag_name=validated_data.get('tagName'),
-                                  tag_description=validated_data.get('tagDescription'))
+        return Tag.objects.create(tag_name=validated_data.get('tag_name'),
+                                  tag_description=validated_data.get('tag_description'))
 
     def update(self, instance, validated_data):
-        instance.tag_name = validated_data.get('tagName')
-        instance.tag_description = validated_data.get('tagDescription')
+        instance.tag_name = validated_data.get('tag_name')
+        instance.tag_description = validated_data.get('tag_description')
         instance.save()
         return instance
-
-
-class UserDisplaySerializer(serializers.RelatedField):
-    def to_representation(self, value):
-        username = value.username
-        pk = value.pk
-        return {"pk": pk, "username": username}
 
 
 class ProfilePictureSerializer(serializers.ModelSerializer):
@@ -68,12 +67,14 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ['user', 'profile_pictures', 'name', 'surname', 'phone', 'date_of_birth', 'description',
                   'gender', 'preference']
+        read_only_fields = ['user']
+        depth = 1
 
     def create(self, validated_data):
         return Profile.objects.create(user=validated_data.get('user'), name=validated_data.get('name'),
                                       surname=validated_data.get('surname'),
                                       phone=validated_data.get('phone'),
-                                      date_of_birth=validated_data.get('dateOfBirth'),
+                                      date_of_birth=validated_data.get('date_of_birth'),
                                       description=validated_data.get('description'),
                                       gender=validated_data.get('gender'), preference=validated_data.get('preference'))
 
@@ -108,15 +109,29 @@ class EventSerializer(serializers.ModelSerializer):
                   'event_finish_time', 'event_attendees', 'event_tags']
 
     def create(self, validated_data):
-        print(validated_data)
-        return Event.objects.create(event_name=validated_data.get('eventName'),
-                                    event_description=validated_data.get('eventDescription'),
-                                    event_creator=validated_data.get('eventCreator'),
-                                    event_start_time=validated_data.get('eventStartTime'),
-                                    event_finish_time=validated_data.get('eventFinishTime'))
+        return Event.objects.create(event_name=validated_data.get('event_name'),
+                                    event_description=validated_data.get('event_description'),
+                                    event_creator=validated_data.get('event_creator'),
+                                    event_start_time=validated_data.get('event_start_time'),
+                                    event_finish_time=validated_data.get('event_finish_time'))
 
 
 class MatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Match
         fields = ['liker', 'liked', 'skip', 'event', 'confirmed']
+
+
+class CoordinatorPictureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CoordinatorPicture
+        fields = ['coordinator', 'url']
+
+
+class CoordinatorSerializer(serializers.ModelSerializer):
+    user = UserDisplaySerializer(read_only=True)
+    coordinator_pictures = CoordinatorPictureSerializer(read_only=True)
+
+    class Meta:
+        model = Coordinator
+        fields = ['user', 'coordinator_pictures', 'coordinator_name', 'coordinator_phone', 'coordinator_details', 'coordinator_phone']

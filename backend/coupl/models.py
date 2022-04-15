@@ -7,6 +7,7 @@ from phonenumber_field import modelfields
 from django.utils.translation import gettext_lazy as _
 import qrcode as qr
 
+
 # Create your models here.
 class Profile(models.Model):
     preference_list = [["Male"], ["Female"], ["Male", "Female"]]
@@ -17,7 +18,7 @@ class Profile(models.Model):
     date_of_birth = models.DateField(blank=False)
     description = models.CharField(default="", max_length=200)
     gender = models.CharField(blank=False, max_length=10)  # "Male" or "Female" written on db
-    preference = models.IntegerField(blank=False)  # Preference list index
+    preference = models.CharField(blank=False, max_length=10)  # Preference list index
     # likes = models.ManyToManyField("self", through_fields=("Match", "liker"))
 
     @property
@@ -110,9 +111,14 @@ class SubAreas(models.Model):
 
 class Coordinator(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    coordinator_name = models.CharField(max_length=75)
     coordinator_phone = modelfields.PhoneNumberField(blank=False)
-    coordinator_contact = None
-    coordinator_rating = None
+    coordinator_details = models.CharField(max_length=250)
+
+
+class CoordinatorPicture(models.Model):
+    coordinator = models.OneToOneField(Coordinator, on_delete=models.CASCADE, related_name="photo")
+    url = models.CharField(max_length=100)
 
 
 class Ticket(models.Model):
