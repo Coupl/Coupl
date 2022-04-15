@@ -188,7 +188,7 @@ class UpdateCoordinatorView(APIView):
 
 
 class GetCoordinatorView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]
 
     def get(self, request, format=None):
         serializer = CoordinatorSerializer(request.user.coordinator)
@@ -332,7 +332,7 @@ class CreateTagView(APIView):
 
 # region LIKE SKIP VIEWS
 class GetUserMatches(APIView):
-    permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
+    permission_classes = [permissions.IsAuthenticated,  coupl.permissions.UserInEvent]
 
     def post(self, request, format=None):
         user = request.user
