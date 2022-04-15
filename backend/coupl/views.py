@@ -19,7 +19,7 @@ from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, Us
 from coupl.models import Event, Tag, Profile, Match, ProfilePicture, Coordinator
 from coupl.mixins import UserInEventMixin, LikeInEventMixin, SkipInEventMixin
 from itertools import chain
-from coupl.permissions import UserInEventPermission
+import coupl.permissions
 
 # region USER VIEWS
 # todo Send user login token when successfully logged in
@@ -332,7 +332,7 @@ class CreateTagView(APIView):
 
 # region LIKE SKIP VIEWS
 class GetUserMatches(APIView):
-    permission_classes = [permissions.IsAuthenticated, UserInEventPermission]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
 
     def post(self, request, format=None):
         user = request.user
@@ -347,7 +347,7 @@ class GetUserMatches(APIView):
 
 
 class GetUserBestMatch(APIView):
-    permission_classes = [permissions.IsAuthenticated, UserInEventPermission]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
 
     def post(self, request, format=None):
         user = request.user
@@ -364,7 +364,7 @@ class GetUserBestMatch(APIView):
 
 
 class UserLike(APIView):
-    permission_classes = [permissions.IsAuthenticated, UserInEventPermission]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
 
     def post(self, request, format=None):
         liked_id = request.data["liked_id"]
@@ -389,7 +389,7 @@ class UserLike(APIView):
 
 
 class UserSkip(APIView):
-    permission_classes = [permissions.IsAuthenticated, UserInEventPermission]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
 
     def post(self, request, format=None):
         skipped_id = request.data["skipped_id"]
@@ -408,7 +408,7 @@ class UserSkip(APIView):
 
 
 class GetUserMutualLikes(APIView):
-    permission_classes = [permissions.IsAuthenticated, UserInEventPermission]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
 
     def post(self, request, format=None):
         event_id = request.data["event_id"]
