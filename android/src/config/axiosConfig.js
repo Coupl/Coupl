@@ -3,8 +3,8 @@ import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { selectAuthorizationInfo } from "../redux/selectors";
 
-//axios.defaults.baseURL = 'https://coupl-bilkent.herokuapp.com/';
-axios.defaults.baseURL = 'http://10.0.2.2:8000/';
+axios.defaults.baseURL = 'https://coupl-bilkent.herokuapp.com/';
+//axios.defaults.baseURL = 'http://10.0.2.2:8000/';
 
 const setupAxios = () => {
 
