@@ -25,8 +25,10 @@ export const authorize = async (store, username, password) => {
         password: password
     }
 
+    let res = null;
+
     try {
-        const res = await axios.post("o/token/", body, config);
+        res = await axios.post("o/token/", body, config);
     } catch (err) {
         Toast.show({
             type: 'error',
