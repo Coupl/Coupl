@@ -1,13 +1,12 @@
 
-import React, { useState } from 'react';
-import { Button, TextInput } from 'react-native-paper';
-import { Image, ImageBackground, ScrollView, StyleSheet, View } from 'react-native';
 import axios from 'axios';
+import React, { useState } from 'react';
+import { ActivityIndicator, Image, ImageBackground, StyleSheet, View } from 'react-native';
+import { Button, TextInput } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
+import { useStore } from 'react-redux';
 import allActions from '../../redux/actions';
-import { useSelector, useStore } from 'react-redux';
 import { authorize } from '../Common/authorization/Oauth2Authorization';
-import { selectAuthorizationInfo } from '../../redux/selectors';
 
 
 const LoginScreen = ({ navigation }) => {
@@ -17,14 +16,18 @@ const LoginScreen = ({ navigation }) => {
 
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+
     const onLoginSubmit = async () => {
+        setLoading(true);
+
         await authorize(store, phone, password);
         const loginData = { phoneNumber: phone, password: password };
 
         //TODO: Use the login route when it works 
         axios.get(`listProfile/`, loginData).then(res => {
             const userInfo = res.data.filter((user) => user.user.username === phone)[0];
-            
+
             if (!userInfo) {
                 Toast.show({
                     type: 'error',
@@ -38,10 +41,32 @@ const LoginScreen = ({ navigation }) => {
                 type: 'success',
                 text1: 'Login is Successful',
             });
+
+            setLoading(false);
+
             navigation.navigate('UserNavigation');
         }).catch((err) => {
+            setLoading(false);
             console.log(err.response);
         });
+    }
+
+    const renderLoginButton = () => {
+        if (loading) {
+            return (
+                <ActivityIndicator size={"large"}/>
+            );
+        }
+
+        return (
+            <Button
+                style={styles.button}
+                mode="contained"
+                onPress={onLoginSubmit}
+            >
+                Login
+            </Button>
+        );
     }
 
     return (
@@ -67,13 +92,8 @@ const LoginScreen = ({ navigation }) => {
                         onChangeText={text => setPassword(text)}
                     />
 
-                    <Button
-                        style={styles.button}
-                        mode="contained"
-                        onPress={onLoginSubmit}
-                    >
-                        Login
-                    </Button>
+                    {renderLoginButton()}
+
                 </View>
             </ImageBackground>
         </View>

@@ -1,5 +1,5 @@
-import axios from "axios"
-import { useStore } from "react-redux";
+import axios from "axios";
+import Toast from 'react-native-toast-message';
 import allActions from "../../../redux/actions";
 
 const CLIENT_ID = "2GfSgx7YIZzZXzvv9bymtb8KtEKJTn5Vwt09ne79";
@@ -25,7 +25,16 @@ export const authorize = async (store, username, password) => {
         password: password
     }
 
-    const res = await axios.post("o/token/", body, config);
+    try {
+        const res = await axios.post("o/token/", body, config);
+    } catch (err) {
+        Toast.show({
+            type: 'error',
+            text1: 'Authorization error, please check your login information.',
+        });
+
+        return;
+    }
     const token = res.data.access_token;
     const refreshToken = res.data.refresh_token;
 
