@@ -1,25 +1,17 @@
-import datetime
-import json
-
 from django.contrib.auth import authenticate
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.db.models import Max
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from rest_framework import authentication, permissions
+from rest_framework import permissions
 from rest_framework.authtoken.models import Token
-from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
-from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer, \
+from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, \
     ProfileSerializer, MatchSerializer, ProfilePictureSerializer, CoordinatorSerializer, CoordinatorPictureSerializer, \
     HobbySerializer
 from coupl.models import Event, Tag, Profile, Match, ProfilePicture, Coordinator, Hobby
-from coupl.mixins import UserInEventMixin, LikeInEventMixin, SkipInEventMixin
 from itertools import chain
 import coupl.permissions
 

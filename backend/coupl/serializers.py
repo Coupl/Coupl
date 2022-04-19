@@ -1,5 +1,4 @@
 from django.contrib.auth.models import User
-from django.forms import model_to_dict
 from rest_framework import serializers
 from coupl.models import Profile, Event, Tag, ProfilePicture, Match, Coordinator, CoordinatorPicture, Hobby
 

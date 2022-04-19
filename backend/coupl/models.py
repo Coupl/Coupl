@@ -1,11 +1,7 @@
-import datetime
-
-import qrcode
 from django.contrib.auth.models import User
 from django.db import models
 from phonenumber_field import modelfields
 from django.utils.translation import gettext_lazy as _
-import qrcode as qr
 
 
 # Create your models here.
