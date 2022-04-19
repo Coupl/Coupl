@@ -16,8 +16,9 @@ from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
 from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, UserDisplaySerializer, \
-    ProfileSerializer, MatchSerializer, ProfilePictureSerializer, CoordinatorSerializer, CoordinatorPictureSerializer
-from coupl.models import Event, Tag, Profile, Match, ProfilePicture, Coordinator
+    ProfileSerializer, MatchSerializer, ProfilePictureSerializer, CoordinatorSerializer, CoordinatorPictureSerializer, \
+    HobbySerializer
+from coupl.models import Event, Tag, Profile, Match, ProfilePicture, Coordinator, Hobby
 from coupl.mixins import UserInEventMixin, LikeInEventMixin, SkipInEventMixin
 from itertools import chain
 import coupl.permissions
@@ -106,6 +107,29 @@ class UpdateProfileView(APIView):
         return JsonResponse(serializer.data, status=201)
 
 
+class AddHobbyProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format=None):
+        profile = Profile.objects.get(user=request.user)
+        profile.hobbies.add(Hobby.objects.get(title=request.data['title']))
+        serializer = ProfileSerializer(profile)
+        return JsonResponse(data=serializer.data)
+
+
+class RemoveHobbyProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format=None):
+        profile = Profile.objects.get(user=request.user)
+        hobby = Hobby.objects.get(title=request.data['title'])
+        if hobby in profile.hobbies.all():
+            profile.hobbies.remove(hobby)
+            serializer = ProfileSerializer(profile)
+            return JsonResponse(data=serializer.data)
+        return JsonResponse(False, safe=False)
+
+
 # region PROFILE PICTURE VIEWS
 class AddProfilePictureView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -158,8 +182,33 @@ class SwapProfilePictureView(APIView):
 
 # endregion PROFILE PICTURE VIEWS
 # region HOBBY VIEWS
-# class GetHobbiesView(APIView):
+class GetHobbiesView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
+    def get(self, request, format=None):
+        hobbies = Hobby.objects.all().order_by("type")
+        serializer = HobbySerializer(hobbies, many=True)
+        return Response(serializer.data)
+
+
+class AddHobbyView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format=None):
+        hobby = HobbySerializer(data=request.data)
+        if hobby.is_valid():
+            hobby.save()
+            return JsonResponse(hobby.data)
+        return JsonResponse(hobby.errors)
+
+
+class RemoveHobbyView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format=None):
+        hobby = Hobby.objects.get(request.data['title'])
+        hobby.delete()
+        return JsonResponse(True, safe=False)
 
 
 # endregion HOBBY VIEWS

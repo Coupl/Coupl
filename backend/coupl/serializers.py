@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.forms import model_to_dict
 from rest_framework import serializers
-from coupl.models import Profile, Event, Tag, ProfilePicture, Match, Coordinator, CoordinatorPicture
+from coupl.models import Profile, Event, Tag, ProfilePicture, Match, Coordinator, CoordinatorPicture, Hobby
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -64,14 +64,21 @@ class ProfilePictureDisplaySerializer(serializers.RelatedField):
         return {"title": title, "description": description, "profile": profile, "url": url, "order": order}
 
 
+class HobbySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Hobby
+        fields = ["title", "type"]
+
+
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserDisplaySerializer(read_only=True)
     profile_pictures = ProfilePictureSerializer(read_only=True, many=True)
+    hobbies = HobbySerializer(read_only=True, many=True)
 
     class Meta:
         model = Profile
-        fields = ['user', 'profile_pictures', 'name', 'surname', 'phone', 'date_of_birth', 'description',
-                  'gender', 'preference']
+        fields = ['user', 'name', 'surname', 'phone', 'date_of_birth', 'description',
+                  'gender', 'preference', 'profile_pictures', 'hobbies']
         read_only_fields = ['user']
         depth = 1
 

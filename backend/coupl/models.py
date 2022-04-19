@@ -33,6 +33,10 @@ class Profile(models.Model):
 
 class Hobby(models.Model):
     title = models.CharField(max_length=50)
+    type = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.title
 
 
 class ProfilePicture(models.Model):
@@ -41,6 +45,9 @@ class ProfilePicture(models.Model):
     profile = models.ForeignKey("Profile", on_delete=models.CASCADE, related_name='profile_pictures')
     url = models.CharField(max_length=150)
     order = models.IntegerField()
+
+    def __str__(self):
+        return str(self.profile.pk) + " Order: " + str(self.order)
 
 
 class Match(models.Model):

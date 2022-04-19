@@ -29,10 +29,16 @@ urlpatterns = [
     path('getMatchList/', coupl.views.GetUserMatches.as_view()),
     path('updateProfile/', coupl.views.UpdateProfileView.as_view()),
     path('getProfile/', coupl.views.GetProfileView.as_view()),
+    path('addProfileHobby/', coupl.views.AddHobbyProfileView.as_view()),
+    path('removeProfileHobby/', coupl.views.RemoveHobbyProfileView.as_view()),
 
     path('addPicture/', coupl.views.AddProfilePictureView.as_view()),
     path('removePicture/', coupl.views.RemoveProfilePictureView.as_view()),
     path('swapPhotos/', coupl.views.SwapProfilePictureView.as_view()),
+
+    path('getHobbies/', coupl.views.GetHobbiesView.as_view()),
+    path('addHobby/', coupl.views.AddHobbyView.as_view()),
+    path('removeHobby/', coupl.views.RemoveHobbyView.as_view()),
 
     path('listEvents/', coupl.views.EventListView.as_view()),
     path('getEvent/', coupl.views.GetEventView.as_view()),
