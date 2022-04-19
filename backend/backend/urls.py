@@ -30,9 +30,9 @@ urlpatterns = [
     path('updateProfile/', coupl.views.UpdateProfileView.as_view()),
     path('getProfile/', coupl.views.GetProfileView.as_view()),
 
-    path('addPicture/', coupl.views.AddProfilePicture.as_view()),
-    path('removePicture/', coupl.views.RemoveProfilePicture.as_view()),
-    path('swapPhotos/', coupl.views.SwapProfilePicture.as_view()),
+    path('addPicture/', coupl.views.AddProfilePictureView.as_view()),
+    path('removePicture/', coupl.views.RemoveProfilePictureView.as_view()),
+    path('swapPhotos/', coupl.views.SwapProfilePictureView.as_view()),
 
     path('listEvents/', coupl.views.EventListView.as_view()),
     path('getEvent/', coupl.views.GetEventView.as_view()),

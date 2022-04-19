@@ -9,6 +9,11 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['pk', 'username', 'password']
 
+    def to_representation(self, instance):
+        username = instance.username
+        pk = instance.pk
+        return {"pk": pk, "username": username}
+
     def create(self, validated_data):
         return User.objects.create_user(username=validated_data.get('username'),
                                         password=validated_data.get('password'))

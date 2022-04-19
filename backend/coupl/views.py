@@ -6,6 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.db.models import Max
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from rest_framework import authentication, permissions
 from rest_framework.authtoken.models import Token
 from rest_framework.parsers import JSONParser
@@ -20,6 +21,7 @@ from coupl.models import Event, Tag, Profile, Match, ProfilePicture, Coordinator
 from coupl.mixins import UserInEventMixin, LikeInEventMixin, SkipInEventMixin
 from itertools import chain
 import coupl.permissions
+
 
 # region USER VIEWS
 # todo Send user login token when successfully logged in
@@ -104,8 +106,8 @@ class UpdateProfileView(APIView):
         return JsonResponse(serializer.data, status=201)
 
 
-# region PROFILE PICTURE VIEW
-class AddProfilePicture(APIView):
+# region PROFILE PICTURE VIEWS
+class AddProfilePictureView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, format=None):
@@ -121,7 +123,7 @@ class AddProfilePicture(APIView):
         return JsonResponse(profile_pic.errors, status=400)
 
 
-class RemoveProfilePicture(APIView):
+class RemoveProfilePictureView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, format=None):
@@ -137,7 +139,7 @@ class RemoveProfilePicture(APIView):
         return JsonResponse(serializer.data, status=201)
 
 
-class SwapProfilePicture(APIView):
+class SwapProfilePictureView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, format=None):
@@ -154,7 +156,13 @@ class SwapProfilePicture(APIView):
         return JsonResponse(serializer.data)
 
 
-# endregion PROFILE PICTURE VIEW
+# endregion PROFILE PICTURE VIEWS
+# region HOBBY VIEWS
+# class GetHobbiesView(APIView):
+
+
+
+# endregion HOBBY VIEWS
 # endregion PROFILE VIEWS
 
 # region COORDINATOR VIEWS
@@ -226,6 +234,8 @@ class CoordinatorRemovePhotoView(APIView):
         picture = request.user.coordinator.photo
         picture.remove()
         return JsonResponse(True, safe=False, status=200)
+
+
 # endregion COORDINATOR PHOTO VIEWS
 # endregion COORDINATOR VIEWS
 
@@ -332,7 +342,7 @@ class CreateTagView(APIView):
 
 # region LIKE SKIP VIEWS
 class GetUserMatches(APIView):
-    permission_classes = [permissions.IsAuthenticated,  coupl.permissions.UserInEvent]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
 
     def post(self, request, format=None):
         user = request.user

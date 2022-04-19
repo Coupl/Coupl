@@ -18,16 +18,21 @@ class Profile(models.Model):
     date_of_birth = models.DateField(blank=False)
     description = models.CharField(default="", max_length=200)
     gender = models.CharField(blank=False, max_length=10)  # "Male" or "Female" written on db
+    sexual_orientation = models.CharField(max_length=100)
     preference = models.CharField(blank=False, max_length=10)  # Preference list index
-    # likes = models.ManyToManyField("self", through_fields=("Match", "liker"))
+    hobbies = models.ManyToManyField("Hobby", related_name="hobbies")
 
     @property
     def eventHistory(self):
-        return Event.objects.filter(eventAttendees__in=self)
+        return  # Event.objects.filter(event_attendees__profile__in=[self])
 
     @property
     def matchHistory(self):
         return  # Profile.objects.filter(profile__in=self.likes).filter(likes__in=self)
+
+
+class Hobby(models.Model):
+    title = models.CharField(max_length=50)
 
 
 class ProfilePicture(models.Model):
