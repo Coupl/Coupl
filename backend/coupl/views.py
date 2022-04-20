@@ -375,7 +375,7 @@ class UserLike(APIView):
         event = Event.objects.get(pk=event_id)
 
         # Liked user also previously liked the liker, match confirms
-        match = Match.objects.get(liked=liker, liker=liked, event=event, skip=False)
+        match = Match.objects.filter(liked=liker, liker=liked, event=event, skip=False)
         if match:
             match.confirmed = True
             match.save()
