@@ -1,45 +1,24 @@
-import React, { memo, useEffect, useMemo, useState } from 'react';
-import {
-  Text,
-  Image,
-  View,
-  Button,
-  StyleSheet,
-  FlatList,
-  Dimensions,
-  SafeAreaView,
-  StatusBar,
-  TouchableHighlight,
-  Alert,
-} from 'react-native';
-import { ActivityIndicator, RadioButton, TextInput } from 'react-native-paper';
-import storage, { firebase } from '@react-native-firebase/storage';
-import ImageCropPicker from 'react-native-image-crop-picker';
-import { getPhotoURL, getUserPhotos, uploadPhoto } from '../../services/firebase/UserPhotos';
-import { selectUser } from '../../redux/selectors';
-import { useSelector, useStore } from 'react-redux';
-import FirebaseImage from '../Common/FirebaseImage';
-import axios from 'axios';
-import allActions from '../../redux/actions';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import PhotoChooser from './PhotoChooser';
-import Gallery from 'react-native-image-gallery';
+import axios from 'axios';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  Button, Dimensions, Text, TouchableOpacity, View
+} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
+import Gallery from 'react-native-image-gallery';
+import { ActivityIndicator, RadioButton, TextInput } from 'react-native-paper';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-
-const numColumns = 3;
-const numRows = 2;
-const height = Dimensions.get('window').height;
-const width = Dimensions.get('window').width;
-const userId = 3;
+import { useSelector, useStore } from 'react-redux';
+import allActions from '../../redux/actions';
+import { selectUser } from '../../redux/selectors';
+import { getPhotoURL } from '../../services/firebase/UserPhotos';
+import PhotoChooser from './PhotoChooser';
+import ProfilePhotoSwiper from './ProfilePhotoSwiper';
 
 const updateProfileInfo = (user, store) => {
   const setUserAction = allActions.userActions.setUser;
 
-  const postBody = {
-    user_id: user.userId
-  }
-  axios.post("getProfile/", postBody).then((res) => {
+  axios.get("getProfile/").then((res) => {
     const newProfileInfo = {
       ...res.data,
       userId: res.data.user.pk
@@ -109,13 +88,22 @@ const ProfileDetails = ({ navigation }) => {
   const renderFemaleRadioButton = (<><Ionicons name="female" size={24} /><Text> Female</Text></>);
   const renderBothRadioButton = (<><Ionicons name="male" size={24} /><Ionicons name="female" size={24} /><Text> Both</Text></>);
 
+  const renderSwiperBottom = () => {
+    return (
+      <View style={{ flexDirection: 'row', marginHorizontal: 24 }}>
+        <TouchableOpacity
+          style={{ flex: 1, paddingVertical: 10, borderRadius: 24, backgroundColor: "blue" }}
+          onPress={() => { navigation.navigate('PhotoChooser') }}
+        >
+          <Text style={{ color: 'white', fontWeight: '600', textAlign: 'center' }}>Change Photos</Text>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+
   return (
     <ScrollView style={{ flex: 1 }}>
-      {ProfilePictures}
-      <Button
-        title="Change Photos"
-        onPress={() => { navigation.navigate('PhotoChooser') }}
-      />
+      <ProfilePhotoSwiper profile={user} renderBottom={renderSwiperBottom} />
       <View style={{ flex: 1 }}>
         <TextInput
           label="Description"
@@ -132,15 +120,15 @@ const ProfileDetails = ({ navigation }) => {
 
         <View>
           <Text >Preferred gender:</Text>
-          <RadioButton.Group 
-          onValueChange={value => {
-            setUserState({
-              ...userState,
-              preference: value
-            });
-            setHaveChanges(true);
-          }} 
-          value={userState.preference}>
+          <RadioButton.Group
+            onValueChange={value => {
+              setUserState({
+                ...userState,
+                preference: value
+              });
+              setHaveChanges(true);
+            }}
+            value={userState.preference}>
             <RadioButton.Item label={renderMaleRadioButton} value={"1"} />
             <RadioButton.Item label={renderFemaleRadioButton} value={"2"} />
             <RadioButton.Item label={renderBothRadioButton} value={"3"} />

@@ -29,10 +29,7 @@ const width = Dimensions.get('window').width;
 const updateProfileInfo = (user, store) => {
   const setUserAction = allActions.userActions.setUser;
 
-  const postBody = {
-    user_id: user.userId
-  }
-  axios.post("getProfile/", postBody).then((res) => {
+  axios.get("getProfile/").then((res) => {
     const newProfileInfo = res.data;
     store.dispatch(setUserAction(newProfileInfo));
   }).catch((err) => {
