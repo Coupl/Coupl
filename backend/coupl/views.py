@@ -64,8 +64,8 @@ class CreateProfileView(APIView):
     def post(self, request):
         user_serializer = UserSerializer(data=request.data['user'])
         if user_serializer.is_valid():
-            user = User.objects.create_user(username=user_serializer.data['username'],
-                                            password=user_serializer.data['password'])
+            user = User.objects.create_user(username=user_serializer.validated_data['username'],
+                                            password=user_serializer.validated_data['password'])
         else:
             return JsonResponse("Can't create user", status=400, safe=False)
         request.data.pop('user', None)
@@ -426,7 +426,7 @@ class UserLike(APIView):
         event = Event.objects.get(pk=event_id)
 
         # Liked user also previously liked the liker, match confirms
-        match = Match.objects.get(liked=liker, liker=liked, event=event, skip=False)
+        match = Match.objects.filter(liked=liker, liker=liked, event=event, skip=False)
         if match:
             match.confirmed = True
             match.save()
