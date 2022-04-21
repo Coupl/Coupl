@@ -10,7 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, \
     ProfileSerializer, MatchSerializer, ProfilePictureSerializer, CoordinatorSerializer, CoordinatorPictureSerializer, \
-    HobbySerializer
+    HobbySerializer, MatchDetailedSerializer
 from coupl.models import Event, Tag, Profile, Match, ProfilePicture, Coordinator, Hobby
 from itertools import chain
 import coupl.permissions
@@ -391,9 +391,25 @@ class GetUserMatches(APIView):
         liked = Match.objects.filter(event__match__liker=user.pk).values_list('liked_id', flat=True,
                                                                               named=False)
 
+        matches = []
+
+        # List of all potential matches
         attendees = event.event_attendees.exclude(pk=user.pk).exclude(pk__in=liked).filter(
             profile__gender__in=Profile.preference_list[int(user.profile.preference)])
-        serializer = UserSerializer(attendees, many=True)
+
+        user_hobbies = user.profile.hobbies.all()
+        for attendee in attendees:
+            past_events = Event.objects.filter(event_attendees__in=[user.pk, attendee.pk]).distinct().exclude(pk=event.pk)
+
+            attendee_hobbies = attendee.profile.hobbies.all()
+            common_hobbies = user_hobbies.intersection(attendee_hobbies)
+
+            common_tags = []
+            common_locations = []
+
+            matches.append({"user": attendee, "past_events": past_events, "common_hobbies": common_hobbies,
+                            "common_event_tags": common_tags, "common_event_locations": common_locations})
+        serializer = MatchDetailedSerializer(matches, many=True)
         return Response(serializer.data)
 
 
@@ -409,7 +425,7 @@ class GetUserBestMatch(APIView):
         attendee = event.event_attendees.exclude(pk=user.pk).exclude(pk__in=liked).filter(
             profile__gender__in=Profile.preference_list[int(user.profile.preference)]).first()
         if not attendee:
-            raise ObjectDoesNotExist
+            return JsonResponse('No matches found.', status=400, safe=False)
         serializer = ProfileSerializer(attendee.profile)
         return Response(serializer.data)
 

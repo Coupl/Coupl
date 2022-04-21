@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from coupl.models import Profile, Event, Tag, ProfilePicture, Match, Coordinator, CoordinatorPicture, Hobby
+from coupl.models import Profile, Event, Tag, ProfilePicture, Match, Coordinator, CoordinatorPicture, Hobby, Location
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -146,3 +146,19 @@ class CoordinatorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Coordinator
         fields = ['user', 'coordinator_pictures', 'coordinator_name', 'coordinator_phone', 'coordinator_details', 'coordinator_phone']
+
+
+class LocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Location
+        fields = ['name', 'description', 'address']
+
+
+class MatchDetailedSerializer(serializers.Serializer):
+    user = UserDisplaySerializer(read_only=True)
+    past_events = EventSerializer(many=True, read_only=True)
+    common_hobbies = HobbySerializer(many=True, read_only=True)
+    common_event_tags = TagSerializer(many=True, read_only=True)
+    common_event_locations = LocationSerializer(many=True, read_only=True)
+
+
