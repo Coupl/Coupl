@@ -11,7 +11,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, \
     ProfileSerializer, MatchSerializer, ProfilePictureSerializer, CoordinatorSerializer, CoordinatorPictureSerializer, \
     HobbySerializer, MatchDetailedSerializer
-from coupl.models import Event, Tag, Profile, Match, ProfilePicture, Coordinator, Hobby, Rating
+from coupl.models import Event, Tag, Profile, Match, ProfilePicture, Coordinator, Hobby, Rating, Ticket
 from itertools import chain
 import coupl.permissions
 
@@ -44,6 +44,21 @@ class UserLoginView(APIView):
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
 
+
+class UserReportView(APIView):
+    def post(self, request, format=None):
+        permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
+        reported = User.objects.get(pk=request.data['reported'])
+        description = request.data['description']
+        reporter = request.user
+
+        if Ticket.objects.filter(reporter=reporter, reported=reported, status="Pending"):
+            return JsonResponse("There's already a pending ticket between users.", status=400, safe=False)
+
+        ticket = Ticket(reporter=reporter, reported=reported, status="Pending", description=description)
+        ticket.save()
+
+        return JsonResponse("Successfully created ticket", status=201, safe=False)
 
 # endregion USER VIEWS
 
@@ -376,6 +391,7 @@ class RateEventView(APIView):
         rating = Rating(rater=user, event=event, rating=stars)
         rating.save()
         return JsonResponse('Successfully rated the event', status=201, safe=False)
+
 
 # region TAG VIEWS
 class TagListView(APIView):

@@ -23,6 +23,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 
+    path('reportUser/', coupl.views.UserReportView.as_view()),
+
     path('listProfile/', coupl.views.ListProfileView.as_view()),
     path('createProfile/', coupl.views.CreateProfileView.as_view()),
     path('getMatchList/', coupl.views.GetUserMatches.as_view()),
