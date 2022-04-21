@@ -133,3 +133,4 @@ class Ticket(models.Model):
     reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reporter")
     reported = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reported")
     description = models.CharField(blank=False, max_length=250)
+    status = models.CharField(default="Pending", max_length=20)
