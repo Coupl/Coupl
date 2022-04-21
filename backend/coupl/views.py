@@ -79,7 +79,7 @@ class CreateProfileView(APIView):
 
 
 class GetProfileView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
 
     def get(self, request, format=None):
         profile = request.user.profile
@@ -89,7 +89,7 @@ class GetProfileView(APIView):
 
 
 class UpdateProfileView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
 
     def post(self, request, format=None):
         profile = request.user.profile
@@ -100,7 +100,7 @@ class UpdateProfileView(APIView):
 
 
 class AddHobbyProfileView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
 
     def post(self, request, format=None):
         profile = Profile.objects.get(user=request.user)
@@ -110,7 +110,7 @@ class AddHobbyProfileView(APIView):
 
 
 class RemoveHobbyProfileView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
 
     def post(self, request, format=None):
         profile = Profile.objects.get(user=request.user)
@@ -124,7 +124,7 @@ class RemoveHobbyProfileView(APIView):
 
 # region PROFILE PICTURE VIEWS
 class AddProfilePictureView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
 
     def post(self, request, format=None):
         profile = request.user.profile
@@ -140,7 +140,7 @@ class AddProfilePictureView(APIView):
 
 
 class RemoveProfilePictureView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
 
     def post(self, request, format=None):
         profile = request.user.profile
@@ -156,7 +156,7 @@ class RemoveProfilePictureView(APIView):
 
 
 class SwapProfilePictureView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
 
     def post(self, request, format=None):
         first_order = request.data['first_order']
@@ -175,7 +175,7 @@ class SwapProfilePictureView(APIView):
 # endregion PROFILE PICTURE VIEWS
 # region HOBBY VIEWS
 class GetHobbiesView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
 
     def get(self, request, format=None):
         hobbies = Hobby.objects.all().order_by("type")
@@ -226,7 +226,7 @@ class CreateCoordinatorView(APIView):
 
 
 class UpdateCoordinatorView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]
 
     def post(self, request, format=None):
         coordinator = request.user.coordinator
@@ -246,7 +246,7 @@ class GetCoordinatorView(APIView):
 
 # region COORDINATOR PHOTO VIEWS
 class CoordinatorAddPhotoView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]
 
     def post(self, request, format=None):
         request.data['coordinator'] = request.user.coordinator.pk
@@ -258,7 +258,7 @@ class CoordinatorAddPhotoView(APIView):
 
 
 class CoordinatorUpdatePhotoView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]
 
     def post(self, request, format=None):
         serializer = CoordinatorPictureSerializer(data=request.data)
@@ -269,7 +269,7 @@ class CoordinatorUpdatePhotoView(APIView):
 
 
 class CoordinatorRemovePhotoView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]
 
     def post(self, request, format=None):
         picture = request.user.coordinator.photo
@@ -282,7 +282,7 @@ class CoordinatorRemovePhotoView(APIView):
 
 # region EVENT VIEWS
 class EventListView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
 
     def get(self, request, format=None):
         events = Event.objects.all()
@@ -291,7 +291,7 @@ class EventListView(APIView):
 
 
 class CreateEventView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]
 
     def post(self, request, format=None):
         serializer = EventSerializer(data=request.data)
@@ -314,7 +314,7 @@ class GetEventView(APIView):
 
 
 class JoinEventView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
 
     def post(self, request, format=None):
         event_id = request.data['event_id']
@@ -328,7 +328,7 @@ class JoinEventView(APIView):
 
 
 class LeaveEventView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
 
     def post(self, request, format=None):
         user = request.user
@@ -340,7 +340,7 @@ class LeaveEventView(APIView):
 
 
 class EventAddTagView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]
 
     def post(self, request, format=None):
         event_id = request.data['event_id']
