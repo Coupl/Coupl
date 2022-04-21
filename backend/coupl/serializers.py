@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from coupl.models import Profile, Event, Tag, ProfilePicture, Match, Coordinator, CoordinatorPicture, Hobby, Location
+from coupl.models import Profile, Event, Tag, ProfilePicture, Match, Coordinator, CoordinatorPicture, Hobby, Location, \
+    Comment, Rating, SubAreas, Ticket
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -110,14 +111,47 @@ class TagDisplaySerializer(serializers.RelatedField):
         return {"pk": pk, "tag_name": tag_name, "tag_description": tag_description}
 
 
+class CommentSerializer(serializers.ModelSerializer):
+    commenter = UserDisplaySerializer(read_only=True)
+    
+    class Meta:
+        model = Comment
+        fields = ['commenter', 'event', 'comment_text']
+
+
+class RatingSerializer(serializers.ModelSerializer):
+    rater = UserDisplaySerializer(read_only=True)
+
+    class Meta:
+        model = Rating
+        fields = ['rating', 'rater', 'event']
+
+
+class LocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Location
+        fields = ['pk', 'name', 'description', 'address']
+
+
+class SubAreasSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SubAreas
+        fields = ['pk', 'event', 'area_name', 'area_description', 'area_picture']
+
+
 class EventSerializer(serializers.ModelSerializer):
     event_attendees = UserDisplaySerializer(many=True, read_only=True)
     event_tags = TagDisplaySerializer(many=True, read_only=True)
+    comments = CommentSerializer(many=True, read_only=True)
+    ratings = RatingSerializer(many=True, read_only=True)
+    event_location = LocationSerializer(read_only=True)
+    sub_areas = SubAreasSerializer(many=True, read_only=True)
 
     class Meta:
         model = Event
-        fields = ['id', 'event_name', 'event_description', 'event_creator', 'event_start_time',
-                  'event_finish_time', 'event_attendees', 'event_tags']
+        fields = ['id', 'event_name', 'event_description', 'event_location', 'event_creator', 'event_start_time',
+                  'event_finish_time', 'event_attendees', 'event_tags', 'sub_areas', 'comments', 'ratings']
 
     def create(self, validated_data):
         return Event.objects.create(event_name=validated_data.get('event_name'),
@@ -148,17 +182,18 @@ class CoordinatorSerializer(serializers.ModelSerializer):
         fields = ['user', 'coordinator_pictures', 'coordinator_name', 'coordinator_phone', 'coordinator_details', 'coordinator_phone']
 
 
-class LocationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Location
-        fields = ['name', 'description', 'address']
-
-
 class MatchDetailedSerializer(serializers.Serializer):
     user = UserDisplaySerializer(read_only=True)
     past_events = EventSerializer(many=True, read_only=True)
     common_hobbies = HobbySerializer(many=True, read_only=True)
     common_event_tags = TagSerializer(many=True, read_only=True)
     common_event_locations = LocationSerializer(many=True, read_only=True)
+
+
+class TicketSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Ticket
+        fields = ['reporter', 'reported', 'description', 'status']
 
 

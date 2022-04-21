@@ -49,6 +49,13 @@ urlpatterns = [
     path('rateEvent/', coupl.views.RateEventView.as_view()),
     path('commentEvent/', coupl.views.CommentEventView.as_view()),
 
+    path('listLocations/', coupl.views.LocationListView.as_view()),
+    path('createLocation/', coupl.views.CreateLocationView.as_view()),
+
+    path('getSubArea/', coupl.views.GetSubAreaView.as_view()),
+    path('addSubArea/', coupl.views.AddSubArea.as_view()),
+    path('removeSubArea/', coupl.views.RemoveSubArea.as_view()),
+
     path('createTag/', coupl.views.CreateTagView.as_view()),
     path('eventAddTag/', coupl.views.EventAddTagView.as_view()),
     path('listTags/', coupl.views.TagListView.as_view()),
@@ -66,5 +73,5 @@ urlpatterns = [
     path('updateCoordinatorPhoto/', coupl.views.CoordinatorUpdatePhotoView.as_view()),
     path('removeCoordinatorPhoto/', coupl.views.CoordinatorRemovePhotoView.as_view()),
 
-
+    path('createTicket/', coupl.views.CreateTicketView.as_view()),
 ]

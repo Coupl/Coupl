@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 # Create your models here.
 class Profile(models.Model):
     preference_list = [["Male"], ["Female"], ["Male", "Female"]]
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     name = models.CharField(blank=False, max_length=30)
     surname = models.CharField(blank=False, max_length=30)
     phone = modelfields.PhoneNumberField(blank=False)
@@ -25,6 +25,13 @@ class Profile(models.Model):
     @property
     def matchHistory(self):
         return  # Profile.objects.filter(profile__in=self.likes).filter(likes__in=self)
+
+
+class Coordinator(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    coordinator_name = models.CharField(max_length=75)
+    coordinator_phone = modelfields.PhoneNumberField(blank=False)
+    coordinator_details = models.CharField(max_length=250)
 
 
 class Hobby(models.Model):
@@ -61,8 +68,8 @@ class Location(models.Model):
 
 
 class LocationPictures(models.Model):
-    title = models.CharField(max_length=50)
-    description = models.CharField(max_length=100)
+    title = models.CharField(max_length=50, blank=True)
+    description = models.CharField(max_length=100, blank=True)
     location = models.ForeignKey("Location", on_delete=models.CASCADE)
     url = models.CharField(max_length=150)
     order = models.IntegerField()
@@ -75,7 +82,7 @@ class Event(models.Model):
     event_start_time = models.DateTimeField(blank=False)
     event_finish_time = models.DateTimeField(blank=False)
     event_creator = models.ForeignKey("Coordinator", on_delete=models.CASCADE)
-    event_location = models.ForeignKey("Location", on_delete=models.CASCADE, null=True)
+    event_location = models.ForeignKey("Location", on_delete=models.CASCADE)
     event_attendees = models.ManyToManyField(User)
 
     @property
@@ -88,7 +95,7 @@ class Event(models.Model):
 
 class Comment(models.Model):
     commenter = models.ForeignKey(User, on_delete=models.CASCADE)
-    event = models.ForeignKey("Event", on_delete=models.CASCADE)
+    event = models.ForeignKey("Event", on_delete=models.CASCADE, related_name="comments")
     comment_text = models.CharField(max_length=150)
 
 
@@ -102,7 +109,7 @@ class Rating(models.Model):
 
     rating = models.IntegerField(choices=Stars.choices)
     rater = models.ForeignKey(User, on_delete=models.CASCADE)
-    event = models.ForeignKey("Event", on_delete=models.CASCADE)
+    event = models.ForeignKey("Event", on_delete=models.CASCADE, related_name="ratings")
 
 
 class Tag(models.Model):
@@ -111,17 +118,10 @@ class Tag(models.Model):
 
 
 class SubAreas(models.Model):
-    event = models.ForeignKey("Event", on_delete=models.CASCADE)
+    event = models.ForeignKey("Event", on_delete=models.CASCADE, related_name='sub_areas')
     area_name = models.CharField(blank=False, max_length=50)
     area_description = models.CharField(max_length=100)
-    area_picture = None
-
-
-class Coordinator(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    coordinator_name = models.CharField(max_length=75)
-    coordinator_phone = modelfields.PhoneNumberField(blank=False)
-    coordinator_details = models.CharField(max_length=250)
+    area_picture = models.CharField(max_length=100)
 
 
 class CoordinatorPicture(models.Model):

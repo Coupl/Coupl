@@ -10,8 +10,9 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, \
     ProfileSerializer, MatchSerializer, ProfilePictureSerializer, CoordinatorSerializer, CoordinatorPictureSerializer, \
-    HobbySerializer, MatchDetailedSerializer
-from coupl.models import Event, Tag, Profile, Match, ProfilePicture, Coordinator, Hobby, Rating, Ticket, Comment
+    HobbySerializer, MatchDetailedSerializer, LocationSerializer, TicketSerializer, SubAreasSerializer
+from coupl.models import Event, Tag, Profile, Match, ProfilePicture, Coordinator, Hobby, Rating, Ticket, Comment, \
+    Location, SubAreas
 from itertools import chain
 import coupl.permissions
 
@@ -59,6 +60,7 @@ class UserReportView(APIView):
         ticket.save()
 
         return JsonResponse("Successfully created ticket", status=201, safe=False)
+
 
 # endregion USER VIEWS
 
@@ -373,7 +375,7 @@ class EventAddTagView(APIView):
 
 
 class RateEventView(APIView):
-    permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser, coupl.permissions.UserInEvent]
 
     def post(self, request, format=None):
         event_id = request.data['event_id']
@@ -394,7 +396,7 @@ class RateEventView(APIView):
 
 
 class CommentEventView(APIView):
-    permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser, coupl.permissions.UserInEvent]
 
     def post(self, request, format=None):
         event_id = request.data['event_id']
@@ -409,6 +411,7 @@ class CommentEventView(APIView):
         comment = Comment(commenter=user, event=event, comment_text=comment_text)
         comment.save()
         return JsonResponse('Successfully commented on the event', status=201, safe=False)
+
 
 # region TAG VIEWS
 class TagListView(APIView):
@@ -432,6 +435,56 @@ class CreateTagView(APIView):
 
 
 # endregion TAG VIEWS
+# region LOCATION VIEWS
+class LocationListView(APIView):
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]
+
+    def get(self, request, format=None):
+        location = Location.objects.all()
+        serializer = LocationSerializer(location, many=True)
+        return Response(serializer.data)
+
+
+class CreateLocationView(APIView):
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]
+
+    def post(self, request, format=None):
+        serializer = LocationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
+
+
+# endregion LOCATION VIEWS
+# region SUBAREA VIEWS
+class GetSubAreaView(APIView):
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]
+
+    def post(self, request, format=None):
+        sub_areas = SubAreas.objects.filter(event_id=request.data['event'])
+        serializer = SubAreasSerializer(sub_areas, many=True)
+        return JsonResponse(serializer.data)
+
+
+class AddSubArea(APIView):
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]
+
+    def post(self, request, format=None):
+        serializer = SubAreasSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
+
+
+class RemoveSubArea(APIView):
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]
+
+    def post(self, request, format=None):
+        SubAreas.objects.get(pk=request.data['area']).delete()
+        return JsonResponse(True, safe=False)
+# endregion SUBAREA VIEWS
 # endregion EVENT VIEWS
 
 # region LIKE SKIP VIEWS
@@ -452,7 +505,8 @@ class GetUserMatches(APIView):
 
         user_hobbies = user.profile.hobbies.all()
         for attendee in attendees:
-            past_events = Event.objects.filter(event_attendees__in=[user.pk, attendee.pk]).distinct().exclude(pk=event.pk)
+            past_events = Event.objects.filter(event_attendees__in=[user.pk, attendee.pk]).distinct().exclude(
+                pk=event.pk)
 
             attendee_hobbies = attendee.profile.hobbies.all()
             common_hobbies = user_hobbies.intersection(attendee_hobbies)
@@ -547,4 +601,19 @@ class GetUserMutualLikes(APIView):
         # serializer = ProfileSerializer(mutuals, many=True)
         return Response(serializer.data)
 
+
 # endregion LIKE SKIP VIEWS
+
+# region TICKET VIEWS
+class CreateTicketView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format=None):
+        request.data['reporter'] = request.user.pk
+        serializer = TicketSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
+
+# endregion TICKET VIEWS
