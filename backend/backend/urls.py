@@ -47,6 +47,7 @@ urlpatterns = [
     path('leaveEvent/', coupl.views.LeaveEventView.as_view()),
     path('joinEvent/', coupl.views.JoinEventView.as_view()),
     path('rateEvent/', coupl.views.RateEventView.as_view()),
+    path('commentEvent/', coupl.views.CommentEventView.as_view()),
 
     path('createTag/', coupl.views.CreateTagView.as_view()),
     path('eventAddTag/', coupl.views.EventAddTagView.as_view()),
