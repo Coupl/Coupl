@@ -11,7 +11,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, \
     ProfileSerializer, MatchSerializer, ProfilePictureSerializer, CoordinatorSerializer, CoordinatorPictureSerializer, \
     HobbySerializer, MatchDetailedSerializer
-from coupl.models import Event, Tag, Profile, Match, ProfilePicture, Coordinator, Hobby
+from coupl.models import Event, Tag, Profile, Match, ProfilePicture, Coordinator, Hobby, Rating
 from itertools import chain
 import coupl.permissions
 
@@ -356,6 +356,26 @@ class EventAddTagView(APIView):
         event.eventTags.add(tag)
         return JsonResponse('Successfully added tag to the event', status=201, safe=False)
 
+
+class RateEventView(APIView):
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
+
+    def post(self, request, format=None):
+        event_id = request.data['event_id']
+        user = request.user
+        event = Event.objects.get(pk=event_id)
+
+        # Check if the user has already rated the event
+        if Rating.objects.filter(rater=user, event=event):
+            return JsonResponse('User has already rated the event', status=400, safe=False)
+
+        stars = request.data['rating']
+        if stars not in range(1, 6):
+            return JsonResponse('Invalid rating', status=400, safe=False)
+
+        rating = Rating(rater=user, event=event, rating=stars)
+        rating.save()
+        return JsonResponse('Successfully rated the event', status=201, safe=False)
 
 # region TAG VIEWS
 class TagListView(APIView):
