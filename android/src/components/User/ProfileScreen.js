@@ -124,8 +124,22 @@ const ProfileDetails = ({ navigation }) => {
 
         <View>
           <Text>Hobbies</Text>
+
+          <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flexWrap: 'wrap', padding: 10 }}>
+            {user.hobbies.map((hobby, index) => {
+              return (
+                <View
+                  key={index}
+                  style={{ flexDirection: "row", paddingVertical: 10, paddingHorizontal: 5, borderRadius: 24, margin: 5, backgroundColor: 'rgba(50, 205, 50, 0.4)' }}
+                >
+                  <Text >{hobby.title}</Text>
+                </View>
+              )
+            })}
+          </View>
+
           <TouchableOpacity
-            style={{ flex: 1, paddingVertical: 10, borderRadius: 24, backgroundColor: 'rgba(50, 205, 50, 0.4)' }}
+            style={{ flex: 1, borderRadius: 24, paddingHorizontal: 10, backgroundColor: "green", alignSelf: "center" }}
             onPress={() => { navigation.navigate('HobbyChooser') }}
           >
             <Text style={{ color: 'white', fontSize: 20, fontWeight: '600', textAlign: 'center' }}>Edit Hobbies</Text>
