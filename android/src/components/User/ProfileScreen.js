@@ -12,6 +12,7 @@ import { useSelector, useStore } from 'react-redux';
 import allActions from '../../redux/actions';
 import { selectUser } from '../../redux/selectors';
 import { getPhotoURL } from '../../services/firebase/UserPhotos';
+import HobbyChooser from './HobbyChooser';
 import PhotoChooser from './PhotoChooser';
 import ProfilePhotoSwiper from './ProfilePhotoSwiper';
 
@@ -122,7 +123,17 @@ const ProfileDetails = ({ navigation }) => {
         />
 
         <View>
-          <Text >Preferred gender:</Text>
+          <Text>Hobbies</Text>
+          <TouchableOpacity
+            style={{ flex: 1, paddingVertical: 10, borderRadius: 24, backgroundColor: 'rgba(50, 205, 50, 0.4)' }}
+            onPress={() => { navigation.navigate('HobbyChooser') }}
+          >
+            <Text style={{ color: 'white', fontSize: 20, fontWeight: '600', textAlign: 'center' }}>Edit Hobbies</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View>
+          <Text >Match me with:</Text>
           <RadioButton.Group
             onValueChange={value => {
               setUserState({
@@ -156,6 +167,7 @@ const ProfileScreen = ({ navigation }) => {
     <Stack.Navigator>
       <Stack.Screen name="ProfileDetails" component={ProfileDetails} options={{ headerShown: false }} />
       <Stack.Screen name="PhotoChooser" component={PhotoChooser} />
+      <Stack.Screen name="HobbyChooser" component={HobbyChooser} />
     </Stack.Navigator>
   )
 };

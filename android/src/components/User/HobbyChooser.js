@@ -1,0 +1,106 @@
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator } from 'react-native-paper';
+import AntDesign from "react-native-vector-icons/AntDesign";
+import { useSelector, useStore } from 'react-redux';
+import { selectUser } from '../../redux/selectors';
+
+const UNSELECTED_COLOR = 'rgba(130, 130, 130, 0.4)';
+const SELECTED_COLOR = 'rgba(50, 205, 50, 0.4)';
+const REMOVED_COLOR = 'rgba(240, 128, 128, 0.4)';
+
+const COLORS = [UNSELECTED_COLOR, SELECTED_COLOR, SELECTED_COLOR, REMOVED_COLOR];
+
+const NONE = 0;
+const SELECTED = 1;
+const JUST_SELECTED = 2;
+const JUST_REMOVED = 3;
+
+const HobbyChooser = () => {
+  const user = useSelector(selectUser);
+  const store = useStore();
+  const [hobbies, setHobbies] = useState([]);
+
+  useEffect(() => {
+    axios.get('getHobbies/').then((res) => {
+      const hobbiesMapped = res.data.map((hobby) => {
+        const state = user.hobbies.filter(userHobby => (hobby.title === userHobby.title)).length > 0 ? SELECTED : NONE;
+        return {
+          ...hobby,
+          loading: false,
+          state: state,
+        }
+      });
+      setHobbies(hobbiesMapped);
+    }).catch((err) => {
+      console.log(err);
+    });
+  }, []);
+
+  const handlePress = (hobby, index) => {
+    const numSelected = hobbies.filter(userHobby => (userHobby.state === SELECTED || userHobby.state === JUST_SELECTED)).length;
+    if (numSelected >= 10) return;
+
+    let loadingHobbies = [...hobbies];
+    loadingHobbies[index].loading = true;
+    setHobbies(loadingHobbies);
+
+    const alreadySelected = (hobby.state === SELECTED) || (hobby.state === JUST_SELECTED);
+    const requestURL = alreadySelected ? 'removeProfileHobby/' : 'addProfileHobby/';
+
+    const postBody = {
+      title: hobby.title
+    };
+    axios.post(requestURL, postBody).then((res) => {
+      let newHobbies = [...hobbies];
+      newHobbies[index].state = alreadySelected ? JUST_REMOVED : JUST_SELECTED;
+      newHobbies[index].loading = false;
+      setHobbies(newHobbies);
+    }).catch((err) => {
+      console.log(err);
+    });
+  }
+
+
+  return (
+    <SafeAreaView>
+
+      {
+        hobbies.filter(userHobby => userHobby.state === (SELECTED || userHobby.state === JUST_SELECTED)).length < 10 ?
+          <Text style={{ alignSelf: "center", fontSize: 26 }}>Select up to 10 hobbies:</Text> :
+          <Text style={{ alignSelf: "center", fontSize: 26 }}>You have selected the maximum of 10 hobbies.</Text>
+      }
+
+      <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flexWrap: 'wrap', padding: 10 }}>
+        {hobbies.map((hobby, index) => {
+          const color = COLORS[hobby.state];
+          return (
+            <TouchableOpacity
+              key={index}
+              style={{ flexDirection: "row", paddingVertical: 10, paddingHorizontal: 5, borderRadius: 24, margin: 5, backgroundColor: color }}
+              onPress={() => { handlePress(hobby, index); }}
+            >
+              <Text >{hobby.title}</Text>
+              {
+                hobby.loading &&
+                <ActivityIndicator />
+              }
+              {
+                (hobby.state === JUST_SELECTED) &&
+                <AntDesign key={index} name="check" style={{ marginHorizontal: 5 }} size={16} />
+              }
+              {
+                (hobby.state === JUST_REMOVED) &&
+                <AntDesign key={index} name="close" style={{ marginHorizontal: 5 }} size={16} />
+              }
+            </TouchableOpacity>
+          )
+        })}
+      </View>
+
+    </SafeAreaView >
+  );
+}
+
+export default HobbyChooser;
