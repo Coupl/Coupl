@@ -4,6 +4,7 @@ import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { useSelector, useStore } from 'react-redux';
+import allActions from '../../redux/actions';
 import { selectUser } from '../../redux/selectors';
 
 const UNSELECTED_COLOR = 'rgba(130, 130, 130, 0.4)';
@@ -20,6 +21,7 @@ const JUST_REMOVED = 3;
 const HobbyChooser = () => {
   const user = useSelector(selectUser);
   const store = useStore();
+  const changeHobbiesAction = allActions.userActions.changeHobbies;
   const [hobbies, setHobbies] = useState([]);
 
   useEffect(() => {
@@ -40,13 +42,13 @@ const HobbyChooser = () => {
 
   const handlePress = (hobby, index) => {
     const numSelected = hobbies.filter(userHobby => (userHobby.state === SELECTED || userHobby.state === JUST_SELECTED)).length;
-    if (numSelected >= 10) return;
+    const alreadySelected = (hobby.state === SELECTED) || (hobby.state === JUST_SELECTED);
+    if (!alreadySelected && numSelected >= 10) return;
 
     let loadingHobbies = [...hobbies];
     loadingHobbies[index].loading = true;
     setHobbies(loadingHobbies);
 
-    const alreadySelected = (hobby.state === SELECTED) || (hobby.state === JUST_SELECTED);
     const requestURL = alreadySelected ? 'removeProfileHobby/' : 'addProfileHobby/';
 
     const postBody = {
@@ -57,6 +59,11 @@ const HobbyChooser = () => {
       newHobbies[index].state = alreadySelected ? JUST_REMOVED : JUST_SELECTED;
       newHobbies[index].loading = false;
       setHobbies(newHobbies);
+
+      const newSelectedHobbies = newHobbies.filter(hobby => (hobby.state === SELECTED || hobby.state === JUST_SELECTED))
+        .map((hobby) => { return { title: hobby.title, type: hobby.type } });
+
+      store.dispatch(changeHobbiesAction(newSelectedHobbies));
     }).catch((err) => {
       console.log(err);
     });

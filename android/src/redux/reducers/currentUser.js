@@ -12,6 +12,14 @@ const currentUser = (state = {
                 user: action.payload,
                 loggedIn: true
             }
+        case "CHANGE_HOBBIES":
+            return {
+                ...state,
+                user: {
+                    ...state.user,
+                    hobbies: action.payload
+                }
+            }
         case "SET_AUTHORIZATION_INFO":
             return {
                 ...state,

@@ -8,6 +8,13 @@ const setUser = (userObj) => {
     }
 }
 
+const changeHobbies = (newHobbies) => {
+    return {
+        type: "CHANGE_HOBBIES",
+        payload: newHobbies
+    }
+}
+
 const setAuthorizationInfo = (authorizationInfo) => {
     return {
         type: "SET_AUTHORIZATION_INFO",
@@ -24,5 +31,6 @@ const logOut = () => {
 export default {
     setUser,
     logOut,
-    setAuthorizationInfo
+    setAuthorizationInfo,
+    changeHobbies
 }
