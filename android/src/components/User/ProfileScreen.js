@@ -15,6 +15,9 @@ import { getPhotoURL } from '../../services/firebase/UserPhotos';
 import PhotoChooser from './PhotoChooser';
 import ProfilePhotoSwiper from './ProfilePhotoSwiper';
 
+const height = Dimensions.get('window').height;
+const width = Dimensions.get('window').width;
+
 const updateProfileInfo = (user, store) => {
   const setUserAction = allActions.userActions.setUser;
 
@@ -92,10 +95,10 @@ const ProfileDetails = ({ navigation }) => {
     return (
       <View style={{ flexDirection: 'row', marginHorizontal: 24 }}>
         <TouchableOpacity
-          style={{ flex: 1, paddingVertical: 10, borderRadius: 24, backgroundColor: "blue" }}
+          style={{ flex: 1, paddingVertical: 10, borderRadius: 24, backgroundColor: 'rgba(50, 205, 50, 0.4)' }}
           onPress={() => { navigation.navigate('PhotoChooser') }}
         >
-          <Text style={{ color: 'white', fontWeight: '600', textAlign: 'center' }}>Change Photos</Text>
+          <Text style={{ color: 'white', fontSize: 20, fontWeight: '600', textAlign: 'center' }}>Change Photos</Text>
         </TouchableOpacity>
       </View>
     )
@@ -156,4 +159,5 @@ const ProfileScreen = ({ navigation }) => {
     </Stack.Navigator>
   )
 };
+
 export default ProfileScreen;

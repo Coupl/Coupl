@@ -13,14 +13,28 @@ const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
 const ProfilePhotoSwiper = ({ profile, renderBottom }) => {
-    const slides = profile.profile_pictures.map((picture, index) => {
-        return {
-            key: "" + index,
-            title: picture.title,
-            description: picture.description,
-            url: picture.url
-        }
-    });
+
+    let slides = [];
+
+    if (profile.profile_pictures.length === 0) {
+        slides = [{
+            key: 0,
+            title: "Add a picture first",
+            description: "",
+            url: ""
+        }];
+    } else {
+        slides = profile.profile_pictures.map((picture, index) => {
+            return {
+                key: "" + index,
+                title: picture.title,
+                description: picture.description,
+                url: picture.url
+            }
+        });
+    }
+
+
 
     const renderItem = ({ item }) => {
         return (
@@ -49,9 +63,11 @@ const ProfilePhotoSwiper = ({ profile, renderBottom }) => {
     const renderPagination = (activeIndex) => {
         return (
             <View style={styles.paginationContainer}>
-                <SafeAreaView>
+                <SafeAreaView style={{ flex: 1 }}>
                     {renderBottom && renderBottom()}
-                    <Text style={styles.profileInfo}>{infoDisplay}</Text>
+                    <View style={styles.profileInfoContainer}>
+                        <Text style={styles.profileInfo}>{infoDisplay}</Text>
+                    </View>
                     <View style={styles.paginationDots}>
                         {slides.length > 1 &&
                             slides.map((_, i) => (
@@ -92,10 +108,17 @@ const styles = StyleSheet.create({
         width: width,
         alignItems: "center"
     },
+    profileInfoContainer: {
+        backgroundColor: 'rgba(130, 130, 130, 0.7)',
+        borderRadius: 20,
+        alignSelf: 'center',
+        marginTop: 5,
+    },
     profileInfo: {
         fontSize: 26,
-        fontWeight: "600", 
-        color: "white"
+        fontWeight: "600",
+        color: "white",
+        padding: 3,
     },
     paginationContainer: {
         position: 'absolute',
