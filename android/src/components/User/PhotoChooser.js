@@ -53,7 +53,6 @@ const PhotoChooser = () => {
       if (!result) return;
 
       const postBody = {
-        id: user.userId,
         title: "empty",
         description: "empty",
         url: result,
@@ -86,7 +85,6 @@ const PhotoChooser = () => {
           onPress: () => {
 
             const postBody = {
-              id: user.userId,
               order: slot
             }
 
