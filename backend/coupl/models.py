@@ -70,7 +70,7 @@ class Location(models.Model):
 class LocationPictures(models.Model):
     title = models.CharField(max_length=50, blank=True)
     description = models.CharField(max_length=100, blank=True)
-    location = models.ForeignKey("Location", on_delete=models.CASCADE)
+    location = models.ForeignKey("Location", on_delete=models.CASCADE, related_name="location_picture")
     url = models.CharField(max_length=150)
     order = models.IntegerField()
 

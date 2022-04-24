@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from coupl.models import Profile, Event, Tag, ProfilePicture, Match, Coordinator, CoordinatorPicture, Hobby, Location, \
-    Comment, Rating, SubAreas, Ticket
+    Comment, Rating, SubAreas, Ticket, LocationPictures
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -113,7 +113,7 @@ class TagDisplaySerializer(serializers.RelatedField):
 
 class CommentSerializer(serializers.ModelSerializer):
     commenter = UserDisplaySerializer(read_only=True)
-    
+
     class Meta:
         model = Comment
         fields = ['commenter', 'event', 'comment_text']
@@ -127,14 +127,21 @@ class RatingSerializer(serializers.ModelSerializer):
         fields = ['rating', 'rater', 'event']
 
 
+class LocationPictureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LocationPictures
+        fields = ['title', 'description', 'location', 'url', 'order']
+
+
 class LocationSerializer(serializers.ModelSerializer):
+    location_picture = LocationPictureSerializer(read_only=True, many=True)
+
     class Meta:
         model = Location
-        fields = ['pk', 'name', 'description', 'address']
+        fields = ['pk', 'name', 'description', 'address', 'location_picture']
 
 
 class SubAreasSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = SubAreas
         fields = ['pk', 'event', 'area_name', 'area_description', 'area_picture']
@@ -179,7 +186,8 @@ class CoordinatorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Coordinator
-        fields = ['user', 'coordinator_pictures', 'coordinator_name', 'coordinator_phone', 'coordinator_details', 'coordinator_phone']
+        fields = ['user', 'coordinator_pictures', 'coordinator_name', 'coordinator_phone', 'coordinator_details',
+                  'coordinator_phone']
 
 
 class MatchDetailedSerializer(serializers.Serializer):
@@ -191,9 +199,6 @@ class MatchDetailedSerializer(serializers.Serializer):
 
 
 class TicketSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Ticket
         fields = ['reporter', 'reported', 'description', 'status']
-
-
