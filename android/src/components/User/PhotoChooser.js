@@ -1,25 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Text,
-  Image,
-  View,
-  StyleSheet,
-  FlatList,
-  Dimensions,
-  SafeAreaView,
-  StatusBar,
-  TouchableHighlight,
-  Alert,
-} from 'react-native';
-import { TextInput } from 'react-native-paper';
-import storage, { firebase } from '@react-native-firebase/storage';
-import ImageCropPicker from 'react-native-image-crop-picker';
-import { getUserPhotos, uploadPhoto } from '../../services/firebase/UserPhotos';
-import { selectUser } from '../../redux/selectors';
-import { useSelector, useStore } from 'react-redux';
-import FirebaseImage from '../Common/FirebaseImage';
 import axios from 'axios';
+import React from 'react';
+import {
+  Alert, Dimensions, FlatList, Image, SafeAreaView, TouchableHighlight
+} from 'react-native';
+import ImageCropPicker from 'react-native-image-crop-picker';
+import { useSelector, useStore } from 'react-redux';
 import allActions from '../../redux/actions';
+import { selectUser } from '../../redux/selectors';
+import { uploadPhoto } from '../../services/firebase/UserPhotos';
+import FirebaseImage from '../Common/FirebaseImage';
 
 const numColumns = 2;
 const numRows = 3;

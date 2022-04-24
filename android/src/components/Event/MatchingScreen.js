@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Text } from 'react-native-paper';
 import { useSelector, useStore } from 'react-redux';
 import allActions from '../../redux/actions';

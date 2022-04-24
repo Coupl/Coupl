@@ -1,4 +1,4 @@
-import storage, { firebase } from '@react-native-firebase/storage';
+import storage from '@react-native-firebase/storage';
 import uuid from 'react-native-uuid';
 
 export const uploadPhoto = async (userId, photo, slot) => {

@@ -1,19 +1,14 @@
-import React from 'react';
-import {
-    View,
-    Text,
-    Image,
-    StyleSheet,
-    Dimensions,
-    FlatList,
-    TouchableOpacity,
-} from 'react-native';
-import { useEffect } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { data } from "./data";
-import AntDesign from "react-native-vector-icons/AntDesign";
-import UpcomingEventsDetailsScreen from './UpcomingEventsDetailsScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React, { useEffect } from 'react';
+import {
+    Dimensions,
+    FlatList, Image,
+    StyleSheet, Text, TouchableOpacity, View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import AntDesign from "react-native-vector-icons/AntDesign";
+import { data } from "./data";
+import UpcomingEventsDetailsScreen from './UpcomingEventsDetailsScreen';
 
 
 const height = Dimensions.get('window').height;

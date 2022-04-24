@@ -1,17 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
-  View,
-  Text,
-  Image,
-  FlatList,
-  TouchableOpacity,
-  Dimensions,
-  StyleSheet,
-  ScrollView,
+  Dimensions, Image, ScrollView, StyleSheet, Text, View
 } from 'react-native';
-import { useEffect } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from 'react-native';
 import AntDesign from "react-native-vector-icons/AntDesign";
 
 const height = Dimensions.get('window').height;

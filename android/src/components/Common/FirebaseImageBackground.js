@@ -1,12 +1,10 @@
 
 import React, { useEffect, useState } from 'react';
-import { getPhotoURL } from '../../services/firebase/UserPhotos';
 import {
-    Text,
-    ImageBackground,
-    View,
-    ActivityIndicator
+    ActivityIndicator, ImageBackground,
+    View
 } from 'react-native';
+import { getPhotoURL } from '../../services/firebase/UserPhotos';
 
 const FirebaseImageBackground = ({ imageName: imageName, ...rest }) => {
 

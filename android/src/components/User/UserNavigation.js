@@ -1,17 +1,13 @@
 
-import React from 'react';
-import {
-    Button,
-} from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React from 'react';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import EventNavigation from '../Event/EventNavigation';
 import HomeScreen from './HomeScreen';
-import UpcomingEventsScreen from './UpcomingEventsScreen';
-import UpcomingEventsDetailsScreen from './UpcomingEventsDetailsScreen';
 import MessagesScreen from './MessagesScreen';
 import ProfileScreen from './ProfileScreen';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import EventNavigation from '../Event/EventNavigation';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import UpcomingEventsScreen from './UpcomingEventsScreen';
 
 const TabsComponent = () => {
     const Tabs = createBottomTabNavigator();

@@ -1,10 +1,10 @@
 
-import React from 'react';
-
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React from 'react';
 import EventHomeScreen from './EventHomeScreen';
-import MatchingScreen from './MatchingScreen';
 import FoundMatchScreen from './FoundMatchScreen';
+import MatchingScreen from './MatchingScreen';
+
 
 const EventNavigation = ({ navigation }) => {
 

@@ -1,13 +1,10 @@
 
-import React from 'react';
-import {
-    Button,
-} from 'react-native';
-
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import WelcomeScreen from './WelcomeScreen';
+import React from 'react';
 import LoginScreen from './LoginScreen';
 import RegisterScreen from './RegisterScreen';
+import WelcomeScreen from './WelcomeScreen';
+
 
 const LandingNavigation = ({ navigation }) => {
 
