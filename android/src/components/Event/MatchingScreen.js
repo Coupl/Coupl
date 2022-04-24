@@ -1,117 +1,119 @@
 
-import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Text } from 'react-native-paper';
 import { useSelector, useStore } from 'react-redux';
 import allActions from '../../redux/actions';
-import { Animated, Image, StyleSheet, View, Dimensions, ScrollView } from 'react-native';
-import axios from 'axios';
-import { Avatar, Card, Title, Paragraph } from 'react-native-paper';
-import AntDesign from "react-native-vector-icons/AntDesign";
 import { selectCurrentEvent, selectLikedUsers, selectUser } from '../../redux/selectors';
-import { hobbies, meetingLocations } from '../User/data';
-import Gallery from 'react-native-image-gallery';
-import moment from 'moment';
-import { getPhotoURL } from '../../services/firebase/UserPhotos';
+import { meetingLocations } from '../User/data';
+import ProfilePhotoSwiper from '../User/ProfilePhotoSwiper';
 
-const height = Dimensions.get('window').height;
-const width = Dimensions.get('window').width;
-const imagePreview = { source: require("./assets/preview.png"), dimensions: { width: 512, height: 512 } };
+const UserCard = ({ currentUser, candidateInfo, likeCandidate, skipCandidate }) => {
+    const hobbies = candidateInfo.hobbies;
 
-const UserCard = ({ candidateInfo, likeCandidate, skipCandidate }) => {
-    const fullName = candidateInfo.name + " " + candidateInfo.surname[0] + ".";
-    const age = "Age: " + moment().diff(candidateInfo.date_of_birth, 'years');;
-    const randomHobbies = hobbies.sort(() => 0.5 - Math.random()).slice(0, 10);
-
-    const [profilePictures, setProfilePictures] = useState(null);
-
-    useEffect(() => {
-        const fetchPictureURLS = async () => {
-            let fetchedProfilePictures = Array(candidateInfo.profile_pictures.length).fill("");
-            for (let i = 0; i < candidateInfo.profile_pictures.length; i++) {
-                const URL = await getPhotoURL(candidateInfo.profile_pictures[i].url);
-                fetchedProfilePictures[i] = { source: { uri: URL } };
-            }
-
-            setProfilePictures(fetchedProfilePictures);
-        }
-
-        fetchPictureURLS().catch((err) => { console.log(err) });
-    }, []);
-
-    const ProfilePictures = () => {
-        if (!profilePictures) {
-            return (
-                <View style={{ height: width, width: width, justifyContent: "center", alignItems: "center" }}>
-                    <ActivityIndicator size={200} />
-                </View>
-            )
-        } else {
-            return (
-                <View style={{ height: width, width: width }}>
-                    <Gallery
-                        style={{ flex: 1, backgroundColor: 'white' }}
-                        images={profilePictures}
-                    />
-                </View>
-            )
-        }
+    const renderSwiperBottom = () => {
+        return (
+            <View style={{ flexDirection: "row" }}>
+                <Button
+                    style={{ flex: 1, backgroundColor: 'rgba(218,223,225,0.5)', borderRadius: 30, marginRight: 100 }}
+                    icon="heart"
+                    onPress={() => likeCandidate(candidateInfo)}>
+                    Like
+                </Button>
+                <Button
+                    style={{ flex: 1, backgroundColor: 'rgba(218,223,225,0.5)', borderRadius: 30 }}
+                    icon="close"
+                    onPress={() => skipCandidate(candidateInfo)}>
+                    Skip
+                </Button>
+            </View>
+        )
     }
 
     return (
-        <View style={[styles.container, {
-            flexDirection: "column"
-        }]}>
-            <ProfilePictures />
-            <Text style={{ fontWeight: "bold", fontSize: 24 }}>{fullName}</Text>
-            <Text style={{ fontWeight: "bold", fontSize: 18 }}>{age}</Text>
-            <ScrollView style={{ flex: 3, padding: 10 }}>
+        <ScrollView style={[styles.container]}>
+            <ProfilePhotoSwiper profile={candidateInfo} renderBottom={renderSwiperBottom} />
+            <View style={{ flexDirection: "row", padding: 10 }}>
+                <View style={{ flexDirection: "row" }}>
+                    <Text style={{ fontWeight: "bold", fontSize: 24 }}>Match Score:</Text>
+                    <Text style={{ backgroundColor: "green", color: "white", borderRadius: 100, padding: 2, fontWeight: "bold", alignSelf: 'flex-start', fontSize: 24 }}>21</Text>
+                </View>
+            </View>
+            <ScrollView style={{ padding: 10 }}>
 
-                <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flexWrap: 'wrap' }}>
-                    {randomHobbies.map((hobby, index) => {
-                        return (
-                            <AntDesign key={index} name="smileo" size={28}
-                                style={styles.icon}
-                                color={'#000'}
-                            >
-                                <Text style={styles.text}>{hobby}</Text>
-                            </AntDesign>
-                        )
-                    })}
+                <View style={{ borderWidth: 1, borderRadius: 20, backgroundColor: "gray" }}>
+                    <Text style={{ alignSelf: "center", paddingBottom: 5 }}>Hobbies</Text>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flexWrap: 'wrap' }}>
+
+                        {hobbies.map((hobby, index) => {
+
+                            const isCommon = currentUser.hobbies.filter((userHobby) => userHobby.title === hobby.title).length > 0;
+
+                            return (
+                                <View key={index} style={{ padding: 5 }}>
+                                    <View style={{ backgroundColor: 'rgba(218,223,225,0.3)', paddingHorizontal: 10, borderRadius: 25 }}>
+                                        <Text style={styles.text}>{hobby.title}</Text>
+                                    </View>
+                                    {
+                                        isCommon &&
+                                        <View style={{ position: "absolute", backgroundColor: 'rgba(46,204,113,0.3)', right: -10, borderRadius: 25, transform: [{ rotate: '30deg' }] }}>
+                                            <Text style={{ fontSize: 10 }}> Common </Text>
+                                        </View>
+                                    }
+                                </View>
+                            )
+                        })}
+                    </View>
                 </View>
             </ScrollView>
             <View style={{ flexDirection: "row", padding: 10 }}>
                 <Button style={{ flex: 1 }} icon="heart" onPress={() => likeCandidate(candidateInfo)}>Like</Button>
                 <Button style={{ flex: 1 }} icon="close" onPress={() => skipCandidate(candidateInfo)}>Skip</Button>
             </View>
-        </View>
+        </ScrollView>
     );
 }
 
+const LOADING = 1;
+const NO_CANDIDATE = 2;
 
 const MatchingScreen = ({ navigation }) => {
 
-    const [currentCandidate, setCurrentCandidate] = useState(null);
+    const [currentCandidate, setCurrentCandidate] = useState(LOADING);
+    const [numCandidates, setNumCandidates] = useState("?");
     const store = useStore();
     const likedUsers = useSelector(selectLikedUsers);
     const user = useSelector(selectUser);
     const event = useSelector(selectCurrentEvent);
 
     const fetchNewCandidate = () => {
-        setCurrentCandidate(null);
+        setCurrentCandidate(LOADING);
 
-        const config = {
-            params: {
-                eventId: event.eventInfo.id,
-                userId: user.userId
-            }
+        const postBody = {
+            event_id: event.eventInfo.id,
+            user_id: user.userId
         }
 
-        axios.get("getBestMatch", config).then((res) => {
-            setCurrentCandidate(res.data)
+        axios.post("getMatchList/", postBody).then((res) => {
+            const candidates = res.data;
+            setNumCandidates(candidates.length);
+
+            if (candidates.length === 0) {
+                setCurrentCandidate(NO_CANDIDATE);
+                return;
+            }
+
+            axios.post("getBestMatch/", postBody).then((res) => {
+                setCurrentCandidate(res.data)
+            }).catch((err) => {
+                console.log(err.response.data);
+            });
+
         }).catch((err) => {
             console.log(err.response.data);
         });
+
     };
 
     useEffect(() => {
@@ -130,7 +132,6 @@ const MatchingScreen = ({ navigation }) => {
     const checkMatch = () => {
         const foundMatch = false;
         if (foundMatch) {
-            console.log(likedUsers);
             const matchUser = currentCandidate;
             const matchLocation = meetingLocations.sort(() => 0.5 - Math.random())[0];
             const foundMatchAction = allActions.eventActions.foundMatch;
@@ -148,11 +149,10 @@ const MatchingScreen = ({ navigation }) => {
     const likeCandidate = (candidate) => {
         const likeUserAction = allActions.eventActions.likeUser;
 
-        console.log(candidate);
         const likeInformation = {
-            eventId: event.eventInfo.id,
-            likerId: user.userId,
-            likedId: candidate.user.pk
+            event_id: event.eventInfo.id,
+            liker_id: user.userId,
+            liked_id: candidate.user.pk
         }
 
         axios.post("likeUser/", likeInformation).then((res) => {
@@ -170,7 +170,7 @@ const MatchingScreen = ({ navigation }) => {
         fetchNewCandidate();
     }
 
-    if (!currentCandidate) {
+    if (currentCandidate === LOADING) {
         return (
             <View style={styles.container}>
                 <ActivityIndicator size={200} color="#0000ff" />
@@ -178,8 +178,22 @@ const MatchingScreen = ({ navigation }) => {
         )
     }
 
+    if (currentCandidate === NO_CANDIDATE) {
+        return (
+            <View style={styles.container}>
+                <Text>No possible matches left.</Text>
+            </View>
+        )
+    }
+
+
     return (
-        <UserCard candidateInfo={currentCandidate} likeCandidate={likeCandidate} skipCandidate={skipCandidate} />
+        <>
+            <View style={{ marginHorizontal: 10, marginTop: 5, borderWidth: 2, borderColor: "gray", borderRadius: 5 }}>
+                <Text style={{ alignSelf: "center" }}>There are {numCandidates} possible matches.</Text>
+            </View>
+            <UserCard currentUser={user} candidateInfo={currentCandidate} likeCandidate={likeCandidate} skipCandidate={skipCandidate} />
+        </>
     );
 };
 
@@ -188,7 +202,13 @@ export default MatchingScreen;
 const styles = StyleSheet.create({
 
     container: {
-        flex: 1
+        flex: 1,
+        margin: 10,
+        borderColor: "gray",
+        backgroundColor: "#DCDCDC",
+        borderWidth: 2,
+        borderBottomLeftRadius: 50,
+        borderBottomRightRadius: 50
     },
     innerContainer: {
         margin: 20,
