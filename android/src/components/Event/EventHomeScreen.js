@@ -1,20 +1,33 @@
 
 import { useFocusEffect } from '@react-navigation/native';
+import axios from 'axios';
+import moment from 'moment';
 import React, { useCallback } from 'react';
-import { BackHandler, Dimensions, Image, ScrollView, StyleSheet, View } from 'react-native';
+import { BackHandler, Dimensions, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
+import AntDesign from "react-native-vector-icons/AntDesign";
 import { useSelector, useStore } from 'react-redux';
 import allActions from '../../redux/actions';
-import { selectCurrentEvent, selectLikedUsers, selectMatch } from '../../redux/selectors';
-import { data } from "./../User/data";
-import AntDesign from "react-native-vector-icons/AntDesign";
-import moment from 'moment';
 import { MatchStates } from '../../redux/reducers/currentEvent';
+import { selectCurrentEvent, selectLikedUsers, selectMatch } from '../../redux/selectors';
+import EventPhotoSwiper from './EventPhotoSwiper';
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
 const EventHomeScreen = ({ navigation }) => {
+
+    useFocusEffect(
+        useCallback(() => {
+            const onBackPress = () => {
+                //Disable the back button usage
+                return true;
+            };
+            BackHandler.addEventListener('hardwareBackPress', onBackPress);
+            return () =>
+                BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+        }, [])
+    );
 
     const currentEvent = useSelector(selectCurrentEvent);
     const eventInfo = currentEvent.eventInfo;
@@ -29,8 +42,18 @@ const EventHomeScreen = ({ navigation }) => {
 
     const leaveEvent = () => {
         const leaveEventAction = allActions.eventActions.leaveEvent;
-        store.dispatch(leaveEventAction());
-        navigation.navigate('UserTabs');
+
+        const postBody = {
+            event_id: eventInfo.id
+        };
+
+        axios.post('leaveEvent/', postBody).then((res) => {
+            console.log(res);
+            navigation.navigate('UserTabs');    
+            store.dispatch(leaveEventAction());
+        }).catch((err) => {
+            console.log(err.response);
+        });
     }
 
     const startMatching = () => {
@@ -46,31 +69,18 @@ const EventHomeScreen = ({ navigation }) => {
     const matchIsFinalized = match && (match.yourAcceptance === MatchStates.ACCEPTED && match.theirAcceptance === MatchStates.ACCEPTED);
     const renderMatchIsFinalizedText = () => {
         return (
-            <Text style={{marginBottom: 30}}>Your match with {match.user.name.first} is already finalized.</Text>
+            <Text style={{ marginBottom: 30 }}>Your match with {match.user.name.first} is already finalized.</Text>
         );
     }
 
-    useFocusEffect(
-        useCallback(() => {
-            const onBackPress = () => {
-                //Disable the back button usage
-                return true;
-            };
-            BackHandler.addEventListener('hardwareBackPress', onBackPress);
-            return () =>
-                BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-        }, [])
-    );
-
-    const eventEndTime = moment().endOf('hour').fromNow();
+    const remainingTime = moment(eventInfo.event_finish_time, 'YYYY-MM-DD').fromNow();
     const numParticipants = eventInfo.event_attendees.length;
     const numLikes = likedUsers.length;
 
     return (
-        <View style={{ flex: 1 }}>
-            <Image style={styles.image} source={{ uri: eventInfo.eventImage }} />
+        <ScrollView style={{ flex: 1 }}>
+            <EventPhotoSwiper event={eventInfo} />
             <View style={styles.background}>
-            <Text>{eventInfo.event_name}</Text>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flexWrap: 'wrap' }}>
                     {eventInfo.event_tags.map((tag, index) => {
                         return (
@@ -85,16 +95,14 @@ const EventHomeScreen = ({ navigation }) => {
                 </View>
 
                 <View style={{
-                    justifyContent: 'center',
                     alignItems: 'center',
-                    flexDirection: 'column'
                 }}>
 
                     <AntDesign name="dashboard" size={28}
                         style={styles.icon}
                         color={'#000'}
                     >
-                        <Text style={styles.text}> Event ends {eventEndTime}</Text>
+                        <Text style={styles.text}> Event ends {remainingTime}</Text>
                     </AntDesign>
 
                     <AntDesign name="user" size={28}
@@ -144,7 +152,7 @@ const EventHomeScreen = ({ navigation }) => {
 
                 </View>
             </View>
-        </View>
+        </ScrollView>
     );
 };
 
@@ -174,12 +182,6 @@ const styles = StyleSheet.create({
     },
     background: {
         paddingTop: 20,
-        position: 'absolute',
-        width,
-        height,
-        transform: [{ translateY: height * 0.3 }],
-        backgroundColor: '#fff',
-        borderRadius: 32
     },
     startMatchingButton: {
         width: width * 0.7,
