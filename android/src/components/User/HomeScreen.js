@@ -1,21 +1,20 @@
 
-import React from 'react';
+import { useIsFocused } from '@react-navigation/native';
+import axios from 'axios';
+import React, { useState } from 'react';
 import {
     Dimensions,
     StyleSheet,
-    Text, TouchableOpacity, View,
+    Text, TouchableOpacity, View
 } from 'react-native';
-import { Button } from 'react-native-paper';
-import { useStore } from 'react-redux';
-import allActions from '../../redux/actions';
-import axios from 'axios'
-
-import QRCodeScanner from 'react-native-qrcode-scanner';
 import { RNCamera } from 'react-native-camera';
-import { useIsFocused } from '@react-navigation/native';
+import { Button } from 'react-native-paper';
+import QRCodeScanner from 'react-native-qrcode-scanner';
 import AntDesign from "react-native-vector-icons/AntDesign";
-import { useState } from 'react';
-import { render } from 'react-native/Libraries/Renderer/implementations/ReactNativeRenderer-prod';
+import { useSelector, useStore } from 'react-redux';
+import allActions from '../../redux/actions';
+import { selectUser } from '../../redux/selectors';
+
 
 const QRCodeScannerTimeout = 1000;
 const height = Dimensions.get('window').height;
@@ -27,15 +26,45 @@ const HomeScreen = ({ navigation }) => {
     const joinEventAction = allActions.eventActions.joinEvent;
     const [renderScanner, setRenderScanner] = useState(false);
     const [scanQRCode, setScanQRCode] = useState(true);
+    const user = useSelector(selectUser);
 
     const joinEvent = (eventId) => {
-        axios.get('getEvent?eventId=' + eventId).then((res) => {
-            var eventInfo = res.data;
-            store.dispatch(joinEventAction(eventInfo));
-            navigation.navigate('EventNavigation');
+        const joinEventBody = {
+            event_id: eventId,
+            user_id: user.userId
+        }
+
+        const getEventBody = {
+            event_id: eventId,
+        }
+
+        axios.post('joinEvent/', joinEventBody).then((res) => {
+
+            axios.post('getEvent/', getEventBody).then((res) => {
+                var eventInfo = res.data;
+                store.dispatch(joinEventAction(eventInfo));
+                navigation.navigate('EventNavigation');
+            }).catch((err) => {
+                console.log(err.response);
+            });
+
         }).catch((err) => {
             console.log(err.response);
+
+            //If user is already in the event, let them in
+            if (err.response.data === "User is already in event") {
+                axios.post('getEvent/', getEventBody).then((res) => {
+                    var eventInfo = res.data;
+                    store.dispatch(joinEventAction(eventInfo));
+                    navigation.navigate('EventNavigation');
+                }).catch((err) => {
+                    console.log(err.response);
+                });
+            }
+            
         });
+
+
     }
 
     const onRead = e => {
@@ -43,20 +72,11 @@ const HomeScreen = ({ navigation }) => {
 
         const url = e.data;
         const eventId = url.split("=")[1];
-
-        const eventInfo = {
-            eventName: "Rastgele bir etkinlik",
-            eventDescription: "eventDescription",
-            numParticipants: 25,
-            eventFinishTime: "eventFinishTime"
-        }
-        store.dispatch(joinEventAction(eventInfo));
-        navigation.navigate('EventNavigation');
-        //joinEvent(eventId);
+        joinEvent(eventId);
 
         setRenderScanner(false);
         setScanQRCode(false);
-        setTimeout(() => {setScanQRCode(true)}, 10000);
+        setTimeout(() => { setScanQRCode(true) }, 10000);
     }
 
     const onPreviewClick = () => {
@@ -72,16 +92,16 @@ const HomeScreen = ({ navigation }) => {
                     flashMode={RNCamera.Constants.FlashMode.torch}
                     reactivate={true} //Can be used again
                     reactivateTimeout={QRCodeScannerTimeout}
-                    /*
-                    bottomContent={
-                        <Button
-                            mode="contained"
-                            onPress={() => joinEvent(7)}
-                        >
-                            Check Out the Upcoming Events
-                        </Button>
-                    }
-                    */
+                /*
+                bottomContent={
+                    <Button
+                        mode="contained"
+                        onPress={() => joinEvent(7)}
+                    >
+                        Check Out the Upcoming Events
+                    </Button>
+                }
+                */
                 />
                 }
             </>
@@ -116,7 +136,7 @@ const HomeScreen = ({ navigation }) => {
             </>
         )
     }
-    
+
     return (
         <View style={styles.container}>
             {renderScanner ? <QRScanner /> : <Preview />}
