@@ -556,8 +556,8 @@ class UserLike(APIView):
         # Else create new match
         else:
             # Check if a match with a progressed state exists
-            match_where_liked = Match.objects.filter(liked=liker, liker=liked, event=event, state_in=[1, 2, 3, 4, 5, 6])
-            match_where_liker = Match.objects.filter(liked=liked, liker=liker, event=event, state_in=[1, 2, 3, 4, 5, 6])
+            match_where_liked = Match.objects.filter(liked=liker, liker=liked, event=event, state__in=[1, 2, 3, 4, 5, 6])
+            match_where_liker = Match.objects.filter(liked=liked, liker=liker, event=event, state__in=[0, 1, 2, 3, 4, 5, 6])
             match = match_where_liked | match_where_liker
             if match:
                 return JsonResponse('User not in likeable state', status=400, safe=False)
@@ -568,7 +568,6 @@ class UserLike(APIView):
         return Response(serializer.data)
 
 
-# TO DO
 class UserSkip(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
 
@@ -587,8 +586,8 @@ class UserSkip(APIView):
             match.save()
         else:
             # Check if a match with a progressed state exists
-            match_where_liked = Match.objects.filter(liked=skipper, liker=skipped, event=event, state_in=[1, 2, 3, 4, 5, 6])
-            match_where_liker = Match.objects.filter(liked=skipped, liker=skipper, event=event, state_in=[1, 2, 3, 4, 5, 6])
+            match_where_liked = Match.objects.filter(liked=skipper, liker=skipped, event=event, state__in=[1, 2, 3, 4, 5, 6])
+            match_where_liker = Match.objects.filter(liked=skipped, liker=skipper, event=event, state__in=[1, 2, 3, 4, 5, 6])
             match = match_where_liked | match_where_liker
             if match:
                 return JsonResponse('User not in skippable state', status=400, safe=False)
@@ -599,8 +598,7 @@ class UserSkip(APIView):
         return Response(serializer.data)
 
 
-# TO DO
-class GetUserMutualLikes(APIView):
+class GetActiveLikes(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
 
     def post(self, request, format=None):
@@ -608,9 +606,9 @@ class GetUserMutualLikes(APIView):
         user = request.user
         event = Event.objects.get(pk=event_id)
 
-        mutuals_as_liker = Match.objects.filter(liker=user, event=event, confirmed=True).values_list('liked', flat=True,
+        mutuals_as_liker = Match.objects.filter(liker=user, event=event, confirmed=True, state__in=[2, 3, 4, 5]).values_list('liked', flat=True,
                                                                                                      named=False)
-        mutuals_as_liked = Match.objects.filter(liked=user, event=event, confirmed=True).values_list('liker', flat=True,
+        mutuals_as_liked = Match.objects.filter(liked=user, event=event, confirmed=True, state__in=[2, 3, 4, 5]).values_list('liker', flat=True,
                                                                                                      named=False)
 
         mutuals = list(chain(mutuals_as_liker, mutuals_as_liked))

@@ -63,7 +63,7 @@ urlpatterns = [
     path('getBestMatch/', coupl.views.GetUserBestMatch.as_view()),
     path('likeUser/', coupl.views.UserLike.as_view()),
     path('skipUser/', coupl.views.UserSkip.as_view()),
-    path('getMutualLikes/', coupl.views.GetUserMutualLikes.as_view()),
+    path('getActiveLikes/', coupl.views.GetActiveLikes.as_view()),
 
     path('createCoordinator/', coupl.views.CreateCoordinatorView.as_view()),
     path('updateCoordinator/', coupl.views.UpdateCoordinatorView.as_view()),

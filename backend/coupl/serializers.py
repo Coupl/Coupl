@@ -171,7 +171,7 @@ class EventSerializer(serializers.ModelSerializer):
 class MatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Match
-        fields = ['liker', 'liked', 'skip', 'event', 'confirmed']
+        fields = ['liker', 'liked', 'state', 'event']
 
 
 class CoordinatorPictureSerializer(serializers.ModelSerializer):

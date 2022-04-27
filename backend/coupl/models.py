@@ -72,7 +72,7 @@ class Match(models.Model):
     liked = models.ForeignKey(User, on_delete=models.CASCADE, related_name="liked")
     state = models.IntegerField(choices=States.choices)
     event = models.ForeignKey("Event", on_delete=models.CASCADE)
-    meeting_location = models.ForeignKey(SubAreas, on_delete=models.CASCADE, related_name="meeting_location")
+    meeting_location = models.ForeignKey(SubAreas, on_delete=models.CASCADE, related_name="meeting_location", null=True)
 
 
 class Location(models.Model):
