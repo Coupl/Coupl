@@ -1,13 +1,14 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useEffect } from 'react';
+import axios from 'axios';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
 import {
     Dimensions,
-    FlatList, Image,
-    StyleSheet, Text, TouchableOpacity, View
+    FlatList, StyleSheet, Text, TouchableOpacity, View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AntDesign from "react-native-vector-icons/AntDesign";
-import { data } from "./data";
+import FirebaseImage from '../Common/FirebaseImage';
 import UpcomingEventsDetailsScreen from './UpcomingEventsDetailsScreen';
 
 
@@ -15,17 +16,28 @@ const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
 const UpcomingEvents = ({ navigation }) => {
+    const [events, setEvents] = useState([]);
+
     useEffect(() => {
         navigation.setOptions({ title: "Upcoming Events" });
+
+        axios.get('listEvents/').then((res) => {
+            setEvents(res.data);
+        }).catch((err) => {
+            console.log(err);
+        })
     }, []);
+
     return (
         <SafeAreaView style={{ flex: 1 }}>
             <FlatList
-                data={data}
-                keyExtractor={item => item.key}
+                data={events}
+                keyExtractor={item => item.id}
                 contentContainerStyle={{ padding: 16 }}
                 renderItem={item_ => {
                     const item = item_.item;
+                    const imageName = item.event_location.location_picture[0]?.url;
+                    const startTime = moment(item.event_start_time, 'YYYY-MM-DD').format('MMMM Do YYYY, h:mm:ss a');
                     return (
                         <TouchableOpacity style={{ marginBottom: 16, height: height * 0.40 }} onPress={() => navigation.navigate('UpcomingEventDetails', { item })}>
                             <View style={{ flex: 1, padding: 16 }}>
@@ -35,20 +47,20 @@ const UpcomingEvents = ({ navigation }) => {
                                         { backgroundColor: '#C0D6E4', borderRadius: 16 },
                                         ]}
                                 />
-                                <Image style={styles.image} source={{ uri: item.coverImage }} />
-                                <Text style={styles.name}>{item.name}</Text>
+                                <FirebaseImage style={styles.image} imageName={imageName} />
+                                <Text style={styles.name}>{item.event_name}</Text>
                                 <AntDesign name="enviroment" size={12}
                                     style={styles.icon}
                                     color={'#000'}
                                 >
 
-                                    <Text style={styles.description}>{item.location}</Text>
+                                    <Text style={styles.description}>{item.event_location.name}</Text>
                                 </AntDesign>
                                 <AntDesign name="calendar" size={12}
                                     style={styles.icon}
                                     color={'#000'}
                                 >
-                                    <Text style={styles.text}>{item.date}</Text>
+                                    <Text style={styles.text}>{startTime}</Text>
                                 </AntDesign>
                             </View>
                         </TouchableOpacity>
