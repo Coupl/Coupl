@@ -1,12 +1,10 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import axios from 'axios';
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Button, Dimensions, Text, TouchableOpacity, View
-} from 'react-native';
+import { Dimensions, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Gallery from 'react-native-image-gallery';
-import { ActivityIndicator, RadioButton, TextInput } from 'react-native-paper';
+import { ActivityIndicator, FAB, RadioButton, TextInput } from 'react-native-paper';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useSelector, useStore } from 'react-redux';
 import allActions from '../../redux/actions';
@@ -106,71 +104,75 @@ const ProfileDetails = ({ navigation }) => {
   }
 
   return (
-    <ScrollView style={{ flex: 1 }}>
-      <ProfilePhotoSwiper profile={user} renderBottom={renderSwiperBottom} />
-      <View style={{ flex: 1 }}>
-        <TextInput
-          label="Description"
-          multiline={true}
-          value={userState.description}
-          onChangeText={text => {
-            setUserState({
-              ...userState,
-              description: text
-            });
-            setHaveChanges(true);
-          }}
-        />
-
-        <View>
-          <Text>Hobbies</Text>
-
-          <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flexWrap: 'wrap', padding: 10 }}>
-            {user.hobbies.map((hobby, index) => {
-              return (
-                <View
-                  key={index}
-                  style={{ flexDirection: "row", paddingVertical: 10, paddingHorizontal: 5, borderRadius: 24, margin: 5, backgroundColor: 'rgba(50, 205, 50, 0.4)' }}
-                >
-                  <Text >{hobby.title}</Text>
-                </View>
-              )
-            })}
-          </View>
-
-          <TouchableOpacity
-            style={{ flex: 1, borderRadius: 24, paddingHorizontal: 10, backgroundColor: "green", alignSelf: "center" }}
-            onPress={() => { navigation.navigate('HobbyChooser') }}
-          >
-            <Text style={{ color: 'white', fontSize: 20, fontWeight: '600', textAlign: 'center' }}>Edit Hobbies</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View>
-          <Text >Match me with:</Text>
-          <RadioButton.Group
-            onValueChange={value => {
+    <View style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1 }}>
+        <ProfilePhotoSwiper profile={user} renderBottom={renderSwiperBottom} />
+        <View style={{ flex: 1 }}>
+          <TextInput
+            label="Description"
+            multiline={true}
+            value={userState.description}
+            onChangeText={text => {
               setUserState({
                 ...userState,
-                preference: value
+                description: text
               });
               setHaveChanges(true);
             }}
-            value={userState.preference}>
-            <RadioButton.Item label={renderMaleRadioButton} value={"1"} />
-            <RadioButton.Item label={renderFemaleRadioButton} value={"2"} />
-            <RadioButton.Item label={renderBothRadioButton} value={"3"} />
-          </RadioButton.Group>
-        </View>
-
-        {haveChanges &&
-          <Button
-            title="Save Changes"
-            onPress={() => { saveChanges() }}
           />
-        }
-      </View>
-    </ScrollView>
+
+          <View>
+            <Text>Hobbies</Text>
+
+            <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flexWrap: 'wrap', padding: 10 }}>
+              {user.hobbies.map((hobby, index) => {
+                return (
+                  <View
+                    key={index}
+                    style={{ flexDirection: "row", paddingVertical: 10, paddingHorizontal: 5, borderRadius: 24, margin: 5, backgroundColor: 'rgba(50, 205, 50, 0.4)' }}
+                  >
+                    <Text >{hobby.title}</Text>
+                  </View>
+                )
+              })}
+            </View>
+
+            <TouchableOpacity
+              style={{ flex: 1, borderRadius: 24, paddingHorizontal: 10, backgroundColor: "green", alignSelf: "center" }}
+              onPress={() => { navigation.navigate('HobbyChooser') }}
+            >
+              <Text style={{ color: 'white', fontSize: 20, fontWeight: '600', textAlign: 'center' }}>Edit Hobbies</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View>
+            <Text >Match me with:</Text>
+            <RadioButton.Group
+              onValueChange={value => {
+                setUserState({
+                  ...userState,
+                  preference: value
+                });
+                setHaveChanges(true);
+              }}
+              value={userState.preference}>
+              <RadioButton.Item label={renderMaleRadioButton} value={"1"} />
+              <RadioButton.Item label={renderFemaleRadioButton} value={"2"} />
+              <RadioButton.Item label={renderBothRadioButton} value={"3"} />
+            </RadioButton.Group>
+          </View>
+
+        </View>
+      </ScrollView>
+      <FAB
+        style={{ position: 'absolute', margin: 16, right: 0, bottom: 0 }}
+        small
+        visible={haveChanges}
+        icon="check"
+        label="Save Changes"
+        onPress={() => { saveChanges() }}
+      />
+    </View>
   )
 }
 
