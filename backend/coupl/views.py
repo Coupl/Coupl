@@ -537,7 +537,6 @@ class GetUserBestMatch(APIView):
         return Response(serializer.data)
 
 
-# TO DO
 class UserLike(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
 
@@ -550,13 +549,19 @@ class UserLike(APIView):
         event = Event.objects.get(pk=event_id)
 
         # Liked user also previously liked the liker, match confirms
-        match = Match.objects.filter(liked=liker, liker=liked, event=event, skip=False)
+        match = Match.objects.filter(liked=liker, liker=liked, event=event, state=0)
         if match:
-            match.confirmed = True
+            match.state = 1
             match.save()
         # Else create new match
         else:
-            match = Match(liker=liker, liked=liked, event=event)
+            # Check if a match with a progressed state exists
+            match_where_liked = Match.objects.filter(liked=liker, liker=liked, event=event, state_in=[1, 2, 3, 4, 5, 6])
+            match_where_liker = Match.objects.filter(liked=liked, liker=liker, event=event, state_in=[1, 2, 3, 4, 5, 6])
+            match = match_where_liked | match_where_liker
+            if match:
+                return JsonResponse('User not in likeable state', status=400, safe=False)
+            match = Match(liker=liker, liked=liked, event=event, state=0)
             match.save()
 
         serializer = MatchSerializer(match)
