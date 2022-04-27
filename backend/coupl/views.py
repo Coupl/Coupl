@@ -537,6 +537,7 @@ class GetUserBestMatch(APIView):
         return Response(serializer.data)
 
 
+# TO DO
 class UserLike(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
 
@@ -562,6 +563,7 @@ class UserLike(APIView):
         return Response(serializer.data)
 
 
+# TO DO
 class UserSkip(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
 
@@ -581,6 +583,7 @@ class UserSkip(APIView):
         return Response(serializer.data)
 
 
+# TO DO
 class GetUserMutualLikes(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
 
@@ -600,6 +603,16 @@ class GetUserMutualLikes(APIView):
         # mutuals = Profile.objects.filter(user_in=mutuals)
         # serializer = ProfileSerializer(mutuals, many=True)
         return Response(serializer.data)
+
+
+# TO DO
+class ConfirmMatchView(APIView):
+    pass
+
+
+# TO DO
+class ChooseMatchSubareaView(APIView):
+    pass
 
 
 # endregion LIKE SKIP VIEWS

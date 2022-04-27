@@ -3,7 +3,6 @@ from django.db import models
 from phonenumber_field import modelfields
 from django.utils.translation import gettext_lazy as _
 
-
 # Create your models here.
 class Profile(models.Model):
     preference_list = [["Male"], ["Female"], ["Male", "Female"]]
@@ -53,12 +52,27 @@ class ProfilePicture(models.Model):
         return str(self.profile.pk) + " Order: " + str(self.order)
 
 
+class SubAreas(models.Model):
+    event = models.ForeignKey("Event", on_delete=models.CASCADE, related_name='sub_areas')
+    area_name = models.CharField(blank=False, max_length=50)
+    area_description = models.CharField(max_length=100)
+    area_picture = models.CharField(max_length=100)
+
+
 class Match(models.Model):
+    class States(models.IntegerChoices):
+        FIRST_LIKE = 0,
+        MUTUAL_LIKE = 1,
+        ACTIVE_MATCH = 2,
+        LOCATION_CHOSEN = 3,
+        FIRST_CONFIRMATION = 4,
+        SUCCESSFUL_MATCH = 5,
+        UNSUCCESSFUL_MATCH = 6,
     liker = models.ForeignKey(User, on_delete=models.CASCADE, related_name="liker")
     liked = models.ForeignKey(User, on_delete=models.CASCADE, related_name="liked")
-    skip = models.BooleanField(default=False)
+    state = models.IntegerField(choices=States.choices)
     event = models.ForeignKey("Event", on_delete=models.CASCADE)
-    confirmed = models.BooleanField(default=False)
+    meeting_location = models.ForeignKey(SubAreas, on_delete=models.CASCADE, related_name="meeting_location")
 
 
 class Location(models.Model):
@@ -115,13 +129,6 @@ class Rating(models.Model):
 class Tag(models.Model):
     tag_name = models.CharField(blank=False, max_length=50)
     tag_description = models.CharField(max_length=100)
-
-
-class SubAreas(models.Model):
-    event = models.ForeignKey("Event", on_delete=models.CASCADE, related_name='sub_areas')
-    area_name = models.CharField(blank=False, max_length=50)
-    area_description = models.CharField(max_length=100)
-    area_picture = models.CharField(max_length=100)
 
 
 class CoordinatorPicture(models.Model):
