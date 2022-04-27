@@ -579,12 +579,23 @@ class UserSkip(APIView):
         skipper = request.user
         skipped = User.objects.get(pk=skipped_id)
         event = Event.objects.get(pk=event_id)
-        skip = Match.objects.get_or_create(liker=skipper, liked=skipped, event=event)
-        skip = skip[0]
-        skip.skip = True
-        skip.save()
 
-        serializer = MatchSerializer(skip)
+        # If the skipped person previously liked the skipper
+        match = Match.objects.filter(liker=skipped, liked=skipper, event=event, state=0)
+        if match:
+            match.state = 6
+            match.save()
+        else:
+            # Check if a match with a progressed state exists
+            match_where_liked = Match.objects.filter(liked=skipper, liker=skipped, event=event, state_in=[1, 2, 3, 4, 5, 6])
+            match_where_liker = Match.objects.filter(liked=skipped, liker=skipper, event=event, state_in=[1, 2, 3, 4, 5, 6])
+            match = match_where_liked | match_where_liker
+            if match:
+                return JsonResponse('User not in skippable state', status=400, safe=False)
+            match = Match(liker=skipper, liked=skipped, event=event, state=6)
+            match.save()
+
+        serializer = MatchSerializer(match)
         return Response(serializer.data)
 
 
