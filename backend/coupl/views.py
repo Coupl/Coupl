@@ -606,9 +606,9 @@ class GetActiveLikes(APIView):
         user = request.user
         event = Event.objects.get(pk=event_id)
 
-        mutuals_as_liker = Match.objects.filter(liker=user, event=event, confirmed=True, state__in=[2, 3, 4, 5]).values_list('liked', flat=True,
+        mutuals_as_liker = Match.objects.filter(liker=user, event=event, state__in=[2, 3, 4, 5]).values_list('liked', flat=True,
                                                                                                      named=False)
-        mutuals_as_liked = Match.objects.filter(liked=user, event=event, confirmed=True, state__in=[2, 3, 4, 5]).values_list('liker', flat=True,
+        mutuals_as_liked = Match.objects.filter(liked=user, event=event, state__in=[2, 3, 4, 5]).values_list('liker', flat=True,
                                                                                                      named=False)
 
         mutuals = list(chain(mutuals_as_liker, mutuals_as_liked))
