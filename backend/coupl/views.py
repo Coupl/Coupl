@@ -565,10 +565,12 @@ class UserLike(APIView):
             match = Match(liker=liker, liked=liked, event=event, state=0)
             match.save()
 
-        serializer = MatchSerializer(match)
+        for m in match:
+            serializer = MatchSerializer(m)
         return Response(serializer.data)
 
 
+# Will make this beautiful later
 class UserSkip(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
 
@@ -596,7 +598,8 @@ class UserSkip(APIView):
             match = Match(liker=skipper, liked=skipped, event=event, state=6)
             match.save()
 
-        serializer = MatchSerializer(match)
+        for m in match:
+            serializer = MatchSerializer(m)
         return Response(serializer.data)
 
 
