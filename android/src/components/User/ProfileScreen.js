@@ -156,9 +156,9 @@ const ProfileDetails = ({ navigation }) => {
                 setHaveChanges(true);
               }}
               value={userState.preference}>
-              <RadioButton.Item label={renderMaleRadioButton} value={"1"} />
-              <RadioButton.Item label={renderFemaleRadioButton} value={"2"} />
-              <RadioButton.Item label={renderBothRadioButton} value={"3"} />
+              <RadioButton.Item label={renderMaleRadioButton} value={"0"} />
+              <RadioButton.Item label={renderFemaleRadioButton} value={"1"} />
+              <RadioButton.Item label={renderBothRadioButton} value={"2"} />
             </RadioButton.Group>
           </View>
 
