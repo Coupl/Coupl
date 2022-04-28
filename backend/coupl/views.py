@@ -551,8 +551,9 @@ class UserLike(APIView):
         # Liked user also previously liked the liker, match confirms
         match = Match.objects.filter(liked=liker, liker=liked, event=event, state=0)
         if match:
-            match.state = 1
-            match.save()
+            for m in match:
+                m.state = 1
+                m.save()
         # Else create new match
         else:
             # Check if a match with a progressed state exists
