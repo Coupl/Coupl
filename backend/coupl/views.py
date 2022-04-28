@@ -565,7 +565,7 @@ class UserLike(APIView):
             match = Match(liker=liker, liked=liked, event=event, state=0)
             match.save()
 
-            serializer = MatchSerializer(match)
+        serializer = MatchSerializer(match)
         return Response(serializer.data)
 
 
@@ -597,7 +597,7 @@ class UserSkip(APIView):
             match = Match(liker=skipper, liked=skipped, event=event, state=6)
             match.save()
 
-            serializer = MatchSerializer(match)
+        serializer = MatchSerializer(match)
         return Response(serializer.data)
 
 
