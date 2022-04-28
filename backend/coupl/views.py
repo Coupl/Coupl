@@ -529,7 +529,7 @@ class GetUserBestMatch(APIView):
         liked = Match.objects.filter(event__match__liker=user.pk).values_list('liked_id', flat=True,
                                                                               named=False)
 
-        attendee = event.event_attendees.exclude(pk=user.pk).exclude(pk__in=liked).filter(
+        attendee = event.event_attendees.exclude(pk__in=user.pk).exclude(pk__in=liked).filter(
             profile__gender__in=Profile.preference_list[int(user.profile.preference)]).first()
         if not attendee:
             return JsonResponse('No matches found.', status=400, safe=False)
@@ -551,9 +551,9 @@ class UserLike(APIView):
         # Liked user also previously liked the liker, match confirms
         match = Match.objects.filter(liked=liker, liker=liked, event=event, state=0)
         if match:
-            for m in match:
-                m.state = 1
-                m.save()
+            match = match[0]
+            match.state = 1
+            match.save()
         # Else create new match
         else:
             # Check if a match with a progressed state exists
@@ -565,8 +565,7 @@ class UserLike(APIView):
             match = Match(liker=liker, liked=liked, event=event, state=0)
             match.save()
 
-        for m in match:
-            serializer = MatchSerializer(m)
+            serializer = MatchSerializer(match)
         return Response(serializer.data)
 
 
@@ -585,9 +584,9 @@ class UserSkip(APIView):
         # If the skipped person previously liked the skipper
         match = Match.objects.filter(liker=skipped, liked=skipper, event=event, state=0)
         if match:
-            for m in match:
-                m.state = 6
-                m.save()
+            match = match[0]
+            match.state = 1
+            match.save()
         else:
             # Check if a match with a progressed state exists
             match_where_liked = Match.objects.filter(liked=skipper, liker=skipped, event=event, state__in=[1, 2, 3, 4, 5, 6])
@@ -598,8 +597,7 @@ class UserSkip(APIView):
             match = Match(liker=skipper, liked=skipped, event=event, state=6)
             match.save()
 
-        for m in match:
-            serializer = MatchSerializer(m)
+            serializer = MatchSerializer(match)
         return Response(serializer.data)
 
 
