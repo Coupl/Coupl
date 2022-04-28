@@ -529,7 +529,7 @@ class GetUserBestMatch(APIView):
         liked = Match.objects.filter(event__match__liker=user.pk).values_list('liked_id', flat=True,
                                                                               named=False)
 
-        attendee = event.event_attendees.exclude(pk__in=user.pk).exclude(pk__in=liked).filter(
+        attendee = event.event_attendees.exclude(pk=user.pk).exclude(pk__in=liked).filter(
             profile__gender__in=Profile.preference_list[int(user.profile.preference)]).first()
         if not attendee:
             return JsonResponse('No matches found.', status=400, safe=False)
