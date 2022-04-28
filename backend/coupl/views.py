@@ -583,8 +583,9 @@ class UserSkip(APIView):
         # If the skipped person previously liked the skipper
         match = Match.objects.filter(liker=skipped, liked=skipper, event=event, state=0)
         if match:
-            match.state = 6
-            match.save()
+            for m in match:
+                m.state = 6
+                m.save()
         else:
             # Check if a match with a progressed state exists
             match_where_liked = Match.objects.filter(liked=skipper, liker=skipped, event=event, state__in=[1, 2, 3, 4, 5, 6])
