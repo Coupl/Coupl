@@ -624,8 +624,15 @@ class GetActiveLikes(APIView):
                                                                                                      named=False)
 
         mutuals = list(chain(mutuals_as_liker, mutuals_as_liked))
-        mutuals = User.objects.filter(pk__in=mutuals)
-        serializer = UserSerializer(mutuals, many=True)
+
+        if len(mutuals) == 0:
+            return JsonResponse("No active likes for the user", status=400, safe=False)
+        else:
+            mutual = mutuals[0] # We should not have more than 1 active like
+            mutual = User.objects.filter(pk=mutual)
+            profile = mutual.profile
+
+        serializer = ProfileSerializer(profile)
         # mutuals = Profile.objects.filter(user_in=mutuals)
         # serializer = ProfileSerializer(mutuals, many=True)
         return Response(serializer.data)
