@@ -630,6 +630,7 @@ class GetActiveLikes(APIView):
         else:
             mutual = mutuals[0] # We should not have more than 1 active like
             mutual = User.objects.filter(pk=mutual)
+            mutual = mutual[0]
             profile = mutual.profile
 
         serializer = ProfileSerializer(profile)
