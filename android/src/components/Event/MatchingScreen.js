@@ -21,7 +21,7 @@ const UserCard = ({ currentUser, candidateInfo, likeCandidate, skipCandidate }) 
                     onPress={() => likeCandidate(candidateInfo)}>
                     Like
                 </Button>
-                <Badge style={{marginHorizontal: 50}} size={35}>55</Badge>
+                <Badge style={{ marginHorizontal: 50 }} size={35}>55</Badge>
                 <Button
                     style={{ flex: 1, backgroundColor: 'rgba(218,223,225,0.5)', borderRadius: 30 }}
                     icon="close"
@@ -34,7 +34,9 @@ const UserCard = ({ currentUser, candidateInfo, likeCandidate, skipCandidate }) 
 
     return (
         <ScrollView style={[styles.container]}>
-            <ProfilePhotoSwiper profile={candidateInfo} renderBottom={renderSwiperBottom} />
+            <View style={{ overflow: "hidden", borderRadius: 50}}>
+                <ProfilePhotoSwiper profile={candidateInfo} renderBottom={renderSwiperBottom} />
+            </View>
             <ScrollView style={{ padding: 10 }}>
 
                 <View style={{ borderWidth: 1, borderRadius: 20, backgroundColor: "gray" }}>
@@ -213,8 +215,7 @@ const styles = StyleSheet.create({
         borderColor: "gray",
         backgroundColor: "#DCDCDC",
         borderWidth: 2,
-        borderBottomLeftRadius: 50,
-        borderBottomRightRadius: 50
+        borderRadius: 50,
     },
     innerContainer: {
         margin: 20,
