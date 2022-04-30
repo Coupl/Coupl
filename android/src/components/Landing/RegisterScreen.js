@@ -1,11 +1,11 @@
 
-import React, { useState } from 'react';
-import { Button, TextInput, RadioButton, Text } from 'react-native-paper';
-import Ionicons, { FontAwesome, Foundation, SimpleLineIcons } from 'react-native-vector-icons/Ionicons';
-import { DatePickerInput } from 'react-native-paper-dates';
-import { ScrollView, StyleSheet, View } from 'react-native';
 import axios from 'axios';
+import React, { useState } from 'react';
+import { Image, ImageBackground, SafeAreaView, StyleSheet, View } from 'react-native';
+import { Button, RadioButton, Text, TextInput } from 'react-native-paper';
+import { DatePickerInput } from 'react-native-paper-dates';
 import Toast from 'react-native-toast-message';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 
 const RegisterScreen = ({ navigation }) => {
@@ -17,6 +17,7 @@ const RegisterScreen = ({ navigation }) => {
     const [username, setUsername] = useState('');
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
+    const [passwordConfirm, setPasswordConfirm] = useState('');
     const [gender, setGender] = useState('');
     const [preferredGender, setPreferredGender] = useState('');
     const [birthdate, setBirthdate] = useState(undefined);
@@ -26,6 +27,38 @@ const RegisterScreen = ({ navigation }) => {
     const renderBothRadioButton = (<><Ionicons name="male" size={24} /><Ionicons name="female" size={24} /><Text> Both</Text></>);
 
     const onRegisterSubmit = () => {
+        const fields = [
+            {val: name, name: "Name"},
+            {val: surname, name: "Surname"},
+            {val: username, name: "Username"},
+            {val: password, name: "Password"},
+            {val: phone, name: "Phone"},
+            {val: gender, name: "Gender"},
+            {val: preferredGender, name: "Match Preference"},
+            {val: birthdate, name: "Birth date"},
+
+        ]
+
+        for (let i = 0; i < fields.length; i++) {
+            if (!fields[i].val) {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Missing fields',
+                    text2: 'Enter a ' + fields[i].name
+                });
+                return;
+            }
+        }
+
+        if (password !== passwordConfirm) {
+            Toast.show({
+                type: 'error',
+                text1: 'Passwords do not match',
+                text2: 'Re-enter your passwords.'
+            });
+            return;
+        }
+
         const bdateString = birthdate.toISOString()
         const birthdateISO8601 = bdateString.substring(0, bdateString.indexOf("T"));
 
@@ -72,71 +105,108 @@ const RegisterScreen = ({ navigation }) => {
     }
 
     return (
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-            <View style={styles.container}>
 
-                <View style={styles.marginedBlock}>
-                    <TextInput
-                        label="Name"
-                        value={name}
-                        onChangeText={text => setName(text)}
+        <SafeAreaView style={{ flex: 1 }}>
+            <ImageBackground source={require("./welcomeBackground.png")} resizeMode="cover" style={{ flex: 1, width: "100%" }}>
+                <View style={{ flex: 1, padding: 20, alignItems: "center", justifyContent: "center" }}>
+                    <Image
+                        style={{
+                            width: "80%",
+                            height: "10%",
+                            resizeMode: 'contain',
+                        }}
+                        source={require('./couplLogo.png')}
                     />
-                    <TextInput
-                        label="Surname"
-                        value={surname}
-                        onChangeText={text => setSurname(text)}
-                    />
+                    <View style={{ height: 70, flexDirection: "row" }}>
+                        <TextInput
+                            style={styles.doubleTextInput}
+                            label="Name"
+                            value={name}
+                            onChangeText={text => setName(text)}
+                        />
+                        <TextInput
+                            style={styles.doubleTextInput}
+                            label="Surname"
+                            value={surname}
+                            onChangeText={text => setSurname(text)}
+                        />
+                    </View>
 
-                    <TextInput
-                        label="Username"
-                        value={username}
-                        onChangeText={text => setUsername(text)}
-                    />
-                    <TextInput
-                        label="Phone"
-                        value={phone}
-                        onChangeText={text => setPhone(text)}
-                    />
-                    <TextInput
-                        label="Password"
-                        secureTextEntry={true}
-                        value={password}
-                        onChangeText={text => setPassword(text)}
-                    />
-                    <DatePickerInput
-                        locale="en-GB"
-                        label="Birthdate"
-                        value={birthdate}
-                        onChange={(d) => setBirthdate(d)}
-                        inputMode="start"
-                    //mode="outlined"
-                    />
+                    <View style={{ height: 70, flexDirection: "row" }}>
+                        <TextInput
+                            style={styles.doubleTextInput}
+                            label="Username"
+                            value={username}
+                            onChangeText={text => setUsername(text)}
+                        />
+                        <TextInput
+                            style={styles.doubleTextInput}
+                            label="Phone"
+                            value={phone}
+                            onChangeText={text => setPhone(text)}
+                        />
+                    </View>
+
+                    <View style={{ height: 70, flexDirection: "row" }}>
+                        <TextInput
+                            style={styles.doubleTextInput}
+                            label="Password"
+                            secureTextEntry={true}
+                            value={password}
+                            onChangeText={text => setPassword(text)}
+                        />
+                        <TextInput
+                            style={styles.doubleTextInput}
+                            label="Confirm Password"
+                            value={passwordConfirm}
+                            onChangeText={text => setPasswordConfirm(text)}
+                        />
+                    </View>
+
+
+                    <View style={styles.textInput}>
+                        <DatePickerInput
+
+                            locale="en-GB"
+                            label="Birthdate"
+                            value={birthdate}
+                            onChange={(d) => setBirthdate(d)}
+                            inputMode="start"
+                        //mode="outlined"
+                        />
+                    </View>
+
+                    <View style={{ flexDirection: "row", marginTop: 5 }}>
+
+                        <View style={{ flex: 1, backgroundColor: "rgba(231,231,231,1)", borderRadius: 20, padding: 10, margin: 5, alignItems: "center" }}>
+                            <Text >I am:</Text>
+                            <RadioButton.Group onValueChange={value => setGender(value)} value={gender}>
+                                <RadioButton.Item labelStyle={{fontSize: 13}} label={renderMaleRadioButton} value="Male" />
+                                <RadioButton.Item labelStyle={{fontSize: 13}} label={renderFemaleRadioButton} value="Female" />
+                            </RadioButton.Group>
+                        </View>
+
+                        <View style={{ flex: 1, backgroundColor: "rgba(231,231,231,1)", borderRadius: 20, padding: 10, margin: 5, justifyContent: "center", alignItems: "center" }}>
+                            <Text >Match me with:</Text>
+                            <RadioButton.Group onValueChange={value => setPreferredGender(value)} value={preferredGender}>
+                                <RadioButton.Item labelStyle={{fontSize: 13}} label={renderMaleRadioButton} value="0" />
+                                <RadioButton.Item labelStyle={{fontSize: 13}} label={renderFemaleRadioButton} value="1" />
+                                <RadioButton.Item labelStyle={{fontSize: 13}} label={renderBothRadioButton} value="2" />
+                            </RadioButton.Group>
+                        </View>
+                    </View>
+
+                    <Button
+                        style={{ margin: 5, width: 200, height: 40, borderRadius: 10 }}
+                        mode="contained"
+                        onPress={onRegisterSubmit}
+                    >
+                        Register
+                    </Button>
+
                 </View>
-                <View style={styles.marginedBlock}>
-                    <Text >Your gender:</Text>
-                    <RadioButton.Group onValueChange={value => setGender(value)} value={gender}>
-                        <RadioButton.Item label={renderMaleRadioButton} value="Male" />
-                        <RadioButton.Item label={renderFemaleRadioButton} value="Female" />
-                    </RadioButton.Group>
-                </View>
-
-                <View style={styles.marginedBlock}>
-                    <Text >Preferred gender:</Text>
-                    <RadioButton.Group onValueChange={value => setPreferredGender(value)} value={preferredGender}>
-                        <RadioButton.Item label={renderMaleRadioButton} value="0" />
-                        <RadioButton.Item label={renderFemaleRadioButton} value="1" />
-                        <RadioButton.Item label={renderBothRadioButton} value="2" />
-                    </RadioButton.Group>
-                </View>
-
-                <Button
-                    mode="contained"
-                    onPress={onRegisterSubmit}
-                >
-                    Register
-                </Button>
-            </View>
-        </ScrollView>
+            </ImageBackground>
+        </SafeAreaView>
     );
 };
 
@@ -146,7 +216,18 @@ const styles = StyleSheet.create({
     },
     marginedBlock: {
         marginBottom: 10
-    }
+    },
+    textInput: {
+        margin: 5,
+        width: 200,
+        height: 60,
+    },
+    doubleTextInput: {
+        flex: 1,
+        margin: 5,
+        height: 60,
+        width: 200
+    },
 });
 
 export default RegisterScreen;
