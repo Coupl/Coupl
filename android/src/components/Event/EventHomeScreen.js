@@ -113,8 +113,10 @@ const EventHomeScreen = ({ navigation }) => {
     const numLikes = 0; //TODO: maybe get this from backend, or just remove
 
     return (
-        <ScrollView style={{ flex: 1 }}>
-            <EventPhotoSwiper event={eventInfo} />
+        <ScrollView style={styles.container}>
+            <View style={{ overflow: "hidden", borderRadius: 20 }}>
+                <EventPhotoSwiper event={eventInfo} />
+            </View>
             <View style={styles.background}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flexWrap: 'wrap' }}>
                     {eventInfo.event_tags.map((tag, index) => {
@@ -183,6 +185,14 @@ const EventHomeScreen = ({ navigation }) => {
 export default EventHomeScreen;
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        margin: 10,
+        borderColor: "gray",
+        backgroundColor: "#DCDCDC",
+        borderWidth: 2,
+        borderRadius: 20,
+    },
     description: {
         paddingTop: 10,
         padding: 10,

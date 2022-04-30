@@ -1,7 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import axios from 'axios';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Dimensions, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Gallery from 'react-native-image-gallery';
 import { ActivityIndicator, FAB, RadioButton, TextInput } from 'react-native-paper';
@@ -104,9 +104,12 @@ const ProfileDetails = ({ navigation }) => {
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <ScrollView style={{ flex: 1 }}>
-        <ProfilePhotoSwiper profile={user} renderBottom={renderSwiperBottom} />
+        <View style={{ overflow: "hidden", borderRadius: 20 }}>
+          <ProfilePhotoSwiper profile={user} renderBottom={renderSwiperBottom} />
+        </View>
+
         <View style={{ flex: 1 }}>
           <TextInput
             label="Description"
@@ -187,5 +190,16 @@ const ProfileScreen = ({ navigation }) => {
     </Stack.Navigator>
   )
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    margin: 10,
+    borderColor: "gray",
+    backgroundColor: "#DCDCDC",
+    borderWidth: 2,
+    borderRadius: 20,
+  },
+});
 
 export default ProfileScreen;

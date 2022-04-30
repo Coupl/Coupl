@@ -21,7 +21,7 @@ const UpcomingEventsDetailsScreen = ({ navigation, route }) => {
     navigation.setOptions({ title: `${item.event_name}` });
   }, []);
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <FirebaseImage style={styles.image} imageName={imageName} />
       <View style={styles.background}>
         <ScrollView>
@@ -62,6 +62,14 @@ export default UpcomingEventsDetailsScreen;
 
 
 const styles = StyleSheet.create({
+  container: {
+      flex: 1,
+      margin: 10,
+      borderColor: "gray",
+      backgroundColor: "#DCDCDC",
+      borderWidth: 2,
+      borderRadius: 20,
+  },
   description: {
     paddingTop: 10,
     padding: 10,
@@ -77,16 +85,15 @@ const styles = StyleSheet.create({
   },
   image: {
     marginTop: -height * 0.03,
-    width: width,
+    width: width - 24,
     height: height * 0.4,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     resizeMode: 'contain',
   },
   background: {
-    paddingTop: 20,
     position: 'absolute',
-    width,
+    width: width - 24,
     height,
     transform: [{ translateY: height * 0.3 }],
     backgroundColor: '#fff',

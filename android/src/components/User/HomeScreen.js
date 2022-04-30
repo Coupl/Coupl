@@ -68,8 +68,8 @@ const HomeMainScreen = ({ navigation }) => {
     }
 
     return (
-        <SafeAreaView style={{ flex: 1, flexDirection: 'column' }}>
-            <View style={{ flex: 5, padding: 10, borderColor: 'rgba(98,0,238,1.0)', borderLeftWidth: 10, borderTopWidth: 10, borderRightWidth: 10, borderTopRightRadius: 30, borderTopLeftRadius: 30 }}>
+        <SafeAreaView style={styles.container}>
+            <View style={{ flex: 5, padding: 10 }}>
                 <TouchableOpacity style={styles.qrScannerPreview} onPress={onPreviewClick}>
                     <AntDesign name="camera" size={120}
                         color={'#fff'}
@@ -77,16 +77,16 @@ const HomeMainScreen = ({ navigation }) => {
                     </AntDesign>
                 </TouchableOpacity>
             </View>
-            <View style={{ flex: 1, flexDirection: 'row', backgroundColor: 'rgba(98,0,238,1.0)' }}>
-                <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "white", borderColor: 'rgba(98,0,238,1.0)', borderLeftWidth: 10, borderBottomWidth: 10, borderRightWidth: 5, borderBottomLeftRadius: 30, borderBottomEndRadius: 30 }}>
-                    <Text style={{ fontSize: 24, color: 'rgba(0,128,0,1.0)', fontWeight: "600" }}>Scan QR Code</Text>
+            <View style={{ flex: 1, flexDirection: 'row', backgroundColor: 'gray' }}>
+                <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#DCDCDC", borderColor: 'gray', borderBottomWidth: 3, borderRightWidth: 2, borderBottomLeftRadius: 30, borderBottomEndRadius: 30 }}>
+                    <Text style={{ fontSize: 24, color: 'gray', fontWeight: "600" }}>Scan QR Code</Text>
                 </View>
-                <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "white", borderColor: 'rgba(98,0,238,1.0)', borderLeftWidth: 5, borderTopWidth: 10, borderRightWidth: 10, borderTopRightRadius: 30, borderTopStartRadius: 30 }}>
-                    <Text style={{ fontSize: 24, color: 'rgba(0,128,0,1.0)', fontWeight: "600" }}>OR</Text>
+                <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#DCDCDC", borderColor: 'gray', borderLeftWidth: 2, borderTopWidth: 3, borderTopRightRadius: 30, borderTopStartRadius: 30 }}>
+                    <Text style={{ fontSize: 24, color: 'gray', fontWeight: "600" }}>OR</Text>
                 </View>
             </View>
 
-            <View style={{ flex: 5, flexDirection: 'column', padding: 10, borderColor: 'rgba(98,0,238,1.0)', borderLeftWidth: 10, borderBottomWidth: 10, borderRightWidth: 10, borderBottomRightRadius: 30, borderBottomLeftRadius: 30 }}>
+            <View style={{ flex: 5, flexDirection: 'column', padding: 10 }}>
 
                 <TouchableOpacity
                     style={{ flex: 1, marginVertical: 10, backgroundColor: 'rgba(0,128,0,0.1)', justifyContent: "center", alignItems: "center" }}
@@ -164,7 +164,7 @@ const QRCodeScannerScreen = ({ navigation }) => {
     const isFocused = useIsFocused();
 
     return (
-        <View style={{ flex: 1 }}>
+        <View style={styles.container}>
             {isFocused && <QRCodeScanner
                 onRead={onRead}
                 reactivate={true} //Can be used again
@@ -190,6 +190,14 @@ const HomeScreen = ({ navigation }) => {
 export default HomeScreen;
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        margin: 10,
+        borderColor: "gray",
+        backgroundColor: "#DCDCDC",
+        borderWidth: 2,
+        borderRadius: 20,
+    },
     text: {
         fontSize: 18,
     },

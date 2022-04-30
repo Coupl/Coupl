@@ -1,13 +1,14 @@
 
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View, TouchableOpacity } from 'react-native';
 import { ActivityIndicator, Badge, Button, Text } from 'react-native-paper';
 import { useSelector, useStore } from 'react-redux';
 import allActions from '../../redux/actions';
 import { selectCurrentEvent, selectUser } from '../../redux/selectors';
 import { meetingLocations } from '../User/data';
 import ProfilePhotoSwiper from '../User/ProfilePhotoSwiper';
+import Popover from 'react-native-popover-view';
 
 const UserCard = ({ currentUser, candidateInfo, likeCandidate, skipCandidate }) => {
     const hobbies = candidateInfo.hobbies;
@@ -21,7 +22,17 @@ const UserCard = ({ currentUser, candidateInfo, likeCandidate, skipCandidate }) 
                     onPress={() => likeCandidate(candidateInfo)}>
                     Like
                 </Button>
-                <Badge style={{ marginHorizontal: 50 }} size={35}>55</Badge>
+                <Popover
+                    from={(
+                        <TouchableOpacity>
+                            <Badge style={{ marginHorizontal: 50 }} size={35}>55</Badge>
+                        </TouchableOpacity>
+                    )}>
+                    <View style={{ alignItems: "center", padding: 10 }}>
+                        <Text>deneme</Text>
+                    </View>
+                </Popover>
+
                 <Button
                     style={{ flex: 1, backgroundColor: 'rgba(218,223,225,0.5)', borderRadius: 30 }}
                     icon="close"
@@ -34,7 +45,7 @@ const UserCard = ({ currentUser, candidateInfo, likeCandidate, skipCandidate }) 
 
     return (
         <ScrollView style={[styles.container]}>
-            <View style={{ overflow: "hidden", borderRadius: 50}}>
+            <View style={{ overflow: "hidden", borderRadius: 50 }}>
                 <ProfilePhotoSwiper profile={candidateInfo} renderBottom={renderSwiperBottom} />
             </View>
             <ScrollView style={{ padding: 10 }}>

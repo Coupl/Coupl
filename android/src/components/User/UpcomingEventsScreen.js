@@ -29,7 +29,7 @@ const UpcomingEvents = ({ navigation }) => {
     }, []);
 
     return (
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView style={styles.container}>
             <FlatList
                 data={events}
                 keyExtractor={item => item.id}
@@ -85,6 +85,14 @@ const UpcomingEventsScreen = ({ navigation }) => {
 export default UpcomingEventsScreen;
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        margin: 10,
+        borderColor: "gray",
+        backgroundColor: "#DCDCDC",
+        borderWidth: 2,
+        borderRadius: 20,
+    },
     name: {
         marginTop: -12,
         fontWeight: '700',
@@ -103,7 +111,7 @@ const styles = StyleSheet.create({
     image: {
         marginLeft: -width * 0.04,
         marginTop: -height * 0.08,
-        width: width * 0.92,
+        width: width * 0.92 - 24,
         height: height * 0.32,
         position: 'relative',
         top: 0,
