@@ -83,6 +83,8 @@ const MatchingScreen = ({ navigation }) => {
     const setActiveMatchAction = allActions.eventActions.setActiveMatch;
 
     const checkMatch = () => {
+        setCurrentCandidate(LOADING);
+
         const postBody = {
             event_id: event.eventInfo.id
         }
@@ -94,6 +96,7 @@ const MatchingScreen = ({ navigation }) => {
                 store.dispatch(setActiveMatchAction(res.data));
             }
         }).catch((err) => {
+            fetchNewCandidate();
         })
     }
 
@@ -148,7 +151,6 @@ const MatchingScreen = ({ navigation }) => {
 
         axios.post("likeUser/", likeInformation).then((res) => {
             checkMatch();
-            fetchNewCandidate();
         }).catch((err) => {
             console.log(err);
         })
@@ -161,10 +163,17 @@ const MatchingScreen = ({ navigation }) => {
 
         axios.post("skipUser/", skipInformation).then((res) => {
             checkMatch();
-            fetchNewCandidate();
         }).catch((err) => {
             console.log(err);
         })
+    }
+
+    //If an active match is found, change the screen
+    if (event.activeMatch) {
+        //Directly navigating during the render causes an error
+        setTimeout(() => {
+            navigation.replace("FoundMatchScreen"); //replace instead of navigate, so that the back button works properly
+        }, 0);
     }
 
     if (currentCandidate === LOADING) {
@@ -181,14 +190,6 @@ const MatchingScreen = ({ navigation }) => {
                 <Text>No possible matches left.</Text>
             </View>
         )
-    }
-
-    //If an active match is found, change the screen
-    if (event.activeMatch) {
-        //Directly navigating during the render causes an error
-        setTimeout(() => {
-            navigation.replace("FoundMatchScreen"); //replace instead of navigate, so that the back button works properly
-        }, 0);
     }
 
 
