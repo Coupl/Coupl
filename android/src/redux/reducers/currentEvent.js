@@ -1,9 +1,8 @@
 const currentEvent = (state = {
     eventInfo: null,
     state: EventStates.NOT_IN_EVENT,
-    likedUsers: [],
-    match: null,
-    rejectedOnce: false,
+    activeMatch: null,
+    activeMatchDecision: null
 }, action) => {
     switch (action.type) {
         case "JOIN_EVENT":
@@ -11,16 +10,16 @@ const currentEvent = (state = {
                 ...state,
                 eventInfo: action.payload,
                 state: EventStates.IN_EVENT,
-                likedUsers: [],
-                match: null
+                activeMatch: null,
+                activeMatchDecision: null
             }
         case "LEAVE_EVENT":
             return {
                 ...state,
                 eventInfo: null,
                 state: EventStates.NOT_IN_EVENT,
-                likedUsers: [],
-                match: null
+                activeMatch: null,
+                activeMatchDecision: null
             }
         case "START_MATCHING":
             return {
@@ -32,46 +31,16 @@ const currentEvent = (state = {
                 ...state,
                 state: EventStates.IN_EVENT
             }
-        case "LIKE_USER":
-            const newLikedUsers = [...state.likedUsers, action.payload];
+        case "SET_ACTIVE_MATCH":
             return {
                 ...state,
-                likedUsers: newLikedUsers
+                activeMatch: action.payload
             }
-        case "FOUND_MATCH":
+        case "ACCEPT_ACTIVE_MATCH":
             return {
                 ...state,
-                match: {
-                    user: action.payload.user,
-                    location: action.payload.location,
-                    yourAcceptance: MatchStates.WAITING,
-                    theirAcceptance: MatchStates.WAITING,
-                }
+                activeMatch: true
             }
-        case "REMOVE_MATCH":
-            return {
-                ...state,
-                match: null
-            }
-        case "ACCEPT_MATCH":
-            return {
-                ...state,
-                match: {
-                    ...state.match,
-                    yourAcceptance: MatchStates.ACCEPTED
-                }
-            }
-        case "MATCHS_CHOICE":
-            return {
-                ...state,
-                match: {
-                    ...state.match,
-                    theirAcceptance: action.payload
-                },
-                rejectedOnce: true
-            }
-        case "SKIP_USER":
-            return state
         default:
             return state
     }
@@ -81,12 +50,6 @@ export const EventStates = {
     NOT_IN_EVENT: "NOT_IN_EVENT",
     IN_EVENT: "IN_EVENT",
     IN_MATCHING: "IN_MATCHING",
-};
-
-export const MatchStates = {
-    WAITING: "WAITING",
-    ACCEPTED: "ACCEPTED",
-    REJECTED: "REJECTED",
 };
 
 export default currentEvent;

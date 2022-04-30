@@ -2,10 +2,10 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, Button, Text } from 'react-native-paper';
+import { ActivityIndicator, Badge, Button, Text } from 'react-native-paper';
 import { useSelector, useStore } from 'react-redux';
 import allActions from '../../redux/actions';
-import { selectCurrentEvent, selectLikedUsers, selectUser } from '../../redux/selectors';
+import { selectCurrentEvent, selectUser } from '../../redux/selectors';
 import { meetingLocations } from '../User/data';
 import ProfilePhotoSwiper from '../User/ProfilePhotoSwiper';
 
@@ -16,11 +16,12 @@ const UserCard = ({ currentUser, candidateInfo, likeCandidate, skipCandidate }) 
         return (
             <View style={{ flexDirection: "row" }}>
                 <Button
-                    style={{ flex: 1, backgroundColor: 'rgba(218,223,225,0.5)', borderRadius: 30, marginRight: 100 }}
+                    style={{ flex: 1, backgroundColor: 'rgba(218,223,225,0.5)', borderRadius: 30 }}
                     icon="heart"
                     onPress={() => likeCandidate(candidateInfo)}>
                     Like
                 </Button>
+                <Badge style={{marginHorizontal: 50}} size={35}>55</Badge>
                 <Button
                     style={{ flex: 1, backgroundColor: 'rgba(218,223,225,0.5)', borderRadius: 30 }}
                     icon="close"
@@ -34,12 +35,6 @@ const UserCard = ({ currentUser, candidateInfo, likeCandidate, skipCandidate }) 
     return (
         <ScrollView style={[styles.container]}>
             <ProfilePhotoSwiper profile={candidateInfo} renderBottom={renderSwiperBottom} />
-            <View style={{ flexDirection: "row", padding: 10 }}>
-                <View style={{ flexDirection: "row" }}>
-                    <Text style={{ fontWeight: "bold", fontSize: 24 }}>Match Score:</Text>
-                    <Text style={{ backgroundColor: "green", color: "white", borderRadius: 100, padding: 2, fontWeight: "bold", alignSelf: 'flex-start', fontSize: 24 }}>21</Text>
-                </View>
-            </View>
             <ScrollView style={{ padding: 10 }}>
 
                 <View style={{ borderWidth: 1, borderRadius: 20, backgroundColor: "gray" }}>
@@ -83,9 +78,24 @@ const MatchingScreen = ({ navigation }) => {
     const [currentCandidate, setCurrentCandidate] = useState(LOADING);
     const [numCandidates, setNumCandidates] = useState("?");
     const store = useStore();
-    const likedUsers = useSelector(selectLikedUsers);
     const user = useSelector(selectUser);
     const event = useSelector(selectCurrentEvent);
+    const setActiveMatchAction = allActions.eventActions.setActiveMatch;
+
+    const checkMatch = () => {
+        const postBody = {
+            event_id: event.eventInfo.id
+        }
+        axios.post('getActiveLikes/', postBody).then((res) => {
+            const newActiveMatch = res.data;
+
+            //If there is no change, do not call dispatch
+            if (JSON.stringify(newActiveMatch) !== JSON.stringify(event.activeMatch)) {
+                store.dispatch(setActiveMatchAction(res.data));
+            }
+        }).catch((err) => {
+        })
+    }
 
     const fetchNewCandidate = () => {
         setCurrentCandidate(LOADING);
@@ -129,34 +139,14 @@ const MatchingScreen = ({ navigation }) => {
         [navigation]
     );
 
-    const checkMatch = () => {
-        const foundMatch = false;
-        if (foundMatch) {
-            const matchUser = currentCandidate;
-            const matchLocation = meetingLocations.sort(() => 0.5 - Math.random())[0];
-            const foundMatchAction = allActions.eventActions.foundMatch;
-
-            const match = {
-                user: matchUser,
-                location: matchLocation
-            }
-
-            store.dispatch(foundMatchAction(match));
-            navigation.navigate('FoundMatchScreen');
-        }
-    }
 
     const likeCandidate = (candidate) => {
-        const likeUserAction = allActions.eventActions.likeUser;
-
         const likeInformation = {
             event_id: event.eventInfo.id,
-            liker_id: user.userId,
             liked_id: candidate.user.pk
         }
 
         axios.post("likeUser/", likeInformation).then((res) => {
-            store.dispatch(likeUserAction(candidate));
             checkMatch();
             fetchNewCandidate();
         }).catch((err) => {
@@ -164,10 +154,17 @@ const MatchingScreen = ({ navigation }) => {
         })
     }
     const skipCandidate = (candidate) => {
-        const skipUserAction = allActions.eventActions.skipUser;
-        store.dispatch(skipUserAction(candidate));
-        checkMatch();
-        fetchNewCandidate();
+        const skipInformation = {
+            event_id: event.eventInfo.id,
+            skipped_id: candidate.user.pk
+        }
+
+        axios.post("skipUser/", skipInformation).then((res) => {
+            checkMatch();
+            fetchNewCandidate();
+        }).catch((err) => {
+            console.log(err);
+        })
     }
 
     if (currentCandidate === LOADING) {
@@ -184,6 +181,14 @@ const MatchingScreen = ({ navigation }) => {
                 <Text>No possible matches left.</Text>
             </View>
         )
+    }
+
+    //If an active match is found, change the screen
+    if (event.activeMatch) {
+        //Directly navigating during the render causes an error
+        setTimeout(() => {
+            navigation.replace("FoundMatchScreen"); //replace instead of navigate, so that the back button works properly
+        }, 0);
     }
 
 

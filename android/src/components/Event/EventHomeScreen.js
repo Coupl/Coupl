@@ -2,20 +2,45 @@
 import { useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import moment from 'moment';
-import React, { useCallback } from 'react';
-import { BackHandler, Dimensions, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useCallback, useEffect } from 'react';
+import { BackHandler, Dimensions, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { useSelector, useStore } from 'react-redux';
 import allActions from '../../redux/actions';
-import { MatchStates } from '../../redux/reducers/currentEvent';
-import { selectCurrentEvent, selectLikedUsers, selectMatch } from '../../redux/selectors';
+import { selectActiveMatch, selectActiveMatchDecision, selectCurrentEvent } from '../../redux/selectors';
+import FirebaseImage from '../Common/FirebaseImage';
 import EventPhotoSwiper from './EventPhotoSwiper';
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
 const EventHomeScreen = ({ navigation }) => {
+    const currentEvent = useSelector(selectCurrentEvent);
+    const eventInfo = currentEvent.eventInfo;
+    const store = useStore();
+    const setActiveMatchAction = allActions.eventActions.setActiveMatch;
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+
+            const postBody = {
+                event_id: eventInfo.id
+            }
+            axios.post('getActiveLikes/', postBody).then((res) => {
+                const newActiveMatch = res.data;
+
+                //If there is no change, do not call dispatch
+                if (JSON.stringify(newActiveMatch) !== JSON.stringify(currentEvent.activeMatch)) {
+                    store.dispatch(setActiveMatchAction(res.data));
+                }
+            }).catch((err) => {
+            })
+
+        }, 10000);
+
+        return () => clearInterval(intervalId);
+    }, [currentEvent]);
 
     useFocusEffect(
         useCallback(() => {
@@ -29,16 +54,12 @@ const EventHomeScreen = ({ navigation }) => {
         }, [])
     );
 
-    const currentEvent = useSelector(selectCurrentEvent);
-    const eventInfo = currentEvent.eventInfo;
-
     if (!eventInfo) {
         return <div>Loading...</div>
     }
 
-    const store = useStore();
-    const likedUsers = useSelector(selectLikedUsers);
-    const match = useSelector(selectMatch);
+    const match = useSelector(selectActiveMatch);
+    const decision = useSelector(selectActiveMatchDecision);
 
     const leaveEvent = () => {
         const leaveEventAction = allActions.eventActions.leaveEvent;
@@ -48,8 +69,7 @@ const EventHomeScreen = ({ navigation }) => {
         };
 
         axios.post('leaveEvent/', postBody).then((res) => {
-            console.log(res);
-            navigation.navigate('UserTabs');    
+            navigation.navigate('UserTabs');
             store.dispatch(leaveEventAction());
         }).catch((err) => {
             console.log(err.response);
@@ -66,16 +86,31 @@ const EventHomeScreen = ({ navigation }) => {
         navigation.navigate('FoundMatchScreen');
     }
 
-    const matchIsFinalized = match && (match.yourAcceptance === MatchStates.ACCEPTED && match.theirAcceptance === MatchStates.ACCEPTED);
-    const renderMatchIsFinalizedText = () => {
+    const renderActiveMatch = () => {
+        if (!match) return;
+
+        const matchPhoto = match.profile_pictures[0].url;
+
         return (
-            <Text style={{ marginBottom: 30 }}>Your match with {match.user.name.first} is already finalized.</Text>
+            <TouchableOpacity
+                style={{ flex: 1, flexDirection: "row", padding: 10, marginBottom: 5, borderWidth: 2, borderRadius: 20 }}
+                onPress={() => navigation.navigate("FoundMatchScreen")}
+            >
+
+                <View style={{ padding: 10, justifyContent: "center", alignItems: "center" }}>
+                    <Text style={{ fontSize: 18 }}>Active match:</Text>
+                </View>
+                <FirebaseImage imageName={matchPhoto} style={{ width: 50, height: 50 }}></FirebaseImage>
+                <View style={{ padding: 10, justifyContent: "center", alignItems: "center" }}>
+                    <Text style={{ fontSize: 18 }}>{match.name} {match.surname}</Text>
+                </View>
+            </TouchableOpacity>
         );
     }
 
     const remainingTime = moment(eventInfo.event_finish_time, 'YYYY-MM-DD').fromNow();
     const numParticipants = eventInfo.event_attendees.length;
-    const numLikes = likedUsers.length;
+    const numLikes = 0; //TODO: maybe get this from backend, or just remove
 
     return (
         <ScrollView style={{ flex: 1 }}>
@@ -120,8 +155,8 @@ const EventHomeScreen = ({ navigation }) => {
                     </AntDesign>
 
                     {
-                        matchIsFinalized ?
-                            renderMatchIsFinalizedText() :
+                        match ?
+                            renderActiveMatch() :
                             <Button
                                 style={styles.startMatchingButton}
                                 mode="contained"
@@ -129,17 +164,6 @@ const EventHomeScreen = ({ navigation }) => {
                             >
                                 Start Matching
                             </Button>
-                    }
-
-                    {
-                        match &&
-                        <Button
-                            style={styles.seeCurrentMatchButton}
-                            mode="contained"
-                            onPress={() => seeCurrentMatch()}
-                        >
-                            See Current Match
-                        </Button>
                     }
 
                     <Button
