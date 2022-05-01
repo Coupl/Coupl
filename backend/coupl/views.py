@@ -10,7 +10,8 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, \
     ProfileSerializer, MatchSerializer, ProfilePictureSerializer, CoordinatorSerializer, CoordinatorPictureSerializer, \
-    HobbySerializer, MatchDetailedSerializer, LocationSerializer, TicketSerializer, SubAreasSerializer, ProfileWithMatchDetailsSerializer
+    HobbySerializer, MatchDetailedSerializer, LocationSerializer, TicketSerializer, SubAreasSerializer, ProfileWithMatchDetailsSerializer, \
+    EventWithMatchDetailsSerializer
 from coupl.models import Event, Tag, Profile, Match, ProfilePicture, Coordinator, Hobby, Rating, Ticket, Comment, \
     Location, SubAreas
 from itertools import chain
@@ -306,6 +307,28 @@ class EventListView(APIView):
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data)
 
+class AttendedEventsListView(APIView):
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
+
+    def get(self, request, format=None):
+        user = request.user
+        events = Event.objects.filter(event_attendees__id=user.pk)
+
+        events_with_matches = []
+        for event in events:
+            match_as_liker = Match.objects.filter(liker=user, event=event, state=6)
+            match_as_liked = Match.objects.filter(liked=user, event=event, state=6)
+            if match_as_liker.exists():
+                matchUser = User.objects.get(pk=match_as_liker[0].liked.pk)
+                events_with_matches.append({"event": event, "profile": matchUser.profile})
+            elif match_as_liked.exists():
+                matchUser = User.objects.get(pk=match_as_liked[0].liker.pk)
+                events_with_matches.append({"event": event, "profile": matchUser.profile})
+            else:
+                events_with_matches.append({"event": event, "profile": None})
+                
+        serializer = EventWithMatchDetailsSerializer(events_with_matches, many=True)
+        return Response(serializer.data)
 
 class CreateEventView(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]

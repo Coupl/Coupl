@@ -42,6 +42,7 @@ urlpatterns = [
     path('removeHobby/', coupl.views.RemoveHobbyView.as_view()),
 
     path('listEvents/', coupl.views.EventListView.as_view()),
+    path('listAttendedEvents/', coupl.views.AttendedEventsListView.as_view()),
     path('getEvent/', coupl.views.GetEventView.as_view()),
     path('addEvent/', coupl.views.CreateEventView.as_view()),
     path('leaveEvent/', coupl.views.LeaveEventView.as_view()),

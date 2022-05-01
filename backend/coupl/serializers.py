@@ -202,6 +202,9 @@ class ProfileWithMatchDetailsSerializer(serializers.Serializer):
     match = MatchSerializer(read_only=True)
     profile = ProfileSerializer(read_only=True)
 
+class EventWithMatchDetailsSerializer(serializers.Serializer):
+    event = EventSerializer(read_only=True)
+    profile = ProfileSerializer(read_only=True)
 
 class TicketSerializer(serializers.ModelSerializer):
     class Meta:
