@@ -462,7 +462,7 @@ class GetSubAreaView(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]
 
     def post(self, request, format=None):
-        sub_areas = SubAreas.objects.filter(event_id=request.data['event'])
+        sub_areas = SubAreas.objects.filter(event_id=request.data['event_id'])
         serializer = SubAreasSerializer(sub_areas, many=True)
         return JsonResponse(serializer.data)
 
