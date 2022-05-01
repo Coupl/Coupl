@@ -14,24 +14,22 @@ const LoginScreen = ({ navigation }) => {
     const store = useStore();
     const setUserAction = allActions.userActions.setUser;
 
-    const [phone, setPhone] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
     const onLoginSubmit = async () => {
         setLoading(true);
 
-        await authorize(store, phone, password);
-        const loginData = { phoneNumber: phone, password: password };
+        await authorize(store, username, password);
 
-        //TODO: Use the login route when it works 
-        axios.get(`listProfile/`, loginData).then(res => {
-            const userInfo = res.data.filter((user) => user.user.username === phone)[0];
+        axios.get(`getProfile/`).then(res => {
+            const userInfo = res.data;
 
             if (!userInfo) {
                 Toast.show({
                     type: 'error',
-                    text1: 'Wrong phone number and/or password',
+                    text1: 'Wrong username number and/or password',
                 });
 
                 return;
@@ -80,9 +78,9 @@ const LoginScreen = ({ navigation }) => {
                     />
                     <TextInput
                         style={styles.textInput}
-                        label="Phone"
-                        value={phone}
-                        onChangeText={text => setPhone(text)}
+                        label="Username"
+                        value={username}
+                        onChangeText={text => setUsername(text)}
                     />
                     <TextInput
                         style={styles.textInput}

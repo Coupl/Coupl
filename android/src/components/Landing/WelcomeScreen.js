@@ -27,7 +27,7 @@ const WelcomeScreen = ({ navigation }) => {
                         mode="contained"
                         onPress={() => navigation.navigate('RegisterScreen')}
                     >
-                        <Text style={styles.buttonText}> Register </Text>
+                       <Text style={styles.buttonText}> Register </Text>
                     </Button>
                     <Text
                         style={styles.bottomRightButton}
@@ -63,15 +63,13 @@ const styles = StyleSheet.create({
     },
     button: {
         margin: 20,
-        width: "60%",
-        height: "15%",
-        justifyContent: 'center',
-        borderRadius: 40,
-        alignItems: 'center'
+        padding: 5,
+        width: 200,
+        borderRadius: 10,
     },
     buttonText: {
         fontSize: 22,
-        color: "white"
+        color: "white",
     },
     bottomRightButton: {
         position: "absolute",
