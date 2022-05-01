@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import EventNavigation from '../Event/EventNavigation';
+import AttendedEventsScreen from './AttendedEventsScreen';
 import HomeScreen from './HomeScreen';
 import MessagesScreen from './MessagesScreen';
 import ProfileScreen from './ProfileScreen';
@@ -20,6 +21,7 @@ const TabsComponent = () => {
                     let iconName = "ios-information-circle";
                     if (route.name === "HomeScreen") iconName = "home";
                     else if (route.name === "UpcomingEventsScreen") iconName = "calendar";
+                    else if (route.name === "AttendedEventsScreen") iconName = "file-tray-outline";
                     else if (route.name === "MessagesScreen") iconName = "chatbox-ellipses";
                     else if (route.name === "ProfileScreen") iconName = "person";
 
@@ -31,6 +33,7 @@ const TabsComponent = () => {
         >
             <Tabs.Screen name="HomeScreen" component={HomeScreen} options={{title : "Home"}}/>
             <Tabs.Screen name="UpcomingEventsScreen" component={UpcomingEventsScreen} options={{title : "Upcoming Events"}}/>
+            <Tabs.Screen name="AttendedEventsScreen" component={AttendedEventsScreen} options={{title : "Attended Events"}}/>
             <Tabs.Screen name="MessagesScreen" component={MessagesScreen} options={{title : "Messages"}}/>
             <Tabs.Screen name="ProfileScreen" component={ProfileScreen} options={{title : "Profile"}}/>
         </Tabs.Navigator>
