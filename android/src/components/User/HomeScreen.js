@@ -165,12 +165,16 @@ const QRCodeScannerScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            {isFocused && <QRCodeScanner
-                onRead={onRead}
-                reactivate={true} //Can be used again
-                reactivateTimeout={QRCodeScannerTimeout}
-            />
-            }
+            <View style={{ flex: 1, overflow: "hidden" }}>
+
+                {isFocused && <QRCodeScanner
+                    onRead={onRead}
+                    reactivate={true} //Can be used again
+                    reactivateTimeout={QRCodeScannerTimeout}
+                />
+                }
+
+            </View>
         </View>
     )
 }
