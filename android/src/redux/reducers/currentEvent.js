@@ -52,4 +52,14 @@ export const EventStates = {
     IN_MATCHING: "IN_MATCHING",
 };
 
+export const MatchStates = {
+    FIRST_LIKE: 0,
+    MUTUAL_LIKE: 1,
+    ACTIVE_MATCH: 2,
+    LOCATION_CHOSEN: 3,
+    FIRST_CONFIRMATION: 4,
+    SUCCESSFUL_MATCH: 5,
+    UNSUCCESSFUL_MATCH: 6,
+};
+
 export default currentEvent;

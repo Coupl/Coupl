@@ -8,7 +8,7 @@ import { Button, Text } from 'react-native-paper';
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { useSelector, useStore } from 'react-redux';
 import allActions from '../../redux/actions';
-import { selectActiveMatch, selectActiveMatchDecision, selectCurrentEvent } from '../../redux/selectors';
+import { selectActiveMatchDecision, selectActiveMatchDetails, selectActiveMatchProfile, selectCurrentEvent } from '../../redux/selectors';
 import FirebaseImage from '../Common/FirebaseImage';
 import EventPhotoSwiper from './EventPhotoSwiper';
 
@@ -22,8 +22,8 @@ const EventHomeScreen = ({ navigation }) => {
     const setActiveMatchAction = allActions.eventActions.setActiveMatch;
 
     useEffect(() => {
-        const intervalId = setInterval(() => {
 
+        const checkMatch = () => {
             const postBody = {
                 event_id: eventInfo.id
             }
@@ -37,6 +37,12 @@ const EventHomeScreen = ({ navigation }) => {
             }).catch((err) => {
             })
 
+        }
+
+        checkMatch();
+
+        const intervalId = setInterval(() => {
+            checkMatch();
         }, 10000);
 
         return () => clearInterval(intervalId);
@@ -58,7 +64,8 @@ const EventHomeScreen = ({ navigation }) => {
         return <div>Loading...</div>
     }
 
-    const match = useSelector(selectActiveMatch);
+    const match = useSelector(selectActiveMatchProfile);
+    const matchDetails = useSelector(selectActiveMatchDetails);
     const decision = useSelector(selectActiveMatchDecision);
 
     const leaveEvent = () => {
