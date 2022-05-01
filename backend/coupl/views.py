@@ -638,8 +638,9 @@ class GetActiveLikes(APIView):
 
         matches = list(chain(match_as_liked, mutuals_as_liker))
         match = matches[0]
+        object = {"match": match, "profile": profile}
 
-        serializer = ProfileWithMatchDetailsSerializer(match=match, profile=profile)
+        serializer = ProfileWithMatchDetailsSerializer(object)
         # mutuals = Profile.objects.filter(user_in=mutuals)
         # serializer = ProfileSerializer(mutuals, many=True)
         return Response(serializer.data)
