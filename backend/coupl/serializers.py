@@ -198,6 +198,11 @@ class MatchDetailedSerializer(serializers.Serializer):
     common_event_locations = LocationSerializer(many=True, read_only=True)
 
 
+class ProfileWithMatchDetailsSerializer(serializers.Serializer):
+    match = MatchSerializer(read_only=True)
+    profile = ProfileSerializer(read_only=True)
+
+
 class TicketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket

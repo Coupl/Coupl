@@ -10,7 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, \
     ProfileSerializer, MatchSerializer, ProfilePictureSerializer, CoordinatorSerializer, CoordinatorPictureSerializer, \
-    HobbySerializer, MatchDetailedSerializer, LocationSerializer, TicketSerializer, SubAreasSerializer
+    HobbySerializer, MatchDetailedSerializer, LocationSerializer, TicketSerializer, SubAreasSerializer, ProfileWithMatchDetailsSerializer
 from coupl.models import Event, Tag, Profile, Match, ProfilePicture, Coordinator, Hobby, Rating, Ticket, Comment, \
     Location, SubAreas
 from itertools import chain
@@ -633,7 +633,13 @@ class GetActiveLikes(APIView):
             mutual = mutual[0]
             profile = mutual.profile
 
-        serializer = ProfileSerializer(profile)
+        match_as_liker = Match.objects.filter(liker=user, event=event, state__in=[2, 3, 4, 5])
+        match_as_liked = Match.objects.filter(liked=user, event=event, state__in=[2, 3, 4, 5])
+
+        matches = list(chain(match_as_liked, mutuals_as_liker))
+        match = matches[0]
+
+        serializer = ProfileWithMatchDetailsSerializer(match=match, profile=profile)
         # mutuals = Profile.objects.filter(user_in=mutuals)
         # serializer = ProfileSerializer(mutuals, many=True)
         return Response(serializer.data)
