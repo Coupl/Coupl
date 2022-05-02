@@ -43,6 +43,11 @@ const App: () => Node = () => {
           component={UserNavigation}
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="CoordinatorNavigation"
+          component={UserNavigation}
+          options={{ headerShown: false }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

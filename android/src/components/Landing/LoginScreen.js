@@ -22,37 +22,69 @@ const LoginScreen = ({ navigation }) => {
         setLoading(true);
 
         await authorize(store, username, password);
+        res = await axios.get('userType/');
+        const userType = res.data;
 
-        axios.get(`getProfile/`).then(res => {
-            const userInfo = res.data;
+        if (userType === "User") {
+            axios.get(`getProfile/`).then(res => {
+                const userInfo = res.data;
 
-            if (!userInfo) {
+                if (!userInfo) {
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Wrong username number and/or password',
+                    });
+
+                    return;
+                }
+                store.dispatch(setUserAction(userInfo));
                 Toast.show({
-                    type: 'error',
-                    text1: 'Wrong username number and/or password',
+                    type: 'success',
+                    text1: 'Login is Successful',
                 });
 
-                return;
-            }
-            store.dispatch(setUserAction(userInfo));
-            Toast.show({
-                type: 'success',
-                text1: 'Login is Successful',
+                setLoading(false);
+
+                navigation.navigate('UserNavigation');
+            }).catch((err) => {
+                setLoading(false);
+                console.log(err.response);
             });
+        }
 
-            setLoading(false);
+        if (userType === "Coordinator") {
+            axios.get(`getCoordinator/`).then(res => {
+                const coordinatorInfo = res.data;
 
-            navigation.navigate('UserNavigation');
-        }).catch((err) => {
-            setLoading(false);
-            console.log(err.response);
-        });
+                if (!coordinatorInfo) {
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Wrong username number and/or password',
+                    });
+
+                    return;
+                }
+                store.dispatch(setUserAction(coordinatorInfo));
+                Toast.show({
+                    type: 'success',
+                    text1: 'Login is Successful',
+                });
+
+                setLoading(false);
+
+                navigation.navigate('CoordinatorNavigation');
+            }).catch((err) => {
+                setLoading(false);
+                console.log(err.response);
+            });
+        }
+
     }
 
     const renderLoginButton = () => {
         if (loading) {
             return (
-                <ActivityIndicator size={"large"}/>
+                <ActivityIndicator size={"large"} />
             );
         }
 
