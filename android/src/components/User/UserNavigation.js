@@ -1,7 +1,9 @@
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useFocusEffect } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useCallback } from 'react';
+import { BackHandler } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import EventNavigation from '../Event/EventNavigation';
 import AttendedEventsScreen from './AttendedEventsScreen';
@@ -42,6 +44,18 @@ const TabsComponent = () => {
 
 const UserNavigation = ({ navigation }) => {
     const Stack = createNativeStackNavigator();
+
+    useFocusEffect(
+        useCallback(() => {
+            const onBackPress = () => {
+                //Disable the back button usage
+                return true;
+            };
+            BackHandler.addEventListener('hardwareBackPress', onBackPress);
+            return () =>
+                BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+        }, [])
+    );
 
     return (
         <Stack.Navigator>
