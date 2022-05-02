@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from django.db.models import Max
+from django.db.models import Max, Count
 from django.http import JsonResponse
 from rest_framework import permissions
 from rest_framework.authtoken.models import Token
@@ -526,18 +526,36 @@ class GetUserMatches(APIView):
         attendees = event.event_attendees.exclude(pk=user.pk).exclude(pk__in=liked).filter(
             profile__gender__in=Profile.preference_list[int(user.profile.preference)])
 
+        user_past_events = Event.objects.filter(event_attendees__id=user.pk).exclude(
+                pk=event.pk)
+                
+        user_location_freqs = Location.objects.filter(event__in=user_past_events).annotate(frequency=Count("id"))
+        user_tag_freqs = Tag.objects.filter(event__in=user_past_events).annotate(frequency=Count("id"))
+
         user_hobbies = user.profile.hobbies.all()
         for attendee in attendees:
-            past_events = Event.objects.filter(event_attendees__in=[user.pk, attendee.pk]).distinct().exclude(
+            attendee_past_events = Event.objects.filter(event_attendees__id=attendee.pk).exclude(
                 pk=event.pk)
+            common_events = user_past_events.filter(pk__in=attendee_past_events)
 
             attendee_hobbies = attendee.profile.hobbies.all()
             common_hobbies = user_hobbies.intersection(attendee_hobbies)
 
+            attendee_tag_freqs = Tag.objects.filter(event__in=attendee_past_events).annotate(frequency=Count("id"))
             common_tags = []
-            common_locations = []
+            for tag in user_tag_freqs:
+                if tag in attendee_tag_freqs:
+                    common_tags.append({"tag": tag, "frequency": tag.frequency})
 
-            matches.append({"user": attendee, "past_events": past_events, "common_hobbies": common_hobbies,
+            #Find the common event locations of user and attendee
+            common_locations = []
+            attendee_location_freqs = Location.objects.filter(event__in=attendee_past_events).annotate(frequency=Count("id"))
+
+            for location in user_location_freqs:
+                if location in attendee_location_freqs:
+                    common_locations.append({"location": location, "frequency": location.frequency})
+
+            matches.append({"user": attendee, "past_events": common_events, "common_hobbies": common_hobbies,
                             "common_event_tags": common_tags, "common_event_locations": common_locations})
         serializer = MatchDetailedSerializer(matches, many=True)
         return Response(serializer.data)
