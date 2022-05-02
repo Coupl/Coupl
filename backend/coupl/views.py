@@ -565,18 +565,21 @@ class GetUserMatches(APIView):
             common_tags = []
             for tag in user_tag_freqs:
                 if tag in attendee_tag_freqs:
-                    common_tags.append({"tag": tag, "frequency": tag.frequency})
+                    attendee_tag = next((tag for tag in attendee_tag_freqs if ...), None)
+                    minFreq = min(tag.frequency, attendee_tag.frequency)
+                    common_tags.append({"tag": tag, "frequency": minFreq})
 
-            # Find the common event locations of user and attendee
+            #Find the common event locations of user and attendee
             common_locations = []
-            attendee_location_freqs = Location.objects.filter(event__in=attendee_past_events).annotate(
-                frequency=Count("id"))
+            attendee_location_freqs = Location.objects.filter(event__in=attendee_past_events).annotate(frequency=Count("id"))
 
             for location in user_location_freqs:
                 if location in attendee_location_freqs:
-                    common_locations.append({"location": location, "frequency": location.frequency})
+                    attendee_location = next((location for location in attendee_location_freqs if ...), None)
+                    minFreq = min(location.frequency, attendee_location.frequency)
+                    common_locations.append({"location": location, "frequency": minFreq})
 
-            match.append({"user": attendee, "past_events": common_events, "common_hobbies": common_hobbies,
+            matches.append({"profile": attendee.profile, "common_events": common_events, "common_hobbies": common_hobbies,
                             "common_event_tags": common_tags, "common_event_locations": common_locations})
         serializer = MatchDetailedSerializer(match, many=True)
         return Response(serializer.data)
