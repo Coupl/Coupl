@@ -158,7 +158,11 @@ class AddProfilePictureView(APIView):
     def post(self, request, format=None):
         profile = request.user.profile
         last_pic = ProfilePicture.objects.filter(profile_id=profile.pk).aggregate(Max('order'))
-        request.data['order'] = last_pic['order__max'] + 1
+        if (last_pic['order__max'] is None):
+            order = 1
+        else:
+            order = last_pic['order__max'] + 1
+        request.data['order'] = order
         data = request.data
         data['profile'] = profile.pk
         profile_pic = ProfilePictureSerializer(data=data)
