@@ -45,7 +45,7 @@ const LoginScreen = ({ navigation }) => {
 
                 setLoading(false);
 
-                navigation.navigate('UserNavigation');
+                navigation.navigate('UserProfileCheck');
             }).catch((err) => {
                 setLoading(false);
                 console.log(err.response);
