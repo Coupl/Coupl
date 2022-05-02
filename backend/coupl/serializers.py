@@ -199,7 +199,7 @@ class LocationWithFrequencySerializer(serializers.Serializer):
 
 class MatchDetailedSerializer(serializers.Serializer):
     profile = ProfileSerializer(read_only=True)
-    past_events = EventSerializer(many=True, read_only=True)
+    common_events = EventSerializer(many=True, read_only=True)
     common_hobbies = HobbySerializer(many=True, read_only=True)
     common_event_tags = TagWithFrequencySerializer(many=True, read_only=True)
     common_event_locations = LocationWithFrequencySerializer(many=True, read_only=True)
