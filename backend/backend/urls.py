@@ -24,6 +24,8 @@ urlpatterns = [
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     path('userType/', coupl.views.UserType.as_view()),
 
+    path('login/', coupl.views.LoginView.as_view()),
+
     path('reportUser/', coupl.views.UserReportView.as_view()),
 
     path('listProfile/', coupl.views.ListProfileView.as_view()),
@@ -65,6 +67,8 @@ urlpatterns = [
     path('getBestMatch/', coupl.views.GetUserBestMatch.as_view()),
     path('likeUser/', coupl.views.UserLike.as_view()),
     path('skipUser/', coupl.views.UserSkip.as_view()),
+    path('setMeetingLocation/', coupl.views.ChooseMatchSubareaView.as_view()),
+    path('confirmMatch/', coupl.views.ConfirmMatchView.as_view()),
     path('getActiveLikes/', coupl.views.GetActiveLikes.as_view()),
 
     path('createCoordinator/', coupl.views.CreateCoordinatorView.as_view()),

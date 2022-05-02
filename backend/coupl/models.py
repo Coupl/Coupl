@@ -9,7 +9,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     name = models.CharField(blank=False, max_length=30)
     surname = models.CharField(blank=False, max_length=30)
-    phone = modelfields.PhoneNumberField(blank=False)
+    phone = modelfields.PhoneNumberField(blank=False, unique=True)
     date_of_birth = models.DateField(blank=False)
     description = models.CharField(default="", max_length=200)
     gender = models.CharField(blank=False, max_length=10)  # "Male" or "Female" written on db

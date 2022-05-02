@@ -189,13 +189,16 @@ class CoordinatorSerializer(serializers.ModelSerializer):
         fields = ['user', 'coordinator_pictures', 'coordinator_name', 'coordinator_phone', 'coordinator_details',
                   'coordinator_phone']
 
+
 class TagWithFrequencySerializer(serializers.Serializer):
     tag = TagSerializer(read_only=True)
     frequency = serializers.IntegerField()
 
+
 class LocationWithFrequencySerializer(serializers.Serializer):
     location = LocationSerializer(read_only=True)
     frequency = serializers.IntegerField()
+
 
 class MatchDetailedSerializer(serializers.Serializer):
     user = UserDisplaySerializer(read_only=True)
@@ -209,9 +212,11 @@ class ProfileWithMatchDetailsSerializer(serializers.Serializer):
     match = MatchSerializer(read_only=True)
     profile = ProfileSerializer(read_only=True)
 
+
 class EventWithMatchDetailsSerializer(serializers.Serializer):
     event = EventSerializer(read_only=True)
     profile = ProfileSerializer(read_only=True)
+
 
 class TicketSerializer(serializers.ModelSerializer):
     class Meta:

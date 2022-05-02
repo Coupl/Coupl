@@ -1,16 +1,21 @@
+import phonenumbers
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.db.models import Max, Count
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from oauth2_provider.views import TokenView
 from rest_framework import permissions
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core.exceptions import ObjectDoesNotExist
 
+from backend.settings import PHONENUMBER_DEFAULT_REGION
 from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, \
     ProfileSerializer, MatchSerializer, ProfilePictureSerializer, CoordinatorSerializer, CoordinatorPictureSerializer, \
-    HobbySerializer, MatchDetailedSerializer, LocationSerializer, TicketSerializer, SubAreasSerializer, ProfileWithMatchDetailsSerializer, \
+    HobbySerializer, MatchDetailedSerializer, LocationSerializer, TicketSerializer, SubAreasSerializer, \
+    ProfileWithMatchDetailsSerializer, \
     EventWithMatchDetailsSerializer
 from coupl.models import Event, Tag, Profile, Match, ProfilePicture, Coordinator, Hobby, Rating, Ticket, Comment, \
     Location, SubAreas
@@ -24,13 +29,11 @@ class LoginView(APIView):
     def post(self, request, format=None):
         username = request.data['username']
         password = request.data['password']
-        authenticated_user = authenticate(username=username, password=password)
-        if authenticated_user is not None:
-            get, create = Token.objects.get_or_create(user=authenticated_user)
-            token = get if get is not None else create
-            request.user = authenticated_user
-            return JsonResponse(token.key, status=200, safe=False)
-        return Response(False)
+        user = get_object_or_404(User, username=username)
+        if user.check_password(password):
+            tk = TokenView(request=request)
+            return tk.validate_authorization_request()
+
 
 class UserType(APIView):
     def get(self, request, format=None):
@@ -39,6 +42,7 @@ class UserType(APIView):
             return JsonResponse("Coordinator", status=200, safe=False)
         else:
             return JsonResponse("User", status=200, safe=False)
+
 
 class UserLoginView(APIView):
     def get(self, request, format=None):
@@ -314,6 +318,7 @@ class EventListView(APIView):
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data)
 
+
 class AttendedEventsListView(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
 
@@ -333,9 +338,10 @@ class AttendedEventsListView(APIView):
                 events_with_matches.append({"event": event, "profile": matchUser.profile})
             else:
                 events_with_matches.append({"event": event, "profile": None})
-                
+
         serializer = EventWithMatchDetailsSerializer(events_with_matches, many=True)
         return Response(serializer.data)
+
 
 class CreateEventView(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]
@@ -514,32 +520,39 @@ class RemoveSubArea(APIView):
     def post(self, request, format=None):
         SubAreas.objects.get(pk=request.data['area']).delete()
         return JsonResponse(True, safe=False)
+
+
 # endregion SUBAREA VIEWS
 # endregion EVENT VIEWS
 
 # region LIKE SKIP VIEWS
 class GetUserMatches(APIView):
-    permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser, coupl.permissions.UserInEvent]
 
     def post(self, request, format=None):
         user = request.user
+        gender_id = Profile.preference_list.index([user.profile.gender])
         event = Event.objects.get(pk=request.data["event_id"])
         liked = Match.objects.filter(event__match__liker=user.pk).values_list('liked_id', flat=True,
                                                                               named=False)
-
-        matches = []
+        skips = Match.objects.filter(liked=user, event=event.pk, state=6).values_list('liker_id', flat=True, named=False)
+        matches = Match.objects.filter(event=event.pk, state=5)
+        matches_liked = matches.values_list('liked_id', flat=True, named=False)
+        matches_liker = matches.values_list('liker_id', flat=True, named=False)
 
         # List of all potential matches
-        attendees = event.event_attendees.exclude(pk=user.pk).exclude(pk__in=liked).filter(
-            profile__gender__in=Profile.preference_list[int(user.profile.preference)])
+        attendees = event.event_attendees.exclude(pk=user.pk).exclude(pk__in=liked).exclude(pk__in=skips).exclude(pk__in=matches_liked).exclude(pk__in=matches_liker).filter(
+            profile__gender__in=Profile.preference_list[int(user.profile.preference)],
+            profile__preference__in=[gender_id, 2])
 
         user_past_events = Event.objects.filter(event_attendees__id=user.pk).exclude(
-                pk=event.pk)
-                
+            pk=event.pk)
+
         user_location_freqs = Location.objects.filter(event__in=user_past_events).annotate(frequency=Count("id"))
         user_tag_freqs = Tag.objects.filter(event__in=user_past_events).annotate(frequency=Count("id"))
 
         user_hobbies = user.profile.hobbies.all()
+        match = []
         for attendee in attendees:
             attendee_past_events = Event.objects.filter(event_attendees__id=attendee.pk).exclude(
                 pk=event.pk)
@@ -554,29 +567,30 @@ class GetUserMatches(APIView):
                 if tag in attendee_tag_freqs:
                     common_tags.append({"tag": tag, "frequency": tag.frequency})
 
-            #Find the common event locations of user and attendee
+            # Find the common event locations of user and attendee
             common_locations = []
-            attendee_location_freqs = Location.objects.filter(event__in=attendee_past_events).annotate(frequency=Count("id"))
+            attendee_location_freqs = Location.objects.filter(event__in=attendee_past_events).annotate(
+                frequency=Count("id"))
 
             for location in user_location_freqs:
                 if location in attendee_location_freqs:
                     common_locations.append({"location": location, "frequency": location.frequency})
 
-            matches.append({"user": attendee, "past_events": common_events, "common_hobbies": common_hobbies,
+            match.append({"user": attendee, "past_events": common_events, "common_hobbies": common_hobbies,
                             "common_event_tags": common_tags, "common_event_locations": common_locations})
-        serializer = MatchDetailedSerializer(matches, many=True)
+        serializer = MatchDetailedSerializer(match, many=True)
         return Response(serializer.data)
 
 
 class GetUserBestMatch(APIView):
-    permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser, coupl.permissions.UserInEvent]
 
     def post(self, request, format=None):
         user = request.user
         event = Event.objects.get(pk=request.data["event_id"])
         liked = Match.objects.filter(event__match__liker=user.pk).values_list('liked_id', flat=True,
                                                                               named=False)
-
+        matched = Match.objects.filter(state=5).values_list('liked_id', flat=True, named=False)
         attendee = event.event_attendees.exclude(pk=user.pk).exclude(pk__in=liked).filter(
             profile__gender__in=Profile.preference_list[int(user.profile.preference)]).first()
         if not attendee:
@@ -586,7 +600,7 @@ class GetUserBestMatch(APIView):
 
 
 class UserLike(APIView):
-    permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser, coupl.permissions.UserInEvent]
 
     def post(self, request, format=None):
         liked_id = request.data["liked_id"]
@@ -602,21 +616,18 @@ class UserLike(APIView):
             match = match[0]
 
             # Check if one of the users have an active match
-            active_match_liker = Match.objects.filter(liked=liked, liker=liker, event=event, state__in=[2, 3, 4, 5])
-            active_match_liked = Match.objects.filter(liked=liker, liker=liked, event=event, state__in=[2, 3, 4, 5])
-
-            active_match = active_match_liker | active_match_liked
-            if active_match: # If so keep this at a passive match
+            active_match = Match.objects.filter(liked_id__in=[liker.pk, liked_id], liker=[liker.pk, liked_id],
+                                                event=event, state__in=[2, 3, 4, 5])
+            if active_match:  # If so keep this at a passive match
                 match.state = 1
-            else: # Else make this an active match
+            else:  # Else make this an active match
                 match.state = 2
             match.save()
         # Else create new match
         else:
             # Check if a match with a progressed state exists
-            match_where_liked = Match.objects.filter(liked=liker, liker=liked, event=event, state__in=[1, 2, 3, 4, 5, 6])
-            match_where_liker = Match.objects.filter(liked=liked, liker=liker, event=event, state__in=[0, 1, 2, 3, 4, 5, 6])
-            match = match_where_liked | match_where_liker
+            match = Match.objects.filter(liked_id__in=[liker.pk, liked_id], liker=[liker.pk, liked_id], event=event,
+                                         state__gt=0)
             if match:
                 return JsonResponse('User not in likeable state', status=400, safe=False)
             match = Match(liker=liker, liked=liked, event=event, state=0)
@@ -639,23 +650,27 @@ class UserSkip(APIView):
         event = Event.objects.get(pk=event_id)
 
         # If the skipped person previously liked the skipper
-        match = Match.objects.filter(liker=skipped, liked=skipper, event=event, state=0)
+        match = Match.objects.filter(liker=skipped, liked=skipper, event=event)
         if match:
             match = match[0]
-            match.state = 1
+            match.state = 6
             match.save()
-        else:
-            # Check if a match with a progressed state exists
-            match_where_liked = Match.objects.filter(liked=skipper, liker=skipped, event=event, state__in=[1, 2, 3, 4, 5, 6])
-            match_where_liker = Match.objects.filter(liked=skipped, liker=skipper, event=event, state__in=[1, 2, 3, 4, 5, 6])
-            match = match_where_liked | match_where_liker
-            if match:
-                return JsonResponse('User not in skippable state', status=400, safe=False)
-            match = Match(liker=skipper, liked=skipped, event=event, state=6)
-            match.save()
+            activate = Match.objects.filter(liker_id__in=[request.user.pk], liked_id__in=[request.user.id], event=event,
+                                            state=1)
+            if activate:
+                activate = activate.first()
+                activate.state = 2
+                activate.save()
+                serializer = MatchSerializer(activate)
+                return JsonResponse(data=serializer.data, status=200)
+            else:
+                serializer = MatchSerializer(match)
+                return JsonResponse(data=serializer.data, status=200)
 
+        match = Match(liker=skipper, liked=skipped, event=event, state=6)
+        match.save()
         serializer = MatchSerializer(match)
-        return Response(serializer.data)
+        return Response(data=serializer.data)
 
 
 class GetActiveLikes(APIView):
@@ -666,17 +681,19 @@ class GetActiveLikes(APIView):
         user = request.user
         event = Event.objects.get(pk=event_id)
 
-        mutuals_as_liker = Match.objects.filter(liker=user, event=event, state__in=[2, 3, 4, 5]).values_list('liked', flat=True,
-                                                                                                     named=False)
-        mutuals_as_liked = Match.objects.filter(liked=user, event=event, state__in=[2, 3, 4, 5]).values_list('liker', flat=True,
-                                                                                                     named=False)
+        mutuals_as_liker = Match.objects.filter(liker=user, event=event, state__in=[2, 3, 4, 5]).values_list('liked',
+                                                                                                             flat=True,
+                                                                                                             named=False)
+        mutuals_as_liked = Match.objects.filter(liked=user, event=event, state__in=[2, 3, 4, 5]).values_list('liker',
+                                                                                                             flat=True,
+                                                                                                             named=False)
 
         mutuals = list(chain(mutuals_as_liker, mutuals_as_liked))
 
         if len(mutuals) == 0:
             return JsonResponse("No active likes for the user", status=400, safe=False)
         else:
-            mutual = mutuals[0] # We should not have more than 1 active like
+            mutual = mutuals[0]  # We should not have more than 1 active like
             mutual = User.objects.filter(pk=mutual)
             mutual = mutual[0]
             profile = mutual.profile
@@ -694,14 +711,38 @@ class GetActiveLikes(APIView):
         return Response(serializer.data)
 
 
-# TO DO
 class ConfirmMatchView(APIView):
-    pass
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser, coupl.permissions.UserInEvent]
+
+    def post(self, request, format=None):
+        match = Match.objects.filter(liker_id__in=[request.user.pk], liked_id__in=[request.user.pk],
+                                     event=request.data['event_id'], state__in=[3, 4])
+        if len(match) == 0:
+            return JsonResponse("No match found", status=404, safe=False)
+        match = match[0]
+        match.state += 1
+        match.save()
+        serializer = MatchSerializer(match)
+        return JsonResponse(data=serializer.data, status=200)
 
 
-# TO DO
 class ChooseMatchSubareaView(APIView):
-    pass
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.UserInEvent, coupl.permissions.IsUser]
+
+    def post(self, request, format=None):
+        users = [request.data['liked_id'], request.user.pk]
+        event = Event.objects.get(pk=request.data['event_id'])
+        match = Match.objects.filter(liker_id__in=users, liked_id__in=users, event_id=event, state=2)
+        if len(match) == 0:
+            return Response(status=404)
+        match = match[0]
+        sub_area = SubAreas.objects.get(pk=request.data['sub_area_id'])
+        match.state = 3
+        match.meeting_location = sub_area
+        match.save()
+        serializer = MatchSerializer(match)
+
+        return JsonResponse(data=serializer.data, status=200)
 
 
 # endregion LIKE SKIP VIEWS
