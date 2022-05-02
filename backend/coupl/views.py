@@ -586,7 +586,7 @@ class GetUserMatches(APIView):
                     minFreq = min(location.frequency, attendee_location.frequency)
                     common_locations.append({"location": location, "frequency": minFreq})
 
-            matches.append(
+            match.append(
                 {"profile": attendee.profile, "common_events": common_events, "common_hobbies": common_hobbies,
                  "common_event_tags": common_tags, "common_event_locations": common_locations})
         serializer = MatchDetailedSerializer(match, many=True)
