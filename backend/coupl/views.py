@@ -627,7 +627,7 @@ class UserLike(APIView):
             match = match[0]
 
             # Check if one of the users have an active match
-            active_match = Match.objects.filter(liked_id__in=[liker.pk, liked_id], liker=[liker.pk, liked_id],
+            active_match = Match.objects.filter(liked_id__in=[liker.pk, liked_id], liker_id__in=[liker.pk, liked_id],
                                                 event=event, state__in=[2, 3, 4, 5])
             if active_match:  # If so keep this at a passive match
                 match.state = 1
