@@ -637,7 +637,7 @@ class UserLike(APIView):
         # Else create new match
         else:
             # Check if a match with a progressed state exists
-            match = Match.objects.filter(liked_id__in=[liker.pk, liked_id], liker=[liker.pk, liked_id], event=event,
+            match = Match.objects.filter(liked_id__in=[liker.pk, liked_id], liker_id__in=[liker.pk, liked_id], event=event,
                                          state__gt=0)
             if match:
                 return JsonResponse('User not in likeable state', status=400, safe=False)
