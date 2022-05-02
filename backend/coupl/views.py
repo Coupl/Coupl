@@ -332,8 +332,8 @@ class AttendedEventsListView(APIView):
 
         events_with_matches = []
         for event in events:
-            match_as_liker = Match.objects.filter(liker=user, event=event, state=6)
-            match_as_liked = Match.objects.filter(liked=user, event=event, state=6)
+            match_as_liker = Match.objects.filter(liker=user, event=event, state=5)
+            match_as_liked = Match.objects.filter(liked=user, event=event, state=5)
             if match_as_liker.exists():
                 matchUser = User.objects.get(pk=match_as_liker[0].liked.pk)
                 events_with_matches.append({"event": event, "profile": matchUser.profile})
