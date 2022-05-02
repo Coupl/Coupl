@@ -22,6 +22,7 @@ import coupl.views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    path('userType/', coupl.views.UserType.as_view()),
 
     path('reportUser/', coupl.views.UserReportView.as_view()),
 

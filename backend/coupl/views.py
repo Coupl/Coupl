@@ -32,6 +32,13 @@ class LoginView(APIView):
             return JsonResponse(token.key, status=200, safe=False)
         return Response(False)
 
+class UserType(APIView):
+    def get(self, request, format=None):
+        user_id = request.user.pk
+        if Coordinator.objects.filter(user__pk=user_id):
+            return JsonResponse("Coordinator", status=200, safe=False)
+        else:
+            return JsonResponse("User", status=200, safe=False)
 
 class UserLoginView(APIView):
     def get(self, request, format=None):
