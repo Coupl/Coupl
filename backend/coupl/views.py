@@ -1,7 +1,7 @@
 import phonenumbers
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from django.db.models import Max, Count
+from django.db.models import Max, Count, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from oauth2_provider.views import TokenView
@@ -535,13 +535,15 @@ class GetUserMatches(APIView):
         event = Event.objects.get(pk=request.data["event_id"])
         liked = Match.objects.filter(event__match__liker=user.pk).values_list('liked_id', flat=True,
                                                                               named=False)
-        skips = Match.objects.filter(liked=user, event=event.pk, state=6).values_list('liker_id', flat=True, named=False)
+        skips = Match.objects.filter(liked=user, event=event.pk, state=6).values_list('liker_id', flat=True,
+                                                                                      named=False)
         matches = Match.objects.filter(event=event.pk, state=5)
         matches_liked = matches.values_list('liked_id', flat=True, named=False)
         matches_liker = matches.values_list('liker_id', flat=True, named=False)
 
         # List of all potential matches
-        attendees = event.event_attendees.exclude(pk=user.pk).exclude(pk__in=liked).exclude(pk__in=skips).exclude(pk__in=matches_liked).exclude(pk__in=matches_liker).filter(
+        attendees = event.event_attendees.exclude(pk=user.pk).exclude(pk__in=liked).exclude(pk__in=skips).exclude(
+            pk__in=matches_liked).exclude(pk__in=matches_liker).filter(
             profile__gender__in=Profile.preference_list[int(user.profile.preference)],
             profile__preference__in=[gender_id, 2])
 
@@ -569,9 +571,10 @@ class GetUserMatches(APIView):
                     minFreq = min(tag.frequency, attendee_tag.frequency)
                     common_tags.append({"tag": tag, "frequency": minFreq})
 
-            #Find the common event locations of user and attendee
+            # Find the common event locations of user and attendee
             common_locations = []
-            attendee_location_freqs = Location.objects.filter(event__in=attendee_past_events).annotate(frequency=Count("id"))
+            attendee_location_freqs = Location.objects.filter(event__in=attendee_past_events).annotate(
+                frequency=Count("id"))
 
             for location in user_location_freqs:
                 if location in attendee_location_freqs:
@@ -579,8 +582,9 @@ class GetUserMatches(APIView):
                     minFreq = min(location.frequency, attendee_location.frequency)
                     common_locations.append({"location": location, "frequency": minFreq})
 
-            matches.append({"profile": attendee.profile, "common_events": common_events, "common_hobbies": common_hobbies,
-                            "common_event_tags": common_tags, "common_event_locations": common_locations})
+            matches.append(
+                {"profile": attendee.profile, "common_events": common_events, "common_hobbies": common_hobbies,
+                 "common_event_tags": common_tags, "common_event_locations": common_locations})
         serializer = MatchDetailedSerializer(match, many=True)
         return Response(serializer.data)
 
@@ -718,8 +722,8 @@ class ConfirmMatchView(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser, coupl.permissions.UserInEvent]
 
     def post(self, request, format=None):
-        match = Match.objects.filter(liker_id__in=[request.user.pk], liked_id__in=[request.user.pk],
-                                     event=request.data['event_id'], state__in=[3, 4])
+        match = Match.objects.filter(Q(liked=request.user) | Q(liker=request.user)).filter(
+            event=request.data['event_id'], state__in=[3, 4])
         if len(match) == 0:
             return JsonResponse("No match found", status=404, safe=False)
         match = match[0]
