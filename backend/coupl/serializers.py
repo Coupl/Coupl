@@ -198,7 +198,7 @@ class LocationWithFrequencySerializer(serializers.Serializer):
     frequency = serializers.IntegerField()
 
 class MatchDetailedSerializer(serializers.Serializer):
-    user = UserDisplaySerializer(read_only=True)
+    profile = ProfileSerializer(read_only=True)
     past_events = EventSerializer(many=True, read_only=True)
     common_hobbies = HobbySerializer(many=True, read_only=True)
     common_event_tags = TagWithFrequencySerializer(many=True, read_only=True)

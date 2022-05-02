@@ -562,7 +562,7 @@ class GetUserMatches(APIView):
                 if location in attendee_location_freqs:
                     common_locations.append({"location": location, "frequency": location.frequency})
 
-            matches.append({"user": attendee, "past_events": common_events, "common_hobbies": common_hobbies,
+            matches.append({"profile": attendee.profile, "past_events": common_events, "common_hobbies": common_hobbies,
                             "common_event_tags": common_tags, "common_event_locations": common_locations})
         serializer = MatchDetailedSerializer(matches, many=True)
         return Response(serializer.data)
