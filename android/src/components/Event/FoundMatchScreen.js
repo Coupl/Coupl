@@ -9,6 +9,7 @@ import { MatchStates } from '../../redux/reducers/currentEvent';
 import { selectActiveMatchDecision, selectActiveMatchDetails, selectActiveMatchProfile, selectCurrentEvent, selectUser } from '../../redux/selectors';
 import FirebaseImage from '../Common/FirebaseImage';
 import ProfilePhotoSwiper from '../User/ProfilePhotoSwiper';
+import axios from 'axios';
 
 const FoundMatchScreen = ({ navigation }) => {
 
@@ -18,6 +19,8 @@ const FoundMatchScreen = ({ navigation }) => {
     const decision = useSelector(selectActiveMatchDecision);
     const currentEvent = useSelector(selectCurrentEvent);
     const store = useStore();
+
+    const setActiveMatch = allActions.eventActions.setActiveMatch;
 
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState(null);
@@ -34,10 +37,58 @@ const FoundMatchScreen = ({ navigation }) => {
         )
     }
 
+    const checkMatch = () => {
+        const postBody = {
+            event_id: currentEvent.eventInfo.id
+        }
+        axios.post('getActiveLikes/', postBody).then((res) => {
+            store.dispatch(setActiveMatch(res.data));
+        }).catch((err) => {
+            console.log(err);
+        })
+    }
+
     const acceptMatch = () => {
         const acceptMatchAction = allActions.eventActions.acceptActiveMatch;
         store.dispatch(acceptMatchAction());
+
+        const confirmInformation = {
+            event_id: currentEvent.eventInfo.id
+        }
+
+        axios.post("confirmMatch/", confirmInformation).then((res) => {
+            checkMatch();
+        }).catch((err) => {
+            console.log(err);
+        })
     }
+
+    const rejectMatch = () => {
+        const skipInformation = {
+            event_id: currentEvent.eventInfo.id,
+            skipped_id: match.user.pk
+        }
+
+        axios.post("skipUser/", skipInformation).then((res) => {
+            navigation.navigate("EventHomeScreen");
+        }).catch((err) => {
+            console.log(err);
+        })
+    }
+    
+    const setMeetingLocation = () => {
+        const locationInformation = {
+            event_id: currentEvent.eventInfo.id,
+            liked_id: match.user.pk,
+            sub_area_id: value
+        };
+
+        axios.post("setMeetingLocation/", locationInformation).then((res) => {
+            checkMatch();
+        }).catch((err) => {
+            console.log(err);
+        })
+    } 
 
     const BottomPanel = () => {
         const locationChoser = (user.userId < match.user.pk);
@@ -89,7 +140,7 @@ const FoundMatchScreen = ({ navigation }) => {
                     <Button
                         style={{}}
                         mode="contained"
-                        onPress={() => { }}
+                        onPress={() => {setMeetingLocation()}}
                     >
                         Confirm
                     </Button>
@@ -103,6 +154,16 @@ const FoundMatchScreen = ({ navigation }) => {
                     <Text style={{ fontSize: 20 }}>You have both liked each other</Text>
                     <ActivityIndicator style={{ margin: 10 }} />
                     <Text style={{ fontSize: 16 }}>Waiting for {match.name} to choose a meeting location.</Text>
+                </>
+            )
+        }
+
+        if (matchDetails.state === MatchStates.FIRST_CONFIRMATION && decision) {
+
+            return (
+                <>
+                    <Text style={{ fontSize: 20 }}>You are waiting for {match.name}'s response.</Text>
+                    <ActivityIndicator style={{ margin: 10 }} />
                 </>
             )
         }
@@ -126,19 +187,9 @@ const FoundMatchScreen = ({ navigation }) => {
                     </View>
 
                     <View style={{ flex: 1, flexDirection: "row", padding: 10 }}>
-                        <Button icon="heart" onPress={() => {}}>Accept</Button>
-                        <Button icon="close" onPress={() => {}}>Find another match</Button>
+                        <Button icon="heart" onPress={() => {acceptMatch()}}>Accept</Button>
+                        <Button icon="close" onPress={() => {rejectMatch()}}>Find another match</Button>
                     </View>
-                </>
-            )
-        }
-
-        if (matchDetails.state === MatchStates.FIRST_CONFIRMATION && decision) {
-
-            return (
-                <>
-                    <Text style={{ fontSize: 20 }}>You are waiting for {match.name}'s response.</Text>
-                    <ActivityIndicator style={{ margin: 10 }} />
                 </>
             )
         }
