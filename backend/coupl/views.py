@@ -18,12 +18,12 @@ from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, \
     ProfileWithMatchDetailsSerializer, MatchScoreSerializer, \
     EventWithMatchDetailsSerializer
 from coupl.models import Event, Tag, Profile, Match, ProfilePicture, Coordinator, Hobby, Rating, Ticket, Comment, \
-    Location, SubAreas
+    Location, SubAreas, MatchScore
 from itertools import chain
 import coupl.permissions
 
 import numpy as np
-from fancyimpute import KNN, SoftImpute, BiScaler, IterativeImputer
+from fancyimpute import KNN, SoftImpute, BiScaler, IterativeImputer, NuclearNormMinimization
 from sklearn.impute import IterativeImputer
 
 # region USER VIEWS
@@ -539,22 +539,29 @@ class UpdateMatchScores(APIView):
     def post(self, request, format=None):
 
         matches = Match.objects.all()
-        numProfiles = Profile.objects.all().aggregate(Max('user_id'))['user_id__max'] + 1
+        userIds = Profile.objects.all().values_list('user_id', flat=True, named=False)
+        userIdsDict = dict(enumerate(userIds, 0))
+        reverseUserIdsDict = {v: k for k, v in userIdsDict.items()}
+
+        numProfiles = len(userIds)
         matrix = np.zeros(shape=(numProfiles,numProfiles))
 
         for match in matches:
+            index1 = reverseUserIdsDict[match.liker_id]
+            index2 = reverseUserIdsDict[match.liked_id]
             if match.state == 6:
-                matrix[match.liker_id][match.liked_id] -= 1
-                matrix[match.liked_id][match.liker_id] -= 1
+                matrix[index1][index2] -= 1
+                matrix[index2][index1] -= 1
             else:
-                matrix[match.liker_id][match.liked_id] += 1
-                matrix[match.liked_id][match.liker_id] += 1
+                matrix[index1][index2] += 1
+                matrix[index2][index1] += 1
 
         matrix[matrix==0] = np.nan
 
         #imp_mean = IterativeImputer(random_state=0)
         #matrix_iterative = imp_mean.fit_transform(matrix)
         matrix_filled_nnm = KNN(k=10).fit_transform(matrix)
+        #matrix_filled_nnm = NuclearNormMinimization().fit_transform(matrix)
         #Consider running the same algorithm on the matrix_filled_nnm
 
         #sum = 0
@@ -565,6 +572,7 @@ class UpdateMatchScores(APIView):
         #print(matrix_filled_nnm)
         #print(sum, np.sum(matrix_filled_nnm))
 
+        scoresToCreate = []
         for row in range(numProfiles):
             if np.isnan(matrix_filled_nnm[row]).all():
                 continue
@@ -572,7 +580,7 @@ class UpdateMatchScores(APIView):
             rowMin = np.nanmin(matrix_filled_nnm[row])
 
             for col in range(row):
-                if np.isnan(matrix_filled_nnm[row][col]).all():
+                if matrix_filled_nnm[row][col] == 0 or np.isnan(matrix_filled_nnm[row][col]).all():
                     continue
 
                 #Score between 0 and 1
@@ -581,10 +589,11 @@ class UpdateMatchScores(APIView):
                 else:
                     score = (matrix_filled_nnm[row][col] - rowMin) / (rowMax - rowMin)
                 if score != 0:
-                    serializer = MatchScoreSerializer(data={'id1': row, 'id2': col, 'score': score})
-                    if serializer.is_valid():
-                        serializer.save()
+                    user1 = User.objects.get(pk=userIdsDict[row])
+                    user2 = User.objects.get(pk=userIdsDict[col])
+                    scoresToCreate.append(MatchScore(user_id=userIdsDict[row], match_id=userIdsDict[col], score=score*100))
                 
+        MatchScore.objects.bulk_create(scoresToCreate)
 
         return Response("Done")
 
@@ -647,7 +656,12 @@ class GetUserMatches(APIView):
 
             hobbies_score = (2 * len(common_hobbies)) / (len(user_hobbies) + len(attendee_hobbies))
             tags_score = (2 * sum(tag["frequency"] for tag in common_tags)) / (sum(tag.frequency for tag in user_tag_freqs) + sum(tag.frequency for tag in attendee_tag_freqs))
-            past_matches_score = 0.4 #Just a random value for now
+            
+            get_score = MatchScore.objects.filter(Q(user_id=user.pk, match_id=attendee.pk) | Q(user_id=attendee.pk, match_id=user.pk)).first()
+            if get_score is not None:
+                past_matches_score = get_score.score / 100
+            else:
+                past_matches_score = 0
             scores = [hobbies_score, tags_score, past_matches_score]
             total_score = sum(scores) * 0.4 - min(scores) * 0.2
 

@@ -149,10 +149,12 @@ class SubAreasSerializer(serializers.ModelSerializer):
 class MatchScoreSerializer(serializers.Serializer):
     class Meta:
         model = MatchScore
-        fields = ['id1', 'id2', 'score']
+        fields = ['user', 'match', 'score']
 
     def create(self, validated_data):
-        return MatchScore.objects.create(**validated_data)
+        return MatchScore.objects.create(user=validated_data.get('user'),
+                                        match=validated_data.get('match'),
+                                        score=validated_data.get('score'))
 
 class EventSerializer(serializers.ModelSerializer):
     event_attendees = UserDisplaySerializer(many=True, read_only=True)
