@@ -593,6 +593,7 @@ class UpdateMatchScores(APIView):
                     user2 = User.objects.get(pk=userIdsDict[col])
                     scoresToCreate.append(MatchScore(user_id=userIdsDict[row], match_id=userIdsDict[col], score=score*100))
                 
+        MatchScore.objects.all().delete()
         MatchScore.objects.bulk_create(scoresToCreate)
 
         return Response("Done")
