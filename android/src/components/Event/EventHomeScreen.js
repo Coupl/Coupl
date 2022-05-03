@@ -156,12 +156,15 @@ const EventHomeScreen = ({ navigation }) => {
                         <Text style={styles.text}> Number of participants: {numParticipants}</Text>
                     </AntDesign>
 
-                    <AntDesign name="heart" size={28}
-                        style={styles.icon}
-                        color={'#000'}
-                    >
-                        <Text style={styles.text}> Number of likes: {numLikes}</Text>
-                    </AntDesign>
+                    {/*
+                        <AntDesign name="heart" size={28}
+                            style={styles.icon}
+                            color={'#000'}
+                        >
+                            <Text style={styles.text}> Number of likes: {numLikes}</Text>
+                        </AntDesign>
+                    */}
+
 
                     {
                         match ?

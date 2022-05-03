@@ -39,7 +39,7 @@ const currentEvent = (state = {
         case "ACCEPT_ACTIVE_MATCH":
             return {
                 ...state,
-                activeMatch: true
+                activeMatchDecision: true
             }
         default:
             return state
