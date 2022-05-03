@@ -74,7 +74,7 @@ const HobbyChooser = () => {
     <SafeAreaView>
 
       {
-        hobbies.filter(userHobby => userHobby.state === (SELECTED || userHobby.state === JUST_SELECTED)).length < 10 ?
+        hobbies.filter(userHobby => (userHobby.state === SELECTED || userHobby.state === JUST_SELECTED)).length < 10 ?
           <Text style={{ alignSelf: "center", fontSize: 26 }}>Select up to 10 hobbies:</Text> :
           <Text style={{ alignSelf: "center", fontSize: 26 }}>You have selected the maximum of 10 hobbies.</Text>
       }

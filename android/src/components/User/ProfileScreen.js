@@ -105,12 +105,12 @@ const ProfileDetails = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1}}>
         <View style={{ overflow: "hidden", borderRadius: 20 }}>
           <ProfilePhotoSwiper profile={user} renderBottom={renderSwiperBottom} />
         </View>
 
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, padding: 10 }}>
           <TextInput
             label="Description"
             multiline={true}
@@ -185,8 +185,8 @@ const ProfileScreen = ({ navigation }) => {
   return (
     <Stack.Navigator>
       <Stack.Screen name="ProfileDetails" component={ProfileDetails} options={{ headerShown: false }} />
-      <Stack.Screen name="PhotoChooser" component={PhotoChooser} />
-      <Stack.Screen name="HobbyChooser" component={HobbyChooser} />
+      <Stack.Screen name="PhotoChooser" component={PhotoChooser} options={{ title: "Edit Photos" }} />
+      <Stack.Screen name="HobbyChooser" component={HobbyChooser} options={{ title: "Edit Hobbies" }}/>
     </Stack.Navigator>
   )
 };
