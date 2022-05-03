@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from coupl.models import Profile, Event, Tag, ProfilePicture, Match, Coordinator, CoordinatorPicture, Hobby, Location, \
-    Comment, Rating, SubAreas, Ticket, LocationPictures
+    Comment, Rating, SubAreas, Ticket, LocationPictures, MatchScore
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -146,6 +146,13 @@ class SubAreasSerializer(serializers.ModelSerializer):
         model = SubAreas
         fields = ['pk', 'event', 'area_name', 'area_description', 'area_picture']
 
+class MatchScoreSerializer(serializers.Serializer):
+    class Meta:
+        model = MatchScore
+        fields = ['id1', 'id2', 'score']
+
+    def create(self, validated_data):
+        return MatchScore.objects.create(**validated_data)
 
 class EventSerializer(serializers.ModelSerializer):
     event_attendees = UserDisplaySerializer(many=True, read_only=True)
@@ -199,6 +206,12 @@ class LocationWithFrequencySerializer(serializers.Serializer):
     location = LocationSerializer(read_only=True)
     frequency = serializers.IntegerField()
 
+class AllMatchScoresSerializer(serializers.Serializer):
+    hobbies_score = serializers.FloatField()
+    tags_score = serializers.FloatField()
+    past_matches_score = serializers.FloatField()
+    total_score = serializers.FloatField()
+
 
 class MatchDetailedSerializer(serializers.Serializer):
     profile = ProfileSerializer(read_only=True)
@@ -206,6 +219,7 @@ class MatchDetailedSerializer(serializers.Serializer):
     common_hobbies = HobbySerializer(many=True, read_only=True)
     common_event_tags = TagWithFrequencySerializer(many=True, read_only=True)
     common_event_locations = LocationWithFrequencySerializer(many=True, read_only=True)
+    match_scores = AllMatchScoresSerializer(read_only=True)
 
 
 class ProfileWithMatchDetailsSerializer(serializers.Serializer):

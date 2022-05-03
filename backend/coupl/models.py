@@ -141,3 +141,8 @@ class Ticket(models.Model):
     reported = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reported")
     description = models.CharField(blank=False, max_length=250)
     status = models.CharField(default="Pending", max_length=20)
+
+class MatchScore(models.Model):
+    id1 = models.IntegerField()
+    id2 = models.IntegerField()
+    score = models.FloatField()

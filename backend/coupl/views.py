@@ -15,13 +15,16 @@ from backend.settings import PHONENUMBER_DEFAULT_REGION
 from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, \
     ProfileSerializer, MatchSerializer, ProfilePictureSerializer, CoordinatorSerializer, CoordinatorPictureSerializer, \
     HobbySerializer, MatchDetailedSerializer, LocationSerializer, TicketSerializer, SubAreasSerializer, \
-    ProfileWithMatchDetailsSerializer, \
+    ProfileWithMatchDetailsSerializer, MatchScoreSerializer, \
     EventWithMatchDetailsSerializer
 from coupl.models import Event, Tag, Profile, Match, ProfilePicture, Coordinator, Hobby, Rating, Ticket, Comment, \
     Location, SubAreas
 from itertools import chain
 import coupl.permissions
 
+import numpy as np
+from fancyimpute import KNN, SoftImpute, BiScaler, IterativeImputer
+from sklearn.impute import IterativeImputer
 
 # region USER VIEWS
 # todo Send user login token when successfully logged in
@@ -530,6 +533,61 @@ class RemoveSubArea(APIView):
 # endregion EVENT VIEWS
 
 # region LIKE SKIP VIEWS
+class UpdateMatchScores(APIView):
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser] #Admin permissionu var mı?
+
+    def post(self, request, format=None):
+
+        matches = Match.objects.all()
+        numProfiles = Profile.objects.all().aggregate(Max('user_id'))['user_id__max'] + 1
+        matrix = np.zeros(shape=(numProfiles,numProfiles))
+
+        for match in matches:
+            if match.state == 6:
+                matrix[match.liker_id][match.liked_id] -= 1
+                matrix[match.liked_id][match.liker_id] -= 1
+            else:
+                matrix[match.liker_id][match.liked_id] += 1
+                matrix[match.liked_id][match.liker_id] += 1
+
+        matrix[matrix==0] = np.nan
+
+        #imp_mean = IterativeImputer(random_state=0)
+        #matrix_iterative = imp_mean.fit_transform(matrix)
+        matrix_filled_nnm = KNN(k=10).fit_transform(matrix)
+        #Consider running the same algorithm on the matrix_filled_nnm
+
+        #sum = 0
+        #for i in range(numProfiles):
+        #    sum += np.sum(matrix_filled_nnm[i][i])
+
+        #print(matrix)
+        #print(matrix_filled_nnm)
+        #print(sum, np.sum(matrix_filled_nnm))
+
+        for row in range(numProfiles):
+            if np.isnan(matrix_filled_nnm[row]).all():
+                continue
+            rowMax = np.nanmax(matrix_filled_nnm[row])
+            rowMin = np.nanmin(matrix_filled_nnm[row])
+
+            for col in range(row):
+                if np.isnan(matrix_filled_nnm[row][col]).all():
+                    continue
+
+                #Score between 0 and 1
+                if rowMax == rowMin:
+                    score = (np.sign(matrix_filled_nnm[row][col]) + 1) / 2
+                else:
+                    score = (matrix_filled_nnm[row][col] - rowMin) / (rowMax - rowMin)
+                if score != 0:
+                    serializer = MatchScoreSerializer(data={'id1': row, 'id2': col, 'score': score})
+                    if serializer.is_valid():
+                        serializer.save()
+                
+
+        return Response("Done")
+
 class GetUserMatches(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser, coupl.permissions.UserInEvent]
 
@@ -586,9 +644,19 @@ class GetUserMatches(APIView):
                     minFreq = min(location.frequency, attendee_location.frequency)
                     common_locations.append({"location": location, "frequency": minFreq})
 
+
+            hobbies_score = (2 * len(common_hobbies)) / (len(user_hobbies) + len(attendee_hobbies))
+            tags_score = (2 * sum(tag["frequency"] for tag in common_tags)) / (sum(tag.frequency for tag in user_tag_freqs) + sum(tag.frequency for tag in attendee_tag_freqs))
+            past_matches_score = 0.4 #Just a random value for now
+            scores = [hobbies_score, tags_score, past_matches_score]
+            total_score = sum(scores) * 0.4 - min(scores) * 0.2
+
+            match_scores = {"hobbies_score": hobbies_score, "tags_score": tags_score,
+                            "past_matches_score": past_matches_score, "total_score": total_score}
+
             match.append(
                 {"profile": attendee.profile, "common_events": common_events, "common_hobbies": common_hobbies,
-                 "common_event_tags": common_tags, "common_event_locations": common_locations})
+                 "common_event_tags": common_tags, "common_event_locations": common_locations, "match_scores": match_scores})
         serializer = MatchDetailedSerializer(match, many=True)
         return Response(serializer.data)
 
