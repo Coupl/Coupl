@@ -75,6 +75,12 @@ class Match(models.Model):
     meeting_location = models.ForeignKey(SubAreas, on_delete=models.CASCADE, related_name="meeting_location", null=True)
 
 
+class MatchScore(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_match")
+    match = models.ForeignKey(User, on_delete=models.CASCADE, related_name="match_score")
+    score = models.IntegerField()
+
+
 class Location(models.Model):
     name = models.CharField(blank=False, max_length=50)
     description = models.CharField(max_length=100)
