@@ -34,7 +34,7 @@ class UserDisplaySerializer(serializers.RelatedField):
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ['tag_name', 'tag_description']
+        fields = ['id', 'tag_name', 'tag_description']
 
     def create(self, validated_data):
         return Tag.objects.create(tag_name=validated_data.get('tag_name'),

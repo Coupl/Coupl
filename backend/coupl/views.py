@@ -382,6 +382,10 @@ class CreateEventView(APIView):
                                          event_start_time=request.data['event_start_time'],
                                          event_finish_time=request.data['event_finish_time'],
                                          event_creator_id=request.user.coordinator.pk)
+            for tag_id in request.data['event_tags']:
+                tag = Tag.objects.get(pk=tag_id)
+                event.event_tags.add(tag)
+            event.save()
         except:
             return JsonResponse(status=400)
         serializer = EventSerializer(instance=event)
