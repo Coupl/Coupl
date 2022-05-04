@@ -37,8 +37,24 @@ const CoordinatorNavigation = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
-        //Disable the back button usage
-        return true;
+        
+        Alert.alert(
+          "Do you want to log out?",
+          "",
+          [
+            {
+              text: "Cancel",
+              onPress: () => { }
+            },
+            {
+              text: "Log out",
+              onPress: () => {
+                  navigation.navigate("WelcomeScreen");
+              },
+              style: "cancel"
+            }
+          ]
+        );
       };
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
       return () =>

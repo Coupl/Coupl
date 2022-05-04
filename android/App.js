@@ -7,6 +7,7 @@
  */
 
 import React from 'react';
+import type { Node } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -25,7 +26,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import setupAxios from './src/config/axiosConfig';
 
-const App = () => {
+const App: () => Node = () => {
   const Stack = createNativeStackNavigator();
   setupAxios();
 

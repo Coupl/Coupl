@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useCallback } from 'react';
-import { BackHandler } from 'react-native';
+import { BackHandler,  Alert, } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import EventNavigation from '../Event/EventNavigation';
 import AttendedEventsScreen from './AttendedEventsScreen';
@@ -48,7 +48,25 @@ const UserNavigation = ({ navigation }) => {
     useFocusEffect(
         useCallback(() => {
             const onBackPress = () => {
-                //Disable the back button usage
+                
+                Alert.alert(
+                    "Do you want to log out?",
+                    "",
+                    [
+                      {
+                        text: "Cancel",
+                        onPress: () => { }
+                      },
+                      {
+                        text: "Log out",
+                        onPress: () => {
+                            navigation.navigate("WelcomeScreen");
+                        },
+                        style: "cancel"
+                      }
+                    ]
+                  );
+
                 return true;
             };
             BackHandler.addEventListener('hardwareBackPress', onBackPress);
