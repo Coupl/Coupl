@@ -81,4 +81,8 @@ urlpatterns = [
     path('removeCoordinatorPhoto/', coupl.views.CoordinatorRemovePhotoView.as_view()),
 
     path('createTicket/', coupl.views.CreateTicketView.as_view()),
+
+    path('sendMessage/', coupl.views.SendMessage.as_view()),
+    path('getMessagedPeople/', coupl.views.GetMessagedPeople.as_view()),
+    path('getChat/', coupl.views.GetChat.as_view()),
 ]

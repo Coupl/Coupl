@@ -1,8 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from coupl.models import Profile, Event, Tag, ProfilePicture, Match, Coordinator, CoordinatorPicture, Hobby, Location, \
-    Comment, Rating, SubAreas, Ticket, LocationPictures, MatchScore
-
+    Comment, Rating, SubAreas, Ticket, LocationPictures, MatchScore, Message
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -238,3 +237,8 @@ class TicketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
         fields = ['reporter', 'reported', 'description', 'status']
+
+class MessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = ['sender', 'receiver', 'content', 'date']
