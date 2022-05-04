@@ -146,15 +146,17 @@ class SubAreasSerializer(serializers.ModelSerializer):
         model = SubAreas
         fields = ['pk', 'event', 'area_name', 'area_description', 'area_picture']
 
-class MatchScoreSerializer(serializers.Serializer):
+
+class MatchScoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = MatchScore
         fields = ['user', 'match', 'score']
 
     def create(self, validated_data):
         return MatchScore.objects.create(user=validated_data.get('user'),
-                                        match=validated_data.get('match'),
-                                        score=validated_data.get('score'))
+                                         match=validated_data.get('match'),
+                                         score=validated_data.get('score'))
+
 
 class EventSerializer(serializers.ModelSerializer):
     event_attendees = UserDisplaySerializer(many=True, read_only=True)
@@ -171,6 +173,7 @@ class EventSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return Event.objects.create(event_name=validated_data.get('event_name'),
+                                    event_location_id=validated_data['event_location'],
                                     event_description=validated_data.get('event_description'),
                                     event_creator=validated_data.get('event_creator'),
                                     event_start_time=validated_data.get('event_start_time'),
@@ -207,6 +210,7 @@ class TagWithFrequencySerializer(serializers.Serializer):
 class LocationWithFrequencySerializer(serializers.Serializer):
     location = LocationSerializer(read_only=True)
     frequency = serializers.IntegerField()
+
 
 class AllMatchScoresSerializer(serializers.Serializer):
     hobbies_score = serializers.FloatField()

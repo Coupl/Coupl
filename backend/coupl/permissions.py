@@ -11,6 +11,14 @@ class UserInEvent(permissions.BasePermission):
         return Event.objects.filter(pk=event_id, event_attendees__in=[user_id])
 
 
+class CoordinatorInEvent(permissions.BasePermission):
+    message = 'Event doesn\'t belong to this Coordinator'
+
+    def has_permission(self, request, view):
+        event_id = request.data['event_id']
+        return Event.objects.filter(pk=event_id, event_creator_id=request.user.coordinator.pk)
+
+
 class IsCoordinator(permissions.BasePermission):
     message = 'Is not an event coordinator.'
 

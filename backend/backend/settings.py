@@ -24,7 +24,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2', 'coupl-bilkent.herokuapp.com', 'coupl.tech']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2', 'https://coupl-bilkent.herokuapp.com', 'coupl.tech']
 
 # Application definition
 

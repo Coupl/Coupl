@@ -1,12 +1,11 @@
 import phonenumbers
-from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.db.models import Max, Count, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from oauth2_provider.views import TokenView
 from rest_framework import permissions
-from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core.exceptions import ObjectDoesNotExist
@@ -25,6 +24,7 @@ import coupl.permissions
 import numpy as np
 from fancyimpute import KNN, SoftImpute, BiScaler, IterativeImputer, NuclearNormMinimization
 from sklearn.impute import IterativeImputer
+
 
 # region USER VIEWS
 # todo Send user login token when successfully logged in
@@ -280,6 +280,27 @@ class GetCoordinatorView(APIView):
         return JsonResponse(serializer.data)
 
 
+# region COORDINATOR EVENTS VIEWS
+class CoordinatorUpcomingEvents(APIView):
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]
+
+    def get(self, request, format=None):
+        events = Event.objects.filter(event_creator=request.user.coordinator, event_start_time__gt=timezone.now())
+        serializer = EventSerializer(events, many=True)
+        return Response(data=serializer.data, status=200)
+
+
+class CoordinatorPreviousEvents(APIView):
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]
+
+    def get(self, request, format=None):
+        events = Event.objects.filter(event_creator=request.user.coordinator, event_finish_time__lt=timezone.now())
+        serializer = EventSerializer(events, many=True)
+        return Response(data=serializer.data, status=200)
+
+
+# endregion COORDINATOR EVENTS VIEWS
+
 # region COORDINATOR PHOTO VIEWS
 class CoordinatorAddPhotoView(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]
@@ -321,7 +342,7 @@ class EventListView(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
 
     def get(self, request, format=None):
-        events = Event.objects.all()
+        events = Event.objects.filter(event_start_time__gt=timezone.now())
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data)
 
@@ -354,11 +375,34 @@ class CreateEventView(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]
 
     def post(self, request, format=None):
-        serializer = EventSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
+        try:
+            event = Event.objects.create(event_name=request.data['event_name'],
+                                         event_location_id=request.data['event_location'],
+                                         event_description=request.data['event_description'],
+                                         event_start_time=request.data['event_start_time'],
+                                         event_finish_time=request.data['event_finish_time'],
+                                         event_creator_id=request.user.coordinator.pk)
+        except:
+            return JsonResponse(status=400)
+        serializer = EventSerializer(instance=event)
+        return JsonResponse(serializer.data, status=201)
+
+
+class UpdateEventView(APIView):
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator,
+                          coupl.permissions.CoordinatorInEvent]
+
+    def post(self, request, format=None):
+        event = Event.objects.get(pk=request.data['event_id'])
+        location = Location.objects.get(pk=request.data['event_location'])
+        event.event_name = request.data['event_name']
+        event.event_location = location
+        event.event_description = request.data['event_description']
+        event.event_start_time = request.data['event_start_time']
+        event.event_finish_time = request.data['event_finish_time']
+        event.save()
+        serializer = EventSerializer(event)
+        return JsonResponse(data=serializer.data, status=200)
 
 
 class GetEventView(APIView):
@@ -388,7 +432,7 @@ class JoinEventView(APIView):
 
 
 class LeaveEventView(APIView):
-    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser, coupl.permissions.UserInEvent]
 
     def post(self, request, format=None):
         user = request.user
@@ -400,7 +444,8 @@ class LeaveEventView(APIView):
 
 
 class EventAddTagView(APIView):
-    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator]
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsCoordinator,
+                          coupl.permissions.CoordinatorInEvent]
 
     def post(self, request, format=None):
         event_id = request.data['event_id']
@@ -534,7 +579,7 @@ class RemoveSubArea(APIView):
 
 # region LIKE SKIP VIEWS
 class UpdateMatchScores(APIView):
-    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser] #Admin permissionu var mı?
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]  # Admin permissionu var mı?
 
     def post(self, request, format=None):
 
@@ -544,7 +589,7 @@ class UpdateMatchScores(APIView):
         reverseUserIdsDict = {v: k for k, v in userIdsDict.items()}
 
         numProfiles = len(userIds)
-        matrix = np.zeros(shape=(numProfiles,numProfiles))
+        matrix = np.zeros(shape=(numProfiles, numProfiles))
 
         for match in matches:
             index1 = reverseUserIdsDict[match.liker_id]
@@ -556,21 +601,21 @@ class UpdateMatchScores(APIView):
                 matrix[index1][index2] += 1
                 matrix[index2][index1] += 1
 
-        matrix[matrix==0] = np.nan
+        matrix[matrix == 0] = np.nan
 
-        #imp_mean = IterativeImputer(random_state=0)
-        #matrix_iterative = imp_mean.fit_transform(matrix)
+        # imp_mean = IterativeImputer(random_state=0)
+        # matrix_iterative = imp_mean.fit_transform(matrix)
         matrix_filled_nnm = KNN(k=10).fit_transform(matrix)
-        #matrix_filled_nnm = NuclearNormMinimization().fit_transform(matrix)
-        #Consider running the same algorithm on the matrix_filled_nnm
+        # matrix_filled_nnm = NuclearNormMinimization().fit_transform(matrix)
+        # Consider running the same algorithm on the matrix_filled_nnm
 
-        #sum = 0
-        #for i in range(numProfiles):
+        # sum = 0
+        # for i in range(numProfiles):
         #    sum += np.sum(matrix_filled_nnm[i][i])
 
-        #print(matrix)
-        #print(matrix_filled_nnm)
-        #print(sum, np.sum(matrix_filled_nnm))
+        # print(matrix)
+        # print(matrix_filled_nnm)
+        # print(sum, np.sum(matrix_filled_nnm))
 
         scoresToCreate = []
         for row in range(numProfiles):
@@ -583,7 +628,7 @@ class UpdateMatchScores(APIView):
                 if matrix_filled_nnm[row][col] == 0 or np.isnan(matrix_filled_nnm[row][col]).all():
                     continue
 
-                #Score between 0 and 1
+                # Score between 0 and 1
                 if rowMax == rowMin:
                     score = (np.sign(matrix_filled_nnm[row][col]) + 1) / 2
                 else:
@@ -591,12 +636,14 @@ class UpdateMatchScores(APIView):
                 if score != 0:
                     user1 = User.objects.get(pk=userIdsDict[row])
                     user2 = User.objects.get(pk=userIdsDict[col])
-                    scoresToCreate.append(MatchScore(user_id=userIdsDict[row], match_id=userIdsDict[col], score=score*100))
-                
+                    scoresToCreate.append(
+                        MatchScore(user_id=userIdsDict[row], match_id=userIdsDict[col], score=score * 100))
+
         MatchScore.objects.all().delete()
         MatchScore.objects.bulk_create(scoresToCreate)
 
         return Response("Done")
+
 
 class GetUserMatches(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser, coupl.permissions.UserInEvent]
@@ -654,11 +701,12 @@ class GetUserMatches(APIView):
                     minFreq = min(location.frequency, attendee_location.frequency)
                     common_locations.append({"location": location, "frequency": minFreq})
 
-
             hobbies_score = (2 * len(common_hobbies)) / (len(user_hobbies) + len(attendee_hobbies))
-            tags_score = (2 * sum(tag["frequency"] for tag in common_tags)) / (sum(tag.frequency for tag in user_tag_freqs) + sum(tag.frequency for tag in attendee_tag_freqs))
-            
-            get_score = MatchScore.objects.filter(Q(user_id=user.pk, match_id=attendee.pk) | Q(user_id=attendee.pk, match_id=user.pk)).first()
+            tags_score = (2 * sum(tag["frequency"] for tag in common_tags)) / (
+                    sum(tag.frequency for tag in user_tag_freqs) + sum(tag.frequency for tag in attendee_tag_freqs))
+
+            get_score = MatchScore.objects.filter(
+                Q(user_id=user.pk, match_id=attendee.pk) | Q(user_id=attendee.pk, match_id=user.pk)).first()
             if get_score is not None:
                 past_matches_score = get_score.score / 100
             else:
@@ -671,7 +719,8 @@ class GetUserMatches(APIView):
 
             match.append(
                 {"profile": attendee.profile, "common_events": common_events, "common_hobbies": common_hobbies,
-                 "common_event_tags": common_tags, "common_event_locations": common_locations, "match_scores": match_scores})
+                 "common_event_tags": common_tags, "common_event_locations": common_locations,
+                 "match_scores": match_scores})
         serializer = MatchDetailedSerializer(match, many=True)
         return Response(serializer.data)
 
@@ -720,7 +769,8 @@ class UserLike(APIView):
         # Else create new match
         else:
             # Check if a match with a progressed state exists
-            match = Match.objects.filter(liked_id__in=[liker.pk, liked_id], liker_id__in=[liker.pk, liked_id], event=event,
+            match = Match.objects.filter(liked_id__in=[liker.pk, liked_id], liker_id__in=[liker.pk, liked_id],
+                                         event=event,
                                          state__gt=0)
             if match:
                 return JsonResponse('User not in likeable state', status=400, safe=False)

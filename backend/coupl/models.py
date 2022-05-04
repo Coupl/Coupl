@@ -3,6 +3,7 @@ from django.db import models
 from phonenumber_field import modelfields
 from django.utils.translation import gettext_lazy as _
 
+
 # Create your models here.
 class Profile(models.Model):
     preference_list = [["Male"], ["Female"], ["Male", "Female"]]
@@ -68,6 +69,7 @@ class Match(models.Model):
         FIRST_CONFIRMATION = 4,
         SUCCESSFUL_MATCH = 5,
         UNSUCCESSFUL_MATCH = 6,
+
     liker = models.ForeignKey(User, on_delete=models.CASCADE, related_name="liker")
     liked = models.ForeignKey(User, on_delete=models.CASCADE, related_name="liked")
     state = models.IntegerField(choices=States.choices)
@@ -148,8 +150,9 @@ class Ticket(models.Model):
     description = models.CharField(blank=False, max_length=250)
     status = models.CharField(default="Pending", max_length=20)
 
+
 class Message(models.Model):
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sender")
-    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="receiver")
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="message_sender")
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="message_receiver")
     content = models.CharField(max_length=200)
     date = models.DateTimeField(auto_now_add=True)

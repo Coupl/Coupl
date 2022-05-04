@@ -49,6 +49,7 @@ urlpatterns = [
     path('listAttendedEvents/', coupl.views.AttendedEventsListView.as_view()),
     path('getEvent/', coupl.views.GetEventView.as_view()),
     path('addEvent/', coupl.views.CreateEventView.as_view()),
+    path('updateEvent/', coupl.views.UpdateEventView.as_view()),
     path('leaveEvent/', coupl.views.LeaveEventView.as_view()),
     path('joinEvent/', coupl.views.JoinEventView.as_view()),
     path('rateEvent/', coupl.views.RateEventView.as_view()),
@@ -75,6 +76,8 @@ urlpatterns = [
     path('createCoordinator/', coupl.views.CreateCoordinatorView.as_view()),
     path('updateCoordinator/', coupl.views.UpdateCoordinatorView.as_view()),
     path('getCoordinator/', coupl.views.GetCoordinatorView.as_view()),
+    path('coordinatorPreviousEvents/', coupl.views.CoordinatorPreviousEvents.as_view()),
+    path('coordinatorUpcomingEvents/', coupl.views.CoordinatorUpcomingEvents.as_view()),
 
     path('addCoordinatorPhoto/', coupl.views.CoordinatorAddPhotoView.as_view()),
     path('updateCoordinatorPhoto/', coupl.views.CoordinatorUpdatePhotoView.as_view()),
