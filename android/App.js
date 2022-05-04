@@ -7,7 +7,6 @@
  */
 
 import React from 'react';
-import type { Node } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -21,12 +20,12 @@ import {
 
 import LandingNavigation from './src/components/Landing/LandingNavigation';
 import UserNavigation from './src/components/User/UserNavigation';
-
+import CoordinatorNavigation from './src/components/Coordinator/CoordinatorNavigation';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import setupAxios from './src/config/axiosConfig';
 
-const App: () => Node = () => {
+const App = () => {
   const Stack = createNativeStackNavigator();
   setupAxios();
 
@@ -45,7 +44,7 @@ const App: () => Node = () => {
         />
         <Stack.Screen
           name="CoordinatorNavigation"
-          component={UserNavigation}
+          component={CoordinatorNavigation}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>
