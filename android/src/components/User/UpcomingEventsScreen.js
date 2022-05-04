@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
         borderRadius: 20,
     },
     name: {
-        marginTop: -12,
+        marginTop: 12,
         fontWeight: '700',
         fontSize: 18,
         color: "black",
