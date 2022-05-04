@@ -15,7 +15,7 @@ const CoordinatorPreviousEventsScreen = ({ navigation }) => {
   const user = useSelector(selectUser);
 
   useEffect(() => {
-    axios.get('listAttendedEvents/').then((res) => {
+    axios.get('/coordinatorPreviousEvents/').then((res) => {
       setEvents(res.data);
     }).catch((err) => {
       console.log(err);

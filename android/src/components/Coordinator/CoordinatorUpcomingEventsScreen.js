@@ -20,7 +20,7 @@ const UpcomingEvents = ({ navigation }) => {
   useEffect(() => {
     navigation.setOptions({ title: "Upcoming Events" });
     //Change the end point
-    axios.get('listEvents/').then((res) => {
+    axios.get('/coordinatorUpcomingEvents/').then((res) => {
       setEvents(res.data);
     }).catch((err) => {
       console.log(err);

@@ -1,76 +1,92 @@
-import { useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
-import moment from 'moment';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  BackHandler,
-  Dimensions,
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
   View,
   Text
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, TextInput } from 'react-native-paper';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import { useSelector, useStore } from 'react-redux';
-import { selectUser } from '../../redux/selectors';
 import { Dropdown, MultiSelect } from 'react-native-element-dropdown';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
-const eventLocationData = [
-  { label: 'Bilkent', value: 'Bilkent' },
-  { label: 'Bahcelievler', value: 'Bahcelievler' }
-]
-
-const eventTagsData = [
-  { label: 'Indoor', value: 'Indoor' },
-  { label: 'Outdoor', value: 'Outdoor' }
-]
-
 const EventCreationNavigation = ({ navigation }) => {
+
   useEffect(() => {
     navigation.setOptions({ title: 'Event Creation' });
-  });
 
-  const user = useSelector(selectUser);
+    axios.get('/listTags').then((res) => {
+      setEventTagsData(res.data);
+    }).catch((err) => {
+      console.log(err);
+    })
+
+    axios.get('/listLocations').then((res) => {
+      setEventLocationsData(res.data);
+    }).catch((err) => {
+      console.log(err);
+    })
+  }, []);
+
+  const today = new Date();
 
   const [eventName, setEventName] = useState('');
-  const [eventTags, setEventTags] = useState([]);
-  const [eventLocation, setEventLocation] = useState('');
   const [eventDescription, setEventDescription] = useState('');
+  const [eventTags, setEventTags] = useState([]);
+  const [eventTagsData, setEventTagsData] = useState([]);
+  const [eventLocation, setEventLocation] = useState(0);
+  const [eventLocationsData, setEventLocationsData] = useState([]);
   const [eventStartTime, setEventStartTime] = useState('');
   const [eventFinishTime, setEventFinishTime] = useState('');
 
-  const [value, setValue] = useState(null);
-  const [selected, setSelected] = useState([]);
   const [isSingleFocus, setIsSingleFocus] = useState(false);
   const [isMultiFocus, setIsMultiFocus] = useState(false);
-  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [isDatePickerVisibleStartTime, setDatePickerVisibilityStartTime] = useState(false);
+  const [isDatePickerVisibleFinishTime, setDatePickerVisibilityFinishTime] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const data = {
     event_name: eventName,
-    event_location: eventLocation,
     event_description: eventDescription,
-    event_creator: user.userId,
+    event_location: eventLocation,
     event_start_time: eventStartTime,
     event_finish_time: eventFinishTime,
-    event_tags: eventTags,
+    event_tags: eventTags.map((i) => i.id)
   };
 
-  const showDatePicker = () => {
-    setDatePickerVisibility(true);
+  const showDatePickerStartTime = () => {
+    setDatePickerVisibilityStartTime(true);
   };
 
-  const hideDatePicker = () => {
-    setDatePickerVisibility(false);
+  const hideDatePickerStartTime = () => {
+    setDatePickerVisibilityStartTime(false);
   };
 
-  const handleConfirm = (date) => {
-    setEventStartTime(date)
-    hideDatePicker();
+  const showDatePickerFinishTime = () => {
+    setDatePickerVisibilityFinishTime(true);
+  };
+
+  const hideDatePickerFinishTime = () => {
+    setDatePickerVisibilityFinishTime(false);
+  };
+
+  const handleConfirmStartTime = (startDate) => {
+    if (today.getTime() > startDate.getTime()) {
+      hideDatePickerStartTime();
+    } else {
+      setEventStartTime(startDate)
+      hideDatePickerStartTime();
+    }
+  };
+
+  const handleConfirmFinishTime = (finishDate) => {
+    if (today.getTime() > finishDate.getTime() || eventStartTime.getTime() > finishDate.getTime()) {
+      hideDatePickerFinishTime();
+    } else {
+      setEventFinishTime(finishDate)
+      hideDatePickerFinishTime();
+    }
   };
 
   const onSubmit = () => {
@@ -135,16 +151,16 @@ const EventCreationNavigation = ({ navigation }) => {
           style={[styles.singleDropdown, isSingleFocus && { borderBottomWidth: 2, borderBottomColor: 'purple' }]}
           placeholderStyle={styles.singlePlaceholderStyle}
           selectedTextStyle={styles.singleSelectedTextStyle}
-          data={eventLocationData}
+          data={eventLocationsData}
           maxHeight={300}
-          labelField="label"
-          valueField="value"
+          labelField="name"
+          valueField="pk"
           placeholder={!isSingleFocus ? 'Event Location' : '...'}
-          value={value}
+          value={eventLocation}
           onFocus={() => setIsSingleFocus(true)}
           onBlur={() => setIsSingleFocus(false)}
           onChange={item => {
-            setValue(item.value);
+            setEventLocation(item.pk);
             setIsSingleFocus(false);
           }}
         />
@@ -153,13 +169,13 @@ const EventCreationNavigation = ({ navigation }) => {
           placeholderStyle={styles.multiPlaceholderStyle}
           selectedTextStyle={styles.multiSelectedTextStyle}
           data={eventTagsData}
-          labelField="label"
-          valueField="value"
+          labelField="tag_name"
+          valueField="id"
           placeholder="Event Tags"
-          value={selected}
+          value={eventTags}
           onFocus={() => setIsMultiFocus(true)}
           onChange={item => {
-            setSelected(item);
+            setEventTags(item);
             setIsMultiFocus(false);
           }}
           selectedStyle={styles.multiSelectedStyle}
@@ -167,7 +183,7 @@ const EventCreationNavigation = ({ navigation }) => {
         />
         <View style={styles.date}>
           <View style={styles.startDate}>
-            <Button style={styles.dateButton} onPress={showDatePicker}>
+            <Button style={styles.dateButton} onPress={showDatePickerStartTime}>
               <Text style={styles.dateText}>
                 {eventStartTime ? eventStartTime.toLocaleDateString() : "Start Time "}
               </Text>
@@ -178,15 +194,15 @@ const EventCreationNavigation = ({ navigation }) => {
             </Button>
             <DateTimePickerModal
               mode="datetime"
-              isVisible={isDatePickerVisible}
-              onConfirm={handleConfirm}
-              onCancel={hideDatePicker}
+              isVisible={isDatePickerVisibleStartTime}
+              onConfirm={handleConfirmStartTime}
+              onCancel={hideDatePickerStartTime}
             />
           </View>
           <View style={styles.endDate}>
-            <Button style={styles.dateButton} onPress={showDatePicker}>
+            <Button style={styles.dateButton} onPress={showDatePickerFinishTime}>
               <Text style={styles.dateText}>
-                {eventStartTime ? eventStartTime.toLocaleDateString() : "Start Time "}
+                {eventFinishTime ? eventFinishTime.toLocaleDateString() : "End Time "}
               </Text>
               <AntDesign name="calendar" size={28}
                 style={styles.dateIcon}
@@ -196,9 +212,9 @@ const EventCreationNavigation = ({ navigation }) => {
             </Button>
             <DateTimePickerModal
               mode="datetime"
-              isVisible={isDatePickerVisible}
-              onConfirm={handleConfirm}
-              onCancel={hideDatePicker}
+              isVisible={isDatePickerVisibleFinishTime}
+              onConfirm={handleConfirmFinishTime}
+              onCancel={hideDatePickerFinishTime}
             />
           </View>
         </View>
@@ -235,6 +251,7 @@ const styles = StyleSheet.create({
   },
   singlePlaceholderStyle: {
     fontSize: 16,
+    color: 'gray'
   },
   singleSelectedTextStyle: {
     fontSize: 16,
@@ -248,6 +265,7 @@ const styles = StyleSheet.create({
   },
   multiPlaceholderStyle: {
     fontSize: 16,
+    color: 'gray'
   },
   multiSelectedTextStyle: {
     fontSize: 14,
