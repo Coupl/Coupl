@@ -148,8 +148,8 @@ class Ticket(models.Model):
     description = models.CharField(blank=False, max_length=250)
     status = models.CharField(default="Pending", max_length=20)
 
-class Chat(models.Model):
-    user1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user1")
-    user2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user2")
-    messages = models.ArrayField(models.CharField(max_length=200), blank=False)
-    
+class Message(models.Model):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sender")
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="receiver")
+    content = models.CharField(max_length=200)
+    date = models.DateTimeField(auto_now_add=True)
