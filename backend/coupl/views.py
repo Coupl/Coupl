@@ -15,9 +15,9 @@ from coupl.serializers import UserSerializer, EventSerializer, TagSerializer, \
     ProfileSerializer, MatchSerializer, ProfilePictureSerializer, CoordinatorSerializer, CoordinatorPictureSerializer, \
     HobbySerializer, MatchDetailedSerializer, LocationSerializer, TicketSerializer, SubAreasSerializer, \
     ProfileWithMatchDetailsSerializer, MatchScoreSerializer, \
-    EventWithMatchDetailsSerializer
+    EventWithMatchDetailsSerializer, MessageSerializer
 from coupl.models import Event, Tag, Profile, Match, ProfilePicture, Coordinator, Hobby, Rating, Ticket, Comment, \
-    Location, SubAreas, MatchScore
+    Location, SubAreas, MatchScore, Message
 from itertools import chain
 import coupl.permissions
 
@@ -904,3 +904,42 @@ class CreateTicketView(APIView):
         return JsonResponse(serializer.errors, status=400)
 
 # endregion TICKET VIEWS
+
+# region MESSAGE VIEWS
+
+class SendMessage(APIView):
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
+
+    def post(self, request, format=None):
+        serializer = MessageSerializer(data={'sender': request.user.pk, 'receiver': request.data['receiver_id'],
+                                             'content': request.data['content']})
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
+
+class GetMessagedPeople(APIView):
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
+
+    def get(self, request, format=None):
+        user = request.user
+        receivedPeople = Message.objects.filter(receiver=user).values_list('sender', flat=True, named=False)
+        sentPeople = Message.objects.filter(sender=user).values_list('receiver', flat=True, named=False)
+        people = list(chain(receivedPeople, sentPeople))
+        uniquePeople = list(set(people))
+        profiles = Profile.objects.filter(user_id__in=uniquePeople)
+        serializer = ProfileSerializer(profiles, many=True)
+
+        return Response(serializer.data)
+
+class GetChat(APIView):
+    permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
+
+    def post(self, request, format=None):
+        user = request.user
+        otherUser = User.objects.get(pk=request.data['other_user_id'])
+        messages = Message.objects.filter(Q(sender=user, receiver=otherUser) | Q(sender=otherUser, receiver=user))
+        serializer = MessageSerializer(messages, many=True)
+        return Response(serializer.data)
+
+# endregion MESSAGE VIEWS
