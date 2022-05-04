@@ -876,10 +876,11 @@ class GetMessagedPeople(APIView):
         receivedPeople = Message.objects.filter(receiver=user).values_list('sender', flat=True, named=False)
         sentPeople = Message.objects.filter(sender=user).values_list('receiver', flat=True, named=False)
         people = list(chain(receivedPeople, sentPeople))
-        # Remove duplicates from people
         uniquePeople = list(set(people))
+        profiles = Profile.objects.filter(user_id__in=uniquePeople)
+        serializer = ProfileSerializer(profiles, many=True)
 
-        return Response(uniquePeople)
+        return Response(serializer.data)
 
 class GetChat(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
