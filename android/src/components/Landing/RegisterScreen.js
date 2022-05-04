@@ -159,6 +159,7 @@ const UserRegisterScreen = ({ navigation }) => {
                         <TextInput
                             style={styles.doubleTextInput}
                             label="Confirm Password"
+                            secureTextEntry={true}
                             value={passwordConfirm}
                             onChangeText={text => setPasswordConfirm(text)}
                         />
@@ -343,6 +344,7 @@ const CoordinatorRegisterScreen = ({ navigation }) => {
                         <TextInput
                             style={styles.doubleTextInput}
                             label="Confirm Password"
+                            secureTextEntry={true}
                             value={passwordConfirm}
                             onChangeText={text => setPasswordConfirm(text)}
                         />
