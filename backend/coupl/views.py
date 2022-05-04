@@ -911,10 +911,17 @@ class SendMessage(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
 
     def post(self, request, format=None):
-        serializer = MessageSerializer(data={'sender': request.user.pk, 'receiver': request.data['receiver_id'],
+        user = request.user
+        serializer = MessageSerializer(data={'sender': user.pk, 'receiver': request.data['receiver_id'],
                                              'content': request.data['content']})
         if serializer.is_valid():
             serializer.save()
+
+            receiver = User.objects.get(pk=request.data['receiver_id'])
+            messages = Message.objects.filter(Q(sender=user, receiver=receiver) | Q(sender=receiver, receiver=user)).order_by('date')
+            allMessages = MessageSerializer(messages, many=True)
+            return Response(allMessages.data)
+
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
 
@@ -928,8 +935,15 @@ class GetMessagedPeople(APIView):
         people = list(chain(receivedPeople, sentPeople))
         uniquePeople = list(set(people))
         profiles = Profile.objects.filter(user_id__in=uniquePeople)
-        serializer = ProfileSerializer(profiles, many=True)
 
+        profilesWithEvent = []
+        for profile in profiles:
+            match = Match.objects.filter(state=5).filter(Q(liker=profile.user, liked=user) | Q(liked=profile.user, liker=user)).first() 
+            matchedEvent = Event.objects.first()
+            profileWithEvent = {'profile': profile, 'event': matchedEvent}
+            profilesWithEvent.append(profileWithEvent)
+
+        serializer = EventWithMatchDetailsSerializer(profilesWithEvent, many=True)
         return Response(serializer.data)
 
 class GetChat(APIView):
@@ -938,7 +952,7 @@ class GetChat(APIView):
     def post(self, request, format=None):
         user = request.user
         otherUser = User.objects.get(pk=request.data['other_user_id'])
-        messages = Message.objects.filter(Q(sender=user, receiver=otherUser) | Q(sender=otherUser, receiver=user))
+        messages = Message.objects.filter(Q(sender=user, receiver=otherUser) | Q(sender=otherUser, receiver=user)).order_by('date')
         serializer = MessageSerializer(messages, many=True)
         return Response(serializer.data)
 
