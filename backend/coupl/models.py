@@ -147,3 +147,9 @@ class Ticket(models.Model):
     reported = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reported")
     description = models.CharField(blank=False, max_length=250)
     status = models.CharField(default="Pending", max_length=20)
+
+class Chat(models.Model):
+    user1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user1")
+    user2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user2")
+    messages = models.ArrayField(models.CharField(max_length=200), blank=False)
+    
