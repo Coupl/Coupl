@@ -1,17 +1,19 @@
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import axios from 'axios';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Divider } from 'react-native-paper';
+import { Dimensions, ScrollView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Divider } from 'react-native-paper';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../redux/selectors';
 import FirebaseImage from '../Common/FirebaseImage';
+import ChatScreen from './ChatScreen';
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
-const AttendedEventsScreen = ({ navigation }) => {
-    const [events, setEvents] = useState([]);
+const MainAttendedEventsScreen = ({ navigation }) => {
+    const [events, setEvents] = useState(null);
     const user = useSelector(selectUser);
 
     useEffect(() => {
@@ -21,6 +23,15 @@ const AttendedEventsScreen = ({ navigation }) => {
             console.log(err);
         })
     }, []);
+
+    if (!events) {
+        return (
+            <View style={styles.container}>
+                <ActivityIndicator size={200} color="#0000ff" />
+                <Text style={{ textAlign: "center", fontSize: 30, padding: 10 }}> Please wait</Text>
+            </View>
+        )
+    }
 
     return (
         <ScrollView style={styles.container}>
@@ -39,10 +50,12 @@ const AttendedEventsScreen = ({ navigation }) => {
 
                     return (
                         <View style={{ flex: 1, flexDirection: "row" }}>
-                            <View>
+                            <TouchableOpacity onPress={()=> {
+                                navigation.navigate('ChatScreen', { profile: match })
+                            }}>
                                 <Text style={{ fontSize: 18 }}> {match.name + " " + match.surname} </Text>
                                 <Text style={{ fontSize: 12 }}> Send a message </Text>
-                            </View>
+                            </TouchableOpacity>
                             <View style={{ flexBasis: 50 }}>
                                 <FirebaseImage imageName={match?.profile_pictures[0]?.url} style={{ width: 50, height: 50 }}></FirebaseImage>
                             </View>
@@ -78,6 +91,18 @@ const AttendedEventsScreen = ({ navigation }) => {
         </ScrollView>
     );
 }
+
+const AttendedEventsScreen = ({ navigation }) => {
+    const Stack = createNativeStackNavigator();
+
+    return (
+        <Stack.Navigator>
+            <Stack.Screen name="MainAttendedEventsScreen" component={MainAttendedEventsScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="ChatScreen" component={ChatScreen} />
+        </Stack.Navigator>
+    );
+}
+
 
 const styles = StyleSheet.create({
     container: {
