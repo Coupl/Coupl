@@ -2,7 +2,7 @@ import axios from "axios";
 import Toast from 'react-native-toast-message';
 import allActions from "../../../redux/actions";
 
-const CLIENT_ID = "2GfSgx7YIZzZXzvv9bymtb8KtEKJTn5Vwt09ne79";
+const CLIENT_ID = "ocdpfY0OOZEQldkfmZeOIeuwr4wTK1dYd914pOx0";
 
 function getQueryString(data = {}) {
     return Object.entries(data)
