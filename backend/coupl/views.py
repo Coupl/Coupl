@@ -944,7 +944,7 @@ class GetMessagedPeople(APIView):
         profilesWithEvent = []
         for profile in profiles:
             match = Match.objects.filter(state=5).filter(Q(liker=profile.user, liked=user) | Q(liked=profile.user, liker=user)).first() 
-            matchedEvent = Event.objects.first()
+            matchedEvent = match.event
             profileWithEvent = {'profile': profile, 'event': matchedEvent}
             profilesWithEvent.append(profileWithEvent)
 
