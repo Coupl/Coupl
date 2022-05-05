@@ -14,11 +14,32 @@ import QRCodeScanner from 'react-native-qrcode-scanner';
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { useSelector, useStore } from 'react-redux';
 import allActions from '../../redux/actions';
+import { selectUser } from '../../redux/selectors';
+import GetLocation from 'react-native-get-location'
+import Toast from 'react-native-toast-message';
 
 
 const QRCodeScannerTimeout = 1000;
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
+
+//https://stackoverflow.com/questions/18883601/function-to-calculate-distance-between-two-coordinates
+const deg2rad = (deg) => {
+    return deg * (Math.PI / 180)
+}
+const getDistanceFromLatLonInMeters = (lat1, lon1, lat2, lon2) => {
+    var R = 6371; // Radius of the earth in km
+    var dLat = deg2rad(lat2 - lat1);  // deg2rad below
+    var dLon = deg2rad(lon2 - lon1);
+    var a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2)
+        ;
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    var d = R * c; // Distance in km
+    return d * 1000;
+}
 
 const HomeMainScreen = ({ navigation }) => {
 
@@ -27,7 +48,6 @@ const HomeMainScreen = ({ navigation }) => {
 
     const joinEvent = (eventId) => {
         const joinEventBody = {
-            user_id: 2,
             event_id: eventId
         }
 
@@ -104,7 +124,7 @@ const HomeMainScreen = ({ navigation }) => {
 
                 <TouchableOpacity
                     style={{ flex: 1, marginVertical: 10, backgroundColor: 'rgba(0,128,0,0.1)', justifyContent: "center", alignItems: "center" }}
-                    onPress={() => joinEvent(7)}
+                    onPress={() => joinEvent(2)}
                 >
                     <Text style={{ fontSize: 20, color: 'rgba(0,128,0,1.0)', fontWeight: "600" }}>Test Event</Text>
                 </TouchableOpacity>
@@ -126,30 +146,58 @@ const QRCodeScannerScreen = ({ navigation }) => {
             event_id: eventId,
         }
 
-        axios.post('joinEvent/', joinEventBody).then((res) => {
+        axios.post('getEvent/', getEventBody).then((res) => {
+            var eventInfo = res.data;
 
-            axios.post('getEvent/', getEventBody).then((res) => {
-                var eventInfo = res.data;
-                store.dispatch(joinEventAction(eventInfo));
-                navigation.navigate('EventNavigation');
-            }).catch((err) => {
-                console.log(err.response);
-            });
+            GetLocation.getCurrentPosition({
+                enableHighAccuracy: true,
+                timeout: 15000,
+            })
+                .then(location => {
+
+                    const lat1 = location.latitude;
+                    const lat2 = eventInfo.event_location.latitude;
+                    const lon1 = location.longitude;
+                    const lon2 = eventInfo.event_location.longitude;
+
+                    const distance = getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2);
+                    
+                    if (distance > 100) {
+                        Toast.show({
+                            type: 'error',
+                            text1: 'You are not at the event location right now.',
+                        });
+                        return;
+                    }
+
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Your location is confirmed, joining the event.',
+                    });
+
+                    axios.post('joinEvent/', joinEventBody).then((res) => {
+
+                        store.dispatch(joinEventAction(eventInfo));
+                        navigation.navigate('EventNavigation');
+
+                    }).catch((err) => {
+                        //If user is already in the event, let them in
+                        if (err.response.data === "User is already in event") {
+                            store.dispatch(joinEventAction(eventInfo));
+                            navigation.navigate('EventNavigation');
+                        }
+
+                    });
+
+
+                })
+                .catch(error => {
+                    const { code, message } = error;
+                    console.warn(code, message);
+                })
 
         }).catch((err) => {
             console.log(err.response);
-
-            //If user is already in the event, let them in
-            if (err.response.data === "User is already in event") {
-                axios.post('getEvent/', getEventBody).then((res) => {
-                    var eventInfo = res.data;
-                    store.dispatch(joinEventAction(eventInfo));
-                    navigation.navigate('EventNavigation');
-                }).catch((err) => {
-                    console.log(err.response);
-                });
-            }
-
         });
 
     }
