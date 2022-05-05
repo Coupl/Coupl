@@ -40,7 +40,8 @@ const ProfilePhotoSwiper = ({ profile, renderBottom }) => {
         return (
             <View>
                 <FirebaseImageBackground style={styles.image} imageName={item.url}>
-                    <Popover
+                    {/*
+                        <Popover
                         from={(
                             <TouchableOpacity style={{ marginTop: 10 }}>
                                 <AntDesign name="infocirlce" size={35} color="white" />
@@ -51,6 +52,8 @@ const ProfilePhotoSwiper = ({ profile, renderBottom }) => {
                             <Text style={styles.text}>{item.description}</Text>
                         </View>
                     </Popover>
+                        */}
+                    
                 </FirebaseImageBackground>
             </View>
         );

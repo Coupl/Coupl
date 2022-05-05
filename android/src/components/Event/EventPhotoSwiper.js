@@ -32,17 +32,20 @@ const EventPhotoSwiper = ({ event }) => {
         return (
             <View>
                 <FirebaseImageBackground style={styles.image} imageName={item.url}>
-                    <Popover
-                        from={(
-                            <TouchableOpacity style={{ marginTop: 10 }}>
-                                <AntDesign name="infocirlce" size={35} color="white" />
-                            </TouchableOpacity>
-                        )}>
-                        <View style={{ alignItems: "center" }}>
-                            <Text style={styles.title}>{item.title}</Text>
-                            <Text style={styles.text}>{item.description}</Text>
-                        </View>
-                    </Popover>
+                    {/*
+                        <Popover
+                            from={(
+                                <TouchableOpacity style={{ marginTop: 10 }}>
+                                    <AntDesign name="infocirlce" size={35} color="white" />
+                                </TouchableOpacity>
+                            )}>
+                            <View style={{ alignItems: "center" }}>
+                                <Text style={styles.title}>{item.title}</Text>
+                                <Text style={styles.text}>{item.description}</Text>
+                            </View>
+                        </Popover>
+                            */}
+
                 </FirebaseImageBackground>
             </View>
         );
