@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { useSelector, useStore } from 'react-redux';
@@ -40,10 +40,22 @@ const HobbyChooser = () => {
     });
   }, []);
 
-  const handlePress = (hobby, index) => {
+  const hobbyTypesArray = hobbies.map((hobby) => hobby.type);
+  const hobbyTypes = [...new Set(hobbyTypesArray)];
+
+  const categorizedHobbies = hobbyTypes.map((hobbyType) => {
+    return {
+      type: hobbyType,
+      list: hobbies.filter((hobby) => hobby.type === hobbyType)
+    }
+  });
+  
+  const handlePress = (hobby) => {
     const numSelected = hobbies.filter(userHobby => (userHobby.state === SELECTED || userHobby.state === JUST_SELECTED)).length;
     const alreadySelected = (hobby.state === SELECTED) || (hobby.state === JUST_SELECTED);
     if (!alreadySelected && numSelected >= 10) return;
+
+    const index = hobbies.map((hobby) => hobby.title).indexOf(hobby.title);
 
     let loadingHobbies = [...hobbies];
     loadingHobbies[index].loading = true;
@@ -69,9 +81,8 @@ const HobbyChooser = () => {
     });
   }
 
-
   return (
-    <SafeAreaView>
+    <ScrollView>
 
       {
         hobbies.filter(userHobby => (userHobby.state === SELECTED || userHobby.state === JUST_SELECTED)).length < 10 ?
@@ -79,34 +90,47 @@ const HobbyChooser = () => {
           <Text style={{ alignSelf: "center", fontSize: 26 }}>You have selected the maximum of 10 hobbies.</Text>
       }
 
-      <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flexWrap: 'wrap', padding: 10 }}>
-        {hobbies.map((hobby, index) => {
-          const color = COLORS[hobby.state];
+      <View style={{ flex: 1 }}>
+        {categorizedHobbies.map((hobbyCategory, index) => {
           return (
-            <TouchableOpacity
-              key={index}
-              style={{ flexDirection: "row", paddingVertical: 10, paddingHorizontal: 5, borderRadius: 24, margin: 5, backgroundColor: color }}
-              onPress={() => { handlePress(hobby, index); }}
-            >
-              <Text >{hobby.title}</Text>
-              {
-                hobby.loading &&
-                <ActivityIndicator />
-              }
-              {
-                (hobby.state === JUST_SELECTED) &&
-                <AntDesign key={index} name="check" style={{ marginHorizontal: 5 }} size={16} />
-              }
-              {
-                (hobby.state === JUST_REMOVED) &&
-                <AntDesign key={index} name="close" style={{ marginHorizontal: 5 }} size={16} />
-              }
-            </TouchableOpacity>
+            <View key={index} style={{ flex: 1 }}>
+
+              <Text style={{alignSelf: "center", fontSize: 22}}>{hobbyCategory.type}</Text>
+              <View
+                style={{ flexDirection: 'row', justifyContent: 'space-evenly', flexWrap: 'wrap', padding: 10, borderRadius: 10, borderWidth: 2, margin: 10 }}
+              >
+                {hobbyCategory.list.map((hobby, index) => {
+                  const color = COLORS[hobby.state];
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      style={{ flexDirection: "row", paddingVertical: 10, paddingHorizontal: 5, borderRadius: 24, margin: 5, backgroundColor: color }}
+                      onPress={() => { handlePress(hobby); }}
+                    >
+                      <Text >{hobby.title}</Text>
+                      {
+                        hobby.loading &&
+                        <ActivityIndicator />
+                      }
+                      {
+                        (hobby.state === JUST_SELECTED) &&
+                        <AntDesign key={index} name="check" style={{ marginHorizontal: 5 }} size={16} />
+                      }
+                      {
+                        (hobby.state === JUST_REMOVED) &&
+                        <AntDesign key={index} name="close" style={{ marginHorizontal: 5 }} size={16} />
+                      }
+                    </TouchableOpacity>
+                  )
+                })}
+              </View>
+            </View>
           )
-        })}
+        })
+        }
       </View>
 
-    </SafeAreaView >
+    </ScrollView >
   );
 }
 
