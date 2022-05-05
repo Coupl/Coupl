@@ -28,7 +28,7 @@ const UpcomingEvents = ({ navigation }) => {
     }).catch((err) => {
       console.log(err);
     })
-  }, [navigation]);
+  });
 
 
   return (<>
