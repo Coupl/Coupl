@@ -87,6 +87,8 @@ class Location(models.Model):
     name = models.CharField(blank=False, max_length=50)
     description = models.CharField(max_length=100)
     address = models.CharField(blank=False, max_length=150)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
 
 
 class LocationPictures(models.Model):
