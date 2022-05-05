@@ -22,7 +22,9 @@ const UpcomingEventsDetailsScreen = ({ navigation, route }) => {
   }, []);
   return (
     <View style={styles.container}>
-      <FirebaseImage style={styles.image} imageName={imageName} />
+      <View style={{ borderRadius: 20, overflow: "hidden" }}>
+        <FirebaseImage style={styles.image} imageName={imageName} />
+      </View>
       <View style={styles.background}>
         <ScrollView>
           <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flexWrap: 'wrap' }}>
@@ -63,12 +65,12 @@ export default UpcomingEventsDetailsScreen;
 
 const styles = StyleSheet.create({
   container: {
-      flex: 1,
-      margin: 10,
-      borderColor: "gray",
-      backgroundColor: "#DCDCDC",
-      borderWidth: 2,
-      borderRadius: 20,
+    flex: 1,
+    margin: 10,
+    borderColor: "gray",
+    backgroundColor: "#DCDCDC",
+    borderWidth: 2,
+    borderRadius: 20,
   },
   description: {
     paddingTop: 10,

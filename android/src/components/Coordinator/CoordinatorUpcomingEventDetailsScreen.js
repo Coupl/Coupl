@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  Dimensions, Image, ScrollView, StyleSheet, Text, View
+  Dimensions, Image, ScrollView, StyleSheet, Text, View, PermissionsAndroid, Platform
 } from 'react-native';
 import AntDesign from "react-native-vector-icons/AntDesign";
 import moment from 'moment';
 import FirebaseImage from '../Common/FirebaseImage';
+import QRCode from 'react-native-qrcode-svg';
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
@@ -13,8 +14,8 @@ const width = Dimensions.get('window').width;
 const CoordinatorUpcomingEventDetailsScreen = ({ navigation, route }) => {
   const { item } = route.params;
 
-  const startTime = moment(item.event_start_time, 'YYYY-MM-DD').format('MMMM Do YYYY, h:mm:ss a');
-  const finishTime = moment(item.event_finish_time, 'YYYY-MM-DD').format('MMMM Do YYYY, h:mm:ss a');
+  const startTime = moment(item.event_start_time, 'YYYY-MM-DD HH:mm:ss').format('MMMM Do YYYY, h:mm:ss a');
+  const finishTime = moment(item.event_finish_time, 'YYYY-MM-DD HH:mm:ss').format('MMMM Do YYYY, h:mm:ss a');
   const imageName = item.event_location.location_picture[0]?.url;
   //TODO: show all the photos with EventPhotoSwiper here 
 
@@ -22,38 +23,52 @@ const CoordinatorUpcomingEventDetailsScreen = ({ navigation, route }) => {
     navigation.setOptions({ title: `${item.event_name}` });
   }, []);
 
+  const qrCodeValue = "coupl.github.io/joinEvent?eventId=" + item.id;
+
   return (
     <View style={styles.container}>
-      <FirebaseImage style={styles.image} imageName={imageName} />
-      <View style={styles.background}>
-        <ScrollView>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flexWrap: 'wrap' }}>
-            <AntDesign name="enviroment" size={28}
-              style={styles.icon}
-              color={'#000'}
-            >
-              <Text style={styles.text}>{item.event_location.name}</Text>
-            </AntDesign>
-            <AntDesign name="clockcircle" size={28}
-              style={styles.icon}
-              color={'#000'}
-            >
-              <Text style={styles.text}>{startTime + " - " + finishTime}</Text>
-            </AntDesign>
-            {item.event_tags.map((tag, index) => {
-              return (
-                <AntDesign key={index} name="slack-square" size={28}
-                  style={styles.icon}
-                  color={'#000'}
-                >
-                  <Text style={styles.text}>{tag.tag_name}</Text>
-                </AntDesign>
-              )
-            })}
-          </View>
-          <Text style={styles.description}>{item.description}</Text>
-        </ScrollView>
+      <View style={{borderRadius: 20, overflow: "hidden"}}>
+        <FirebaseImage style={{ width: width, height: width / 2 }} imageName={imageName} />
       </View>
+      <ScrollView>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flexWrap: 'wrap' }}>
+          <AntDesign name="enviroment" size={28}
+            style={styles.icon}
+            color={'#000'}
+          >
+            <Text style={styles.text}>{item.event_location.name}</Text>
+          </AntDesign>
+          <AntDesign name="clockcircle" size={28}
+            style={styles.icon}
+            color={'#000'}
+          >
+            <Text style={styles.text}>{startTime + " - " + finishTime}</Text>
+          </AntDesign>
+          {item.event_tags.map((tag, index) => {
+            return (
+              <AntDesign key={index} name="slack-square" size={28}
+                style={styles.icon}
+                color={'#000'}
+              >
+                <Text style={styles.text}>{tag.tag_name}</Text>
+              </AntDesign>
+            )
+          })}
+        </View>
+        <Text style={styles.description}>{item.description}</Text>
+
+
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <Text style={{ marginBottom: 10, fontSize: 22 }}>QR Code to enter the event</Text>
+          <QRCode
+            style={{ marginVertical: 20 }}
+            size={width - 100}
+            logoBackgroundColor='#DCDCDC'
+            logo={require('./assets/logo.png')}
+            value={qrCodeValue}
+          />
+        </View>
+      </ScrollView>
     </View>
   )
 }
@@ -94,10 +109,8 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   background: {
-    position: 'absolute',
     width: width - 24,
     height,
-    transform: [{ translateY: height * 0.3 }],
     backgroundColor: '#fff',
     borderRadius: 32
   }
