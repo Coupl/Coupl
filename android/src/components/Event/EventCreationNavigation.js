@@ -4,9 +4,11 @@ import {
   ScrollView,
   StyleSheet,
   View,
-  Text
+  Text,
+  ActivityIndicator
 } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
+import Toast from 'react-native-toast-message';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { Dropdown, MultiSelect } from 'react-native-element-dropdown';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -52,7 +54,7 @@ const EventCreationNavigation = ({ navigation }) => {
     event_location: eventLocation,
     event_start_time: eventStartTime,
     event_finish_time: eventFinishTime,
-    event_tags: eventTags.map((i) => i.id)
+    event_tags: eventTags
   };
 
   const showDatePickerStartTime = () => {
@@ -111,11 +113,12 @@ const EventCreationNavigation = ({ navigation }) => {
 
         setLoading(false);
 
-        navigation.navigate('UpcomingOrganizationsScreen');
+        navigation.navigate('UpcomingEvents');
       })
       .catch(err => {
         setLoading(false);
-        console.log(err.response);
+        console.log(err);
+        navigation.navigate('UpcomingEvents');
       });
   };
 

@@ -4,9 +4,10 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
-  FlatList, StyleSheet, Text, TouchableOpacity, View, Image
+  FlatList, StyleSheet, Text, TouchableOpacity, View, Image, ScrollView, ActivityIndicator
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Divider } from 'react-native-paper';
+import Toast from 'react-native-toast-message';
 import AntDesign from "react-native-vector-icons/AntDesign";
 import FirebaseImage from '../Common/FirebaseImage';
 import CoordinatorUpcomingEventDetailsScreen from './CoordinatorUpcomingEventDetailsScreen';
@@ -16,62 +17,79 @@ const width = Dimensions.get('window').width;
 
 const UpcomingEvents = ({ navigation }) => {
   const [events, setEvents] = useState([]);
+  const [isDone, setIsDone] = useState(false);
 
   useEffect(() => {
     navigation.setOptions({ title: "Upcoming Events" });
     //Change the end point
     axios.get('/coordinatorUpcomingEvents/').then((res) => {
       setEvents(res.data);
+      setIsDone(true);
     }).catch((err) => {
       console.log(err);
     })
-  }, []);
+  }, [navigation]);
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <FlatList
-        data={events}
-        keyExtractor={item => item.id}
-        contentContainerStyle={{ padding: 16 }}
-        renderItem={item_ => {
-          const item = item_.item;
-          const imageName = item.event_location.location_picture[0]?.url;
-          const startTime = moment(item.event_start_time, 'YYYY-MM-DD').format('MMMM Do YYYY, h:mm:ss a');
-          return (
-            <TouchableOpacity style={{ marginBottom: 16, height: height * 0.40 }} onPress={() => navigation.navigate('UpcomingEventDetails', { item })}>
-              <View style={{ flex: 1, padding: 16 }}>
-                <View
-                  style={
-                    [StyleSheet.absoluteFillObject,
-                    { backgroundColor: '#C0D6E4', borderRadius: 16 },
-                    ]}
-                />
-                <FirebaseImage style={styles.image} imageName={imageName} />
-                <Text style={styles.name}>{item.event_name}</Text>
-                <AntDesign name="enviroment" size={12}
-                  style={styles.icon}
-                  color={'#000'}
-                >
 
-                  <Text style={styles.description}>{item.event_location.name}</Text>
-                </AntDesign>
-                <AntDesign name="calendar" size={12}
-                  style={styles.icon}
-                  color={'#000'}
-                >
-                  <Text style={styles.text}>{startTime}</Text>
-                </AntDesign>
-              </View>
-            </TouchableOpacity>
-          );
-        }}
-      />
-      <View>
+  return (<>
+    {isDone ? (
+      <View style={{ flex: 1 }}>
+        <ScrollView style={styles.container}>
+          {events.map((event, index) => {
+
+            const startTime = moment(event.event_start_time, 'YYYY-MM-DD HH:mm:ss').format('MMMM Do YYYY, h:mm:ss a');
+            const start = moment(event.event_start_time, 'YYYY-MM-DD HH:mm:ss');
+            const end = moment(event.event_finish_time, 'YYYY-MM-DD HH:mm:ss');
+            const duration = moment.duration(end.diff(start)).asHours().toFixed(0);
+
+            return (
+              <TouchableOpacity key={index + ""} style={{ flex: 1 }} onPress={() => navigation.navigate('CoordinatorUpcomingEventDetails', { item: event })}>
+                <View style={{ flex: 1, padding: 5, margin: 5, }} >
+                  <View style={{ overflow: "hidden" }}>
+                    <FirebaseImage imageName={event.event_location.location_picture[0]?.url} style={{ width: width, height: width / 3 }}></FirebaseImage>
+                  </View>
+                  <View style={{ paddingVertical: 10, flex: 1, flexDirection: 'row' }}>
+
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 18 }}> {event.event_name} </Text>
+                      <AntDesign name="enviroment" size={12}
+                        style={styles.icon}
+                        color={'#000'}
+                      >
+
+                        <Text style={styles.description}>{event.event_location.name}</Text>
+                      </AntDesign>
+                      <AntDesign name="calendar" size={12}
+                        style={styles.icon}
+                        color={'#000'}
+                      >
+                        <Text style={styles.text}>{startTime}</Text>
+                      </AntDesign>
+                    </View>
+
+
+
+                    <View style={{ flex: 1, position: "absolute", right: 0, top: 10 }}>
+                      <Text style={{ fontSize: 18 }}> Event length: {duration} hours </Text>
+                    </View>
+                  </View>
+                </View>
+
+                <Divider style={{}} />
+              </TouchableOpacity>
+            )
+          })}
+        </ScrollView>
         <TouchableOpacity onPress={() => { navigation.navigate('EventCreationNavigation'); }}>
           <Image style={styles.eventCreation} source={require("./assets/plus.png")} />
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    ) :
+      <ScrollView style={styles.container}>
+        <ActivityIndicator size={'large'} />
+      </ScrollView>
+    }
+  </>
   );
 };
 
@@ -88,6 +106,7 @@ const CoordinatorUpcomingEventsScreen = ({ navigation }) => {
 
 export default CoordinatorUpcomingEventsScreen;
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -98,7 +117,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   name: {
-    marginTop: -12,
+    marginTop: 12,
     fontWeight: '700',
     fontSize: 18,
     color: "black",

@@ -21,6 +21,7 @@ const CoordinatorUpcomingEventDetailsScreen = ({ navigation, route }) => {
   useEffect(() => {
     navigation.setOptions({ title: `${item.event_name}` });
   }, []);
+
   return (
     <View style={styles.container}>
       <FirebaseImage style={styles.image} imageName={imageName} />
