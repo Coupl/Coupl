@@ -31,13 +31,13 @@ const UpcomingEvents = ({ navigation }) => {
     return (
 
         <ScrollView style={styles.container}>
-            {events.map((event, index) => {
+            {events.map((event, index) => { 
 
-                const startTime = moment(event.event_start_time, 'YYYY-MM-DD').format('MMMM Do YYYY, h:mm:ss a');
+                const startTime = moment(event.event_start_time, 'YYYY-MM-DD HH:mm:ss').format('MMMM Do YYYY, h:mm:ss a');
 
-                const start = moment(event.event_start_time, 'YYYY-MM-DD');
-                const end = moment(event.event_finish_time, 'YYYY-MM-DD');
-                const duration = moment.duration(end.diff(start)).asHours();
+                const start = moment(event.event_start_time, 'YYYY-MM-DD HH:mm:ss');
+                const end = moment(event.event_finish_time, 'YYYY-MM-DD HH:mm:ss');
+                const duration = moment.duration(end.diff(start)).asHours().toFixed(0);
 
                 return (
                     <TouchableOpacity key={index + ""} style={{ flex: 1 }} onPress={() => navigation.navigate('UpcomingEventDetails', { item: event })}>

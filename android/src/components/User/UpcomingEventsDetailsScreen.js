@@ -12,8 +12,8 @@ const width = Dimensions.get('window').width;
 const UpcomingEventsDetailsScreen = ({ navigation, route }) => {
   const { item } = route.params;
 
-  const startTime = moment(item.event_start_time, 'YYYY-MM-DD').format('MMMM Do YYYY, h:mm:ss a');
-  const finishTime = moment(item.event_finish_time, 'YYYY-MM-DD').format('MMMM Do YYYY, h:mm:ss a');
+  const startTime = moment(item.event_start_time, 'YYYY-MM-DD HH:mm:ss').format('MMMM Do YYYY, h:mm:ss a');
+  const finishTime = moment(item.event_finish_time, 'YYYY-MM-DD HH:mm:ss').format('MMMM Do YYYY, h:mm:ss a');
   const imageName = item.event_location.location_picture[0]?.url;
   //TODO: show all the photos with EventPhotoSwiper here 
 

@@ -52,9 +52,9 @@ const MainMessagesScreen = ({ navigation }) => {
                     >
                         <FirebaseImage imageName={profile.profile_pictures[0]?.url} style={{ width: 100, height: 100 }} />
                         <View style={{ flex: 1 }}>
-                            <Text style={{ padding: 5, fontSize: 24 }}>{profile.name} {profile.surname}</Text>
-                            <Text style={{ padding: 5, fontSize: 16 }}>From event: {event.event_name} | {event.event_location.name}</Text>
-                            <Text style={{ paddingHorizontal: 5, fontSize: 16 }}>Matched {eventDate}</Text>
+                            <Text style={{ padding: 5, fontSize: 22 }}>{profile.name} {profile.surname}</Text>
+                            <Text style={{ padding: 5, fontSize: 14 }}>From event: {event.event_name} | {event.event_location.name}</Text>
+                            <Text style={{ paddingHorizontal: 5, fontSize: 14 }}>Matched {eventDate}</Text>
                         </View>
                     </TouchableOpacity>
                 )
