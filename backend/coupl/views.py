@@ -707,7 +707,10 @@ class GetUserMatches(APIView):
                     common_locations.append({"location": location, "frequency": minFreq})
 
             hobbies_score = (2 * len(common_hobbies)) / (len(user_hobbies) + len(attendee_hobbies))
-            tags_score = (2 * sum(tag["frequency"] for tag in common_tags)) / (
+            if sum(tag.frequency for tag in user_tag_freqs) + sum(tag.frequency for tag in attendee_tag_freqs) == 0:
+                tags_score = 0
+            else:
+                tags_score = (2 * sum(tag["frequency"] for tag in common_tags)) / (
                     sum(tag.frequency for tag in user_tag_freqs) + sum(tag.frequency for tag in attendee_tag_freqs))
 
             get_score = MatchScore.objects.filter(
