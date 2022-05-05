@@ -137,7 +137,7 @@ class LocationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Location
-        fields = ['pk', 'name', 'description', 'address', 'location_picture']
+        fields = ['pk', 'name', 'description', 'address', 'location_picture', 'latitude', 'longitude']
 
 
 class SubAreasSerializer(serializers.ModelSerializer):
