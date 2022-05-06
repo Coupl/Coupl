@@ -121,13 +121,6 @@ const HomeMainScreen = ({ navigation }) => {
                 >
                     <Text style={{ fontSize: 20, color: 'rgba(0,128,0,1.0)', fontWeight: "600" }}>See Your Past Events</Text>
                 </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={{ flex: 1, marginVertical: 10, backgroundColor: 'rgba(0,128,0,0.1)', justifyContent: "center", alignItems: "center" }}
-                    onPress={() => joinEvent(1)}
-                >
-                    <Text style={{ fontSize: 20, color: 'rgba(0,128,0,1.0)', fontWeight: "600" }}>Test Event</Text>
-                </TouchableOpacity>
             </View>
         </SafeAreaView>
     )
