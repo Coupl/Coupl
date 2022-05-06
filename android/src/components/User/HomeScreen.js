@@ -124,7 +124,7 @@ const HomeMainScreen = ({ navigation }) => {
 
                 <TouchableOpacity
                     style={{ flex: 1, marginVertical: 10, backgroundColor: 'rgba(0,128,0,0.1)', justifyContent: "center", alignItems: "center" }}
-                    onPress={() => joinEvent(2)}
+                    onPress={() => joinEvent(1)}
                 >
                     <Text style={{ fontSize: 20, color: 'rgba(0,128,0,1.0)', fontWeight: "600" }}>Test Event</Text>
                 </TouchableOpacity>
@@ -166,14 +166,16 @@ const QRCodeScannerScreen = ({ navigation }) => {
                         Toast.show({
                             type: 'error',
                             text1: 'You are not at the event location right now.',
+                            text2: 'Still granting access during the test version'
                         });
-                        return;
+                    } else {
+
+                        Toast.show({
+                            type: 'success',
+                            text1: 'Your location is confirmed, joining the event.',
+                        });
                     }
 
-                    Toast.show({
-                        type: 'success',
-                        text1: 'Your location is confirmed, joining the event.',
-                    });
 
                     axios.post('joinEvent/', joinEventBody).then((res) => {
 

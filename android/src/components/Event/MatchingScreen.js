@@ -205,7 +205,8 @@ const MatchingScreen = ({ navigation }) => {
         }
 
         axios.post("getMatchList/", postBody).then((res) => {
-            const candidates = res.data;
+            const candidates = res.data.sort((a, b) => b.match_scores.total_score - a.match_scores.total_score);
+
             setNumCandidates(candidates.length);
 
             if (candidates.length === 0) {
