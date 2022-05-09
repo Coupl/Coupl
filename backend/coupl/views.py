@@ -342,7 +342,7 @@ class EventListView(APIView):
     permission_classes = [permissions.IsAuthenticated, coupl.permissions.IsUser]
 
     def get(self, request, format=None):
-        events = Event.objects.filter(event_start_time__gt=timezone.now())
+        events = Event.objects.filter(event_start_time__gt=timezone.now()).order_by("event_start_time")
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data)
 
@@ -657,7 +657,7 @@ class GetUserMatches(APIView):
         user = request.user
         gender_id = Profile.preference_list.index([user.profile.gender])
         event = Event.objects.get(pk=request.data["event_id"])
-        liked = Match.objects.filter(event__match__liker=user.pk).values_list('liked_id', flat=True,
+        liked = Match.objects.filter(event=event.pk, event__match__liker=user.pk).values_list('liked_id', flat=True,
                                                                               named=False)
         skips = Match.objects.filter(liked=user, event=event.pk, state=6).values_list('liker_id', flat=True,
                                                                                       named=False)
