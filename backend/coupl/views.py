@@ -352,7 +352,7 @@ class AttendedEventsListView(APIView):
 
     def get(self, request, format=None):
         user = request.user
-        events = Event.objects.filter(event_attendees__id=user.pk)
+        events = Event.objects.filter(event_attendees__id=user.pk).order_by("event_start_time")
 
         events_with_matches = []
         for event in events:
